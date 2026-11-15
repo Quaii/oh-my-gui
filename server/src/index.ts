@@ -1,3 +1,4 @@
+import {desktopAccess} from "./desktop.ts";
 import os from "node:os";
 import {listEditorFiles,readEditorFile,saveEditorFile,reportedFileRoots} from "./editor.ts";
 import {projectSuggestions}from"./suggestions.ts";
@@ -533,7 +534,11 @@ async function serveStatic(res: http.ServerResponse, pathname: string) {
 }
 
 const server = http.createServer((req, res) => {
-  const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+  const url = new URL(req.url || "/", process.env.OMP_DESKTOP_TOKEN ? `http://127.0.0.1:${(server.address() as import("node:net").AddressInfo).port}` : `http://${req.headers.host || "localhost"}`);
+  if(!desktopAccess(req,res,url,process.env.OMP_DESKTOP_TOKEN))return;
+  if(process.env.OMP_DESKTOP_TOKEN && url.pathname==="/api/desktop/appearance" && req.method==="POST"){
+    void readBody(req,1024).then(body=>{if(!/^#[0-9a-f]{6}$/i.test(body.accent||"")){json(res,400,{error:"Invalid accent"});return;}process.stdout.write("OMP_DESKTOP_APPEARANCE "+JSON.stringify({accent:body.accent})+"\n");res.writeHead(204);res.end();}).catch(()=>json(res,400,{error:"Invalid appearance request"}));return;
+  }
   handleApi(req, res, url).then((handled) => {
     if (!handled) serveStatic(res, url.pathname);
   }).catch((err) => json(res, 500, { error: String(err) }));
@@ -541,11 +546,14 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, HOST, () => {
   log(`listening http://${HOST}:${PORT}`);
+  if(process.env.OMP_DESKTOP_TOKEN)process.stdout.write("OMP_DESKTOP_READY "+JSON.stringify({port:(server.address() as import("node:net").AddressInfo).port})+"\n");
   log(`omp binary: ${OMP_BINARY}`);
   log(`agent dir:  ${AGENT_DIR}`);
 });
 
+let stopping=false;
 async function shutdown() {
+  if(stopping)return;stopping=true;
   log("shutting down");
   await Promise.allSettled([...slots.values()].map((s) => s.bridge.stop(2500)));
   server.close(() => process.exit(0));
@@ -553,3 +561,5 @@ async function shutdown() {
 }
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+
+if(process.env.OMP_DESKTOP_TOKEN){process.stdin.resume();process.stdin.on("data",chunk=>{if(String(chunk).includes("shutdown"))void shutdown();});process.stdin.on("end",()=>void shutdown());}

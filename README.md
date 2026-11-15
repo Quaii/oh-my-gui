@@ -88,3 +88,9 @@ The editor shares the workspace background and floating breadcrumb toolbar. Focu
 Markdown files offer Source and Visual editing modes. Visual mode loads editorcn on demand, shares the current file draft and guarded Save action, and serializes Markdown through Tiptap. Merely opening Visual mode does not modify the file. Frontmatter and embedded HTML stay in Source mode to preserve source-only syntax. Standard headings, formatting, links, lists, tasks, images, tables, and fenced code are supported. Switching modes keeps the source editor mounted and its undo history. Source/Visual controls use transition-kit tabs with reduced-motion support.
 
 Transition-kit is the shared motion system for workspace/settings routes, settings sections, tabs, expandable sections, sidebar widths and filtered chat rows, editor tab/focus layout, and workspace cards. Theme switching uses a native View Transition adapter with the kit's fade treatment so all twelve themes remain available. Motion changes start only for deliberate interface updates; token streaming and resize dragging stay immediate. Reduced motion disables travel, and unsupported browsers keep normal state updates. Existing shadcn/Radix behavior, focus handling, and native OMP data remain in place.
+
+## Desktop shell
+
+The Tauri 2 desktop implementation lives on `tauri`; see [desktop development](DESKTOP.md) and the
+[implementation tasks](TAURI-TASKS.md). `npm run desktop:dev` runs the native debug app;
+`npm run desktop:build` creates the Windows release and installer. OMP remains an installed prerequisite.

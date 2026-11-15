@@ -1085,3 +1085,7 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 .transcript-message.is-note+.transcript-message{margin-top:12px}
 
 .assistant-message>.message-actions-inline{position:relative;left:auto;top:auto;margin-top:8px;min-height:36px}
+
+/* WebView: avoid full blurred-canvas snapshots on frequent desktop actions. */
+[data-desktop=true] .sidebar-container,[data-desktop=true] .settings-sidebar{transition:width 160ms cubic-bezier(.22,1,.36,1)}
+@media(prefers-reduced-motion:reduce){[data-desktop=true] .sidebar-container,[data-desktop=true] .settings-sidebar{transition:none!important}}

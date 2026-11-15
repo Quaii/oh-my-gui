@@ -7,8 +7,8 @@ primarily a polish and correctness phase, not an invitation to redesign it.
 
 ## One interface, two hosts
 
-The browser version works today. `tauri` is the desktop integration branch; a working Tauri app is
-not implemented merely because the branch exists. Keep the React interface and backend behavior
+The browser version works today. `tauri` also contains the first desktop shell; read [DESKTOP.md](DESKTOP.md)
+for its build commands, runtime boundary and verification limits. Keep the React interface and backend behavior
 shared. Add desktop lifecycle and packaging around them rather than maintaining a second UI or
 rewriting the backend without a concrete need.
 

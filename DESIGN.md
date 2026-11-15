@@ -217,6 +217,11 @@ on transition wrappers: losing them can move the whole main panel out of view. A
 transition owners for one interaction. Streaming tokens, typing and live resize dragging remain
 immediate. Reduced motion removes snapshot travel; unsupported APIs fall back to usable state changes.
 
+The Tauri WebView is an explicit exception: frequent desktop state changes and navigation commit
+immediately without full-canvas snapshots; sidebar width uses a 160ms CSS transition. This avoids
+snapshotting the blurred shader canvas on every interaction. The native window icon follows the
+active accent through the local desktop host. Browser transition behavior remains unchanged.
+
 ## Review before calling a visual change finished
 
 Inspect the rendered result, not just the JSX or a successful build. Compare the affected surface at

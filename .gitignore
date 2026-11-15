@@ -12,3 +12,8 @@ ui-overhaul-preview.png
 usage-hover-preview.png
 .DS_Store
 Thumbs.db
+
+# Desktop build output and copied runtime
+src-tauri/target/
+src-tauri/resources/runtime/
+src-tauri/gen/

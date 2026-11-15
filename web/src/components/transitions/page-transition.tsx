@@ -1,4 +1,5 @@
 "use client";
+import {isDesktopHost} from "../../lib/desktop";
 
 import {
   addTransitionType,
@@ -21,6 +22,7 @@ export const navigateWithTransition = (
   navigate: () => void,
   { direction = "forward" }: { direction?: "forward" | "back" } = {}
 ) => {
+  if(isDesktopHost()){navigate();return;}
   startTransition(() => {
     if (direction === "back") {
       addTransitionType(PAGE_BACK_TYPE);
@@ -103,6 +105,7 @@ export const PageTransition = ({
     }
   }, [duration, easing]);
 
+  if(isDesktopHost())return <PageTransitionFrame {...props}>{children}</PageTransitionFrame>;
   return (
     <ViewTransition
       key={id}
