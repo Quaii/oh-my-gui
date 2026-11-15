@@ -1,0 +1,31 @@
+# Audit of the last ten feature requests
+
+Reviewed 15 November 2026. This follows the ten most recent substantive feature requests; short “continue” messages and environment instructions do not add features.
+
+| Request | Finding and result | Evidence |
+| --- | --- | --- |
+| Context cards appear only when useful; dismiss separately; exit a project; keep the welcome composer in its usual place | Implemented. Plans/active agents/verified GitHub activity open their own cards. Cards dismiss independently. Global New chat starts a standalone home-folder chat; the breadcrumb offers Leave project. The welcome content and composer share their width. | `RightRail.tsx`, `App.tsx`, `TopBar.tsx`, `index.css` |
+| Sidebar scroll fade, model-supported Fast mode, aligned welcome content, neutral folder icon and New project surface | Implemented. Shared masked blur wraps the sidebar scroll areas. Fast requires advertised priority service support; the native GPT-5.6 Luna catalog does advertise it. Home uses the app's folder icon, and New project uses the sidebar surface. | `ScrollFade.tsx`, `model-capabilities.ts`, `Projects.tsx`, `App.tsx`, `index.css` |
+| One activity group per request; wider task plan; accent checks; unfinished tasks first; automatic plan opening | Implemented. Native indices are retained while assistant/tool iterations share one activity group. Canonical native todo results update the plan and open its card. | `transcript.ts`, `store.ts`, `GoalPlan.tsx`, `RightRail.tsx`; streaming/chat-turn tests |
+| Inset project rows, expandable folders, hover-only plus, supplied component patterns | Implemented. Projects use Collapsible, nested chat branches and an inset hover surface; the plus reveals on hover/focus or touch. Supplied Trace/Marker/Commit/MessageBranch/PackageInfo/WebPreview/Attachment patterns are installed and wired where native data supports them. | `Sidebar.tsx`, `Message.tsx`, `ToolPatterns.tsx`, `FilesChanged.tsx`, `ui/*` |
+| Rare UI web sources; contextual cheap suggestions above the input; completed-task disclosure; correct scrollbar and hover close | Implemented. WebSearch receives parsed structured/Markdown sources. Suggestions require an existing project context, use OMP's `@smol` role, and cache unchanged context. Pending tasks precede the Show completed disclosure; scrolling is below progress, and the close button reveals on hover/focus. | `ToolCard.tsx`, `web-sources.ts`, `ProjectSuggestions.tsx`, `suggestions.ts`, `GoalPlan.tsx`, `RightRail.tsx` |
+| Home must never show the floating Task plan/GitHub/Session/Agents cards | Implemented. Home does not mount the inspector or its toolbar control. The dashboard's previously requested unfinished-work recap remains. | `App.tsx`, `TopBar.tsx` |
+| Permission control in the composer | Implemented for OMP's four native approval defaults. Its scope is explicitly **global**, shared with terminal sessions. Project/tool policies and CLI overrides still apply. It is not a per-chat override, and loading the UI never changes permissions. | `PermissionControl.tsx`, `shared/permissions.ts`, existing native settings API |
+| Changed files open a second floating file browser/editor; matching blur; no false project label | Initially partial: one document, flat capped listing, changed-file-only entry point. Completed in this pass with an independent Open files action/shortcut, lazy expandable folders, root selection, pagination, retained file tabs/drafts, save/reload/close handling, keyboard resizing, and a peer editor panel. Normal chats say Workspace; newly created standalone chats use the home folder. | `FileWorkspace.tsx`, `files/*`, `editor-session.ts`, `server/src/editor.ts`, `TopBar.tsx`, `App.tsx` |
+| Message action rounding/tooltip dot; editing directly in the user message | Implemented. Fixed outer/inner radii, arrow-free action tooltips, in-place text editing with a visible label and Cancel/Send. Resending uses OMP's native branch navigation rather than modifying the old transcript. | `Message.tsx`, `App.tsx`, `ui/tooltip.tsx`, `index.css` |
+| Review recent requests and finish the file browser | This audit records what exists, the browser gaps found, and their fixes. File tabs now retain unsaved drafts while Home, Settings, or another chat is shown. No unsaved file content is written to browser storage. Closing a dirty tab/pane asks whether to save or discard; stale disk writes are rejected. | This audit; editor session and real filesystem tests |
+
+## Practical limits
+
+- The editor supports UTF-8 text up to 2 MB. Binary files and other encodings report a clear error. It offers browsing, editing, saving and reloading; filesystem deletion/renaming and a full IDE/debugger were not requested or added.
+- Files are scoped to the chat's working folder and folders touched by successful native file tools. Real paths are checked before access. The UI does not silently browse arbitrary paths.
+- The native permission selector changes OMP's default, not an OS sandbox. It does not promise that explicit restrictions disappear in Full access.
+- Some supplied patterns depend on recognizable native output. The UI does not invent commits, test results, package changes, citations or alternative replies. The web preview does not capture arbitrary dev-server consoles.
+- Code/unit checks cover native streaming, branches, usage, permissions, suggestion caching and sources. Browser checks exercise the current UI without sending extra model prompts or changing the user's existing files.
+
+## Verification for this audit
+
+- 37 focused tests pass, including real filesystem pagination across more than 200 entries, stale saves, binary rejection, independent tab drafts, background-load focus, and edits made during a pending save.
+- Browser checks opened the file pane independently, expanded nested folders, opened multiple files, saved a newly created test fixture, retained an unsaved fixture through Settings/chat navigation, tested the dirty-close choice, switched browser roots, and resized both columns with the keyboard.
+- At 390 × 844 the editor uses a floating mobile overlay with no page overflow and an accessible Close button. Desktop testing used the normal 1280 × 720 viewport.
+- Existing C++ content was opened read-only. No additional model prompt or permission change was sent for this audit.

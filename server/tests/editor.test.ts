@@ -17,3 +17,12 @@ test('out-of-workspace browser roots come only from successful native file tools
  const calls=[{role:'assistant',content:[{type:'toolCall',id:'ok',name:'write',arguments:{path:outside}},{type:'toolCall',id:'failed',name:'write',arguments:{path:path.resolve('web/private')}}]},{role:'toolResult',toolCallId:'ok'},{role:'toolResult',toolCallId:'failed',isError:true}];
  assert.deepEqual(reportedFileRoots(cwd,calls),[cwd,path.dirname(outside)]);
 });
+
+test('folder pagination is complete and filters apply before the page limit',async()=>{
+ const root=await fs.mkdtemp(path.resolve('.tmp/editor-pages-'));
+ try{await Promise.all(Array.from({length:205},(_,i)=>fs.writeFile(path.join(root,'file-'+String(i).padStart(3,'0')+'.txt'),'x')));await fs.mkdir(path.join(root,'folder'));const {listEditorFiles}=await import('../src/editor.ts');const first=await listEditorFiles([root],root),second=await listEditorFiles([root],root,'',first.nextOffset!);
+ assert.equal(first.entries[0].directory,true);assert.equal(first.total,206);assert.equal(first.entries.length,200);assert.equal(second.entries.length,6);assert.equal(second.nextOffset,null);assert.equal(new Set([...first.entries,...second.entries].map(e=>e.path)).size,206);assert.equal(first.parent,null);
+ const filtered=await listEditorFiles([root],root,'file-204');assert.equal(filtered.entries.length,1);assert.equal(filtered.entries[0].name,'file-204.txt');
+ const document=await readEditorFile([root],filtered.entries[0].path);await assert.rejects(()=>saveEditorFile([root],document.path,'bad\0text',document.version),/Binary/);assert.equal((await fs.readFile(document.path,'utf8')),'x');
+ }finally{await fs.rm(root,{recursive:true,force:true});}
+});

@@ -1,0 +1,34 @@
+import {useEffect,useState} from 'react';
+import {ChevronRight,Folder,FolderOpen,RotateCcw,Search} from 'lucide-react';
+import {get} from '../../lib/api';
+import {containsPath,fileName,pathKey} from '../../lib/editor-session';
+import {FileIcon} from '../FilesChanged';
+import {Input} from '../ui/input';
+import {Skeleton} from '../ui/skeleton';
+import {Button} from '../ui/button';
+import {Select,SelectTrigger,SelectContent,SelectItem,SelectValue} from '../ui/select';
+import {ScrollFade} from '../ScrollFade';
+type Entry={name:string;path:string;directory:boolean};
+type Listing={path:string;roots:string[];entries:Entry[];total:number;nextOffset:number|null};
+function Directory({chatKey,path,selected,onOpen,query='',revision,depth=0}:{chatKey:string;path:string;selected:string|null;onOpen:(path:string)=>void;query?:string;revision:number;depth?:number}){
+ const [data,setData]=useState<Listing|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[retry,setRetry]=useState(0),[more,setMore]=useState(false);
+ const url='/api/files?key='+encodeURIComponent(chatKey)+'&path='+encodeURIComponent(path)+'&q='+encodeURIComponent(query);
+ useEffect(()=>{const controller=new AbortController();setLoading(true);setError('');get<Listing>(url).then(value=>{if(!controller.signal.aborted)setData(value);}).catch(e=>{if(!controller.signal.aborted)setError(e.message);}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});return()=>controller.abort();},[url,revision,retry]);
+ async function loadMore(){if(!data||data.nextOffset===null||more)return;setMore(true);try{const next=await get<Listing>(url+'&offset='+data.nextOffset);setData(old=>old?{...next,entries:[...old.entries,...next.entries]}:next);}catch(e:any){setError(e.message);}finally{setMore(false);}}
+ if(loading&&!data)return <div className="space-y-3 px-3 py-2" aria-label="Loading folder" aria-busy="true">{[1,2,3,4].map(n=><Skeleton key={n} className="h-4 w-full rounded"/>)}</div>;
+ if(error)return <div className="px-3 py-2 text-xs text-muted-foreground"><p className="break-words">{error}</p><Button size="sm" variant="ghost" onClick={()=>setRetry(n=>n+1)}>Retry</Button></div>;
+ if(!data?.entries.length)return <p className="px-3 py-3 text-xs text-muted-foreground">{query?'No matching files or folders.':'This folder is empty.'}</p>;
+ return <><div role="group" aria-busy={loading}>{data.entries.map(entry=><TreeEntry key={entry.path} entry={entry} selected={selected} onOpen={onOpen} chatKey={chatKey} revision={revision} depth={depth}/>)}</div>{data.nextOffset!==null&&<Button size="sm" variant="ghost" className="my-1 w-full text-xs" disabled={more} onClick={()=>void loadMore()}>{more?'Loading…':'Show more'} · {data.entries.length} of {data.total}</Button>}</>;
+}
+function TreeEntry({entry,selected,onOpen,chatKey,revision,depth}:{entry:Entry;selected:string|null;onOpen:(path:string)=>void;chatKey:string;revision:number;depth:number}){
+ const [open,setOpen]=useState(!!selected&&entry.directory&&containsPath(entry.path,selected));
+ useEffect(()=>{if(selected&&entry.directory&&containsPath(entry.path,selected))setOpen(true);},[selected,entry.path]);
+ const selectedFile=!!selected&&pathKey(selected)===pathKey(entry.path);
+ return <div role="treeitem" aria-expanded={entry.directory?open:undefined} aria-selected={selectedFile}><button type="button" className={'file-browser-entry '+(selectedFile?'is-selected':'')} style={{paddingLeft:8+depth*12}} title={entry.path} aria-label={entry.directory?(open?'Collapse folder ':'Expand folder ')+entry.name:'Open file '+entry.name} onClick={()=>entry.directory?setOpen(value=>!value):onOpen(entry.path)} onKeyDown={event=>{if(entry.directory&&event.key==='ArrowRight'){event.preventDefault();setOpen(true);}if(entry.directory&&event.key==='ArrowLeft'){event.preventDefault();setOpen(false);}}}>{entry.directory?<ChevronRight className={'size-3 shrink-0 transition-transform '+(open?'rotate-90':'')}/>:<span className="w-3 shrink-0"/>}{entry.directory?open?<FolderOpen className="size-3.5 shrink-0 text-muted-foreground"/>:<Folder className="size-3.5 shrink-0 text-muted-foreground"/>:<FileIcon path={entry.path}/>}<span className="truncate">{entry.name}</span></button>{entry.directory&&open&&<Directory chatKey={chatKey} path={entry.path} selected={selected} onOpen={onOpen} revision={revision} depth={depth+1}/>}</div>;
+}
+export function FileTree({chatKey,roots,root,onRootChange,selected,onOpen,revision}:{chatKey:string;roots:string[];root:string;onRootChange:(path:string)=>void;selected:string|null;onOpen:(path:string)=>void;revision:number}){
+ const [query,setQuery]=useState(''),[filter,setFilter]=useState(''),[refresh,setRefresh]=useState(0);
+ useEffect(()=>{const timer=setTimeout(()=>setFilter(query.trim()),150);return()=>clearTimeout(timer);},[query]);
+ useEffect(()=>{setQuery('');setFilter('');},[root]);
+ return <nav aria-label="File browser" className="file-browser"><div className="file-browser-controls"><div className="flex items-center gap-1"><Select value={root} onValueChange={onRootChange}><SelectTrigger aria-label="File browser root" className="h-8 min-w-0 flex-1 rounded-md border-0 bg-transparent px-2 text-xs"><SelectValue>{fileName(root)}</SelectValue></SelectTrigger><SelectContent>{roots.map(path=><SelectItem key={path} value={path}><span title={path}>{fileName(path)}<span className="ml-2 text-[10px] text-muted-foreground">{path}</span></span></SelectItem>)}</SelectContent></Select><Button size="icon-sm" variant="ghost" aria-label="Refresh files" onClick={()=>setRefresh(n=>n+1)}><RotateCcw className="size-3.5"/></Button></div><div className="relative mt-1"><Search className="pointer-events-none absolute left-2 top-2 size-3 text-muted-foreground"/><Input aria-label="Filter files in root folder" placeholder="Filter this folder…" value={query} onChange={e=>setQuery(e.target.value)} className="h-7 rounded-md pl-7 pr-2 text-xs"/></div></div><ScrollFade className="min-h-0 flex-1"><div className="h-full overflow-y-auto px-1 pb-3" role="tree" aria-label="Workspace files" onKeyDown={event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;const buttons=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=treeitem]>button')),index=buttons.indexOf(event.target as HTMLButtonElement);if(index<0)return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:Math.max(0,Math.min(buttons.length-1,index+(event.key==='ArrowDown'?1:-1)));buttons[next]?.focus();}}><Directory key={root} chatKey={chatKey} path={root} selected={selected} onOpen={onOpen} query={filter} revision={revision+refresh}/></div></ScrollFade></nav>;
+}

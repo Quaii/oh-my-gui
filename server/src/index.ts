@@ -146,7 +146,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       const body=req.method==='PUT'?await readBody(req):{},key=String(body.key||url.searchParams.get('key')||''),slot=slots.get(key);
       if(!slot){json(res,404,{error:'No active chat workspace.'});return true;}
       const snapshot=await readChatSnapshot(slot.bridge),roots=reportedFileRoots(slot.cwd,snapshot.messages),requested=path.resolve(slot.cwd,String(body.path||url.searchParams.get('path')||slot.cwd));
-      try{const data=p==='/api/files'?await listEditorFiles(roots,requested,url.searchParams.get('q')||''):req.method==='PUT'?await saveEditorFile(roots,requested,String(body.content??''),String(body.version||'')):await readEditorFile(roots,requested);json(res,200,{...data,roots});}
+      try{const data=p==='/api/files'?await listEditorFiles(roots,requested,url.searchParams.get('q')||'',Number(url.searchParams.get('offset')||0)):req.method==='PUT'?await saveEditorFile(roots,requested,String(body.content??''),String(body.version||'')):await readEditorFile(roots,requested);json(res,200,{...data,roots});}
       catch(error:any){json(res,400,{error:error.message});}return true;
     }
     if (p === "/api/health") {

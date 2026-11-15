@@ -19,6 +19,7 @@ export interface CommandPaletteProps {
   activePath: string | null;
   onSlash: (name: string) => void;
   onNew: () => void;
+  onOpenFiles: () => void;
   onOpenSettings: () => void;
   onRefresh: () => void;
   onOpenSession: (s: any) => void;
@@ -27,6 +28,7 @@ export interface CommandPaletteProps {
 export function CommandPalette(props: CommandPaletteProps) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "e") {e.preventDefault();props.onOpenFiles();return;}
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         props.onOpenChange(!props.open);
@@ -34,7 +36,7 @@ export function CommandPalette(props: CommandPaletteProps) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [props.open, props.onOpenChange]);
+  }, [props.open, props.onOpenChange, props.onOpenFiles]);
 
   const run = (fn: () => void) => {
     props.onOpenChange(false);
@@ -52,6 +54,7 @@ export function CommandPalette(props: CommandPaletteProps) {
             <MessageSquarePlus className="size-3.5" /> New session
             <CommandShortcut>⌘N</CommandShortcut>
           </CommandItem>
+          <CommandItem value="open files file browser explorer editor" onSelect={() => run(props.onOpenFiles)}><FolderGit2 className="size-3.5"/> Open files<CommandShortcut>Ctrl+Shift+E</CommandShortcut></CommandItem>
           <CommandItem value="settings preferences config" onSelect={() => run(props.onOpenSettings)}>
             <Settings2 className="size-3.5" /> Settings
             <CommandShortcut>⌘,</CommandShortcut>

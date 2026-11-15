@@ -57,7 +57,7 @@ export default function App() {
   const inSettings = route.startsWith("/settings");
   const openSettings = useCallback(() => navigate("/settings"), []);
   const closeSettings = useCallback(() => navigate("/"), []);
-  const [fileRequest,setFileRequest]=useState<{path:string;n:number}|null>(null);
+  const [fileWorkspaces,setFileWorkspaces]=useState<Record<string,{cwd:string;request:{path?:string;n:number}}>>({});
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [connected, setConnected] = useState(false);
   const [behavior, setBehavior] = useState<"steer" | "followUp">("steer");
@@ -89,8 +89,9 @@ export default function App() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickRef = useRef(true);
 
-  useEffect(()=>setFileRequest(null),[chat.key]);
   const cwd = boot?.cwd ?? localStorage.getItem(LS_CWD) ?? "";
+  const fileRequest=chat.key?fileWorkspaces[chat.key]?.request:null;
+  const openFiles=useCallback((path?:string)=>{const key=keyRef.current;if(!key)return;setHome(false);setFileWorkspaces(previous=>({...previous,[key]:{cwd,request:{path,n:Date.now()}}}));},[cwd]);
 
   const [paletteVersion, setPaletteVersion] = useState(0);
   useEffect(() => subscribePalette(() => setPaletteVersion((v) => v + 1)), []);
@@ -427,7 +428,7 @@ export default function App() {
   useEffect(()=>{const node=composerRef.current;if(!node)return;const observer=new ResizeObserver(()=>node.closest<HTMLElement>(".workspace-main")?.style.setProperty("--composer-height",`${node.offsetHeight}px`));observer.observe(node);return()=>observer.disconnect();},[home,empty]);
 
   return (
-    <FileOpenContext.Provider value={path=>setFileRequest({path,n:Date.now()})}><div className="app-shell relative isolate flex h-full w-full overflow-hidden bg-background text-foreground">
+    <FileOpenContext.Provider value={openFiles}><div className="app-shell relative isolate flex h-full w-full overflow-hidden bg-background text-foreground">
       <AnimatePresence mode="wait" initial={false}><motion.div key={inSettings?"settings":"workspace"} className="flex h-full min-h-0 min-w-0 flex-1" initial={{opacity:0,x:reducedMotion?0:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:reducedMotion?0:-8}} transition={{duration:reducedMotion?0:.18,ease:[.22,1,.36,1]}}>
       {inSettings ? (
         <SettingsPage
@@ -528,6 +529,8 @@ export default function App() {
           running={running}
           notice={chat.notice}
           contextPercent={chat.state?.contextUsage?.percent}
+          onOpenFiles={!home?()=>openFiles():undefined}
+          filesOpen={!!fileRequest}
           showWorkspaceCards={!home&&!fileRequest}
           inspector={home||fileRequest?null:<RightRail enabled={!home} manual={railOpen} chat={chat} stats={stats} cwd={cwd} onCancelSubagent={id=>sendCmd({type:"cancel_subagent",subagentId:id})} onRequestPlan={()=>{setHome(false);setRailOpen(false);setSeed({text:"Help me create a step-by-step plan for ",n:Date.now()});}} />}
           railOpen={railOpen}
@@ -673,11 +676,12 @@ export default function App() {
           </div>
         </div>}
       </main>
-      {!home&&fileRequest&&chat.key&&<Suspense fallback={<aside className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={chat.key} cwd={cwd} request={fileRequest} onClose={()=>setFileRequest(null)}/></Suspense>}
+
         </>
       )}
 
       </motion.div></AnimatePresence>
+      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={<aside hidden={home||inSettings||key!==chat.key} className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={key} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;})}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
       <CommandPalette
         open={paletteOpen}
@@ -687,6 +691,7 @@ export default function App() {
         activePath={activePath}
         onSlash={(name) => onSend(`/${name}`, [])}
         onNew={newSession}
+        onOpenFiles={()=>openFiles()}
         onOpenSettings={openSettings}
         onRefresh={refreshSessions}
         onOpenSession={openSession}

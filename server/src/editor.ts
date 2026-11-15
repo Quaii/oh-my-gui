@@ -18,14 +18,18 @@ export async function readEditorFile(roots:string[],requested:string){
  return {path:file,content,version:hash(data),size:data.length};
 }
 export async function saveEditorFile(roots:string[],requested:string,content:string,version:string){
+ if(content.includes('\0'))throw new Error('Binary content cannot be saved by the text editor.');
  if(Buffer.byteLength(content,'utf8')>MAX_BYTES)throw new Error('This editor supports text files up to 2 MB.');
  const current=await readEditorFile(roots,requested);
  if(current.version!==version)throw new Error('The file changed on disk. Reload it before saving your edits.');
  await fs.writeFile(current.path,content,'utf8');return readEditorFile(roots,current.path);
 }
-export async function listEditorFiles(roots:string[],requested:string,query=''){
+export async function listEditorFiles(roots:string[],requested:string,query='',offset=0){
  const directory=await resolveEditorPath(roots,requested),entries=await fs.readdir(directory,{withFileTypes:true});
- return {path:directory,entries:entries.filter(e=>!e.isSymbolicLink()&&!['.git','node_modules'].includes(e.name)&&e.name.toLowerCase().includes(query.toLowerCase())).sort((a,b)=>Number(b.isDirectory())-Number(a.isDirectory())||a.name.localeCompare(b.name)).slice(0,200).map(e=>({name:e.name,path:path.join(directory,e.name),directory:e.isDirectory()}))};
+ const filtered=entries.filter(e=>!e.isSymbolicLink()&&!['.git','node_modules'].includes(e.name)&&e.name.toLowerCase().includes(query.toLowerCase())).sort((a,b)=>Number(b.isDirectory())-Number(a.isDirectory())||a.name.localeCompare(b.name));
+ const start=Number.isSafeInteger(offset)&&offset>=0?Math.min(offset,filtered.length):0;
+ const parent=path.dirname(directory);let parentPath:string|null=null;try{parentPath=parent!==directory?await resolveEditorPath(roots,parent):null;}catch{}
+ return {path:directory,parent:parentPath,total:filtered.length,nextOffset:start+200<filtered.length?start+200:null,entries:filtered.slice(start,start+200).map(e=>({name:e.name,path:path.join(directory,e.name),directory:e.isDirectory()}))};
 }
 export function reportedFileRoots(cwd:string,messages:any[]){
  const results=new Map(messages.filter(m=>m.role==='toolResult').map(m=>[m.toolCallId??m.tool_use_id??m.id,m]));
