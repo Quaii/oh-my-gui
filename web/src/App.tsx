@@ -621,7 +621,7 @@ export default function App() {
         </div>
 
         {!home && <div ref={composerRef} className="composer-region relative z-10 shrink-0 px-6 pt-3 pb-5">
-          <div className="composer-blur-gradient" aria-hidden="true"/><div className="relative mx-auto w-full max-w-[752px]">
+          <div className="composer-frame relative mx-auto w-full max-w-[752px]"><div className="composer-blur-gradient" aria-hidden="true"/>
             {running && (
               <div className="mb-2 flex items-center gap-2">
                 <AiStatus state={aiState as any} className="text-[11.5px] text-muted-foreground" />

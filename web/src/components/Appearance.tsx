@@ -1,4 +1,4 @@
-import {ScrollFade} from "./ScrollFade";
+import {ScrollArea} from "./ui/scroll-area";
 import {ColorPicker} from "./ColorPicker";
 import { Slider } from "@/components/ui/slider";
 import { ReactBitsBackground, REACT_BITS_BACKGROUNDS, type ReactBitsBackgroundId } from "./backgrounds/ReactBitsBackground";
@@ -58,10 +58,10 @@ export function AppearanceControls({expanded=false}:{expanded?:boolean}={}) {
       </div>
       <div>
         <div className="mb-3 flex items-center gap-2 text-[13px] font-medium"><Waves className="size-4 text-muted-foreground" /> Background</div>
-        <ScrollFade><div className="background-gallery grid grid-cols-4 gap-3" role="group" aria-label="Background">
+        <ScrollArea className={expanded?"background-gallery-scroll h-[430px]":"background-gallery-scroll h-[230px]"}><div className="background-gallery grid grid-cols-4 gap-3" role="group" aria-label="Background">
           {BACKGROUND_OPTIONS.map(o => {const bit=REACT_BITS_BACKGROUNDS.find(b=>b.value===o.value),palette=palettes[o.value as keyof typeof palettes];return <button key={o.value} aria-label={`Background: ${o.label}`} aria-pressed={ambience===o.value&&!custom.image} onClick={()=>setAmbience(o.value)} className="background-choice group min-w-0 self-start text-left"><span className={`ambience-swatch overflow-hidden ${ambience===o.value&&!custom.image?"is-selected":""}`} style={palette?{background:`linear-gradient(135deg,${palette[0]},${palette[2]} 55%,${palette[3]})`}:undefined}>{(bit||palette)&&<img src={bit?`/backgrounds/react-bits/${bit.slug}.jpg`:`/backgrounds/23rd/${o.value}.jpg`} alt="" loading="lazy" className="size-full object-cover"/>}{ambience===o.value&&!custom.image&&<span className="absolute right-2 top-2 grid size-4 place-items-center rounded-full bg-foreground text-background"><Check className="size-2.5"/></span>}</span><span className="background-choice-label mt-2 block text-xs text-muted-foreground group-hover:text-foreground" title={o.label}>{o.label}</span></button>})}
 
-        </div></ScrollFade>
+        </div></ScrollArea>
       </div>
       <section className="background-adjustments space-y-6"><h3 className="text-sm font-medium">Background controls</h3>
       <label className="background-animation-row flex w-full items-center justify-between gap-4 text-[13px]">

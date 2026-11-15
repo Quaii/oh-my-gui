@@ -1,3 +1,4 @@
+import {toolSettingIcon} from "../ToolIcons";
 import {useRef,type ComponentType} from "react";
 import {motion,useReducedMotion} from "motion/react";
 import {useSmoothWheel} from "@/lib/use-smooth-wheel";
@@ -37,6 +38,6 @@ export function SettingGlyph({settingKey,type}:{settingKey:string;type:string}){
  const rules:[RegExp,ComponentType<any>][]=[[/thinking|reasoning|effort/,Brain],[/fastmode/,Zap],[/slowmode|speed/,Gauge],[/timeout|runtime|delay|interval/,Timer],[/retry|rescan|refresh/,RotateCcw],[/compact|summari/,Minimize2],[/steer|interrupt/,ArrowRightLeft],[/followup|queue/,ListStart],[/stream/,Radio],[/model/,Boxes],[/sessionid/,Fingerprint],[/name|identity|persona/,UserRound],[/usage|cost|tokens/,BarChart3],[/approval|permission|safe/,Shield],[/url|endpoint|network|proxy/,Globe],[/max|min|limit|count|size|depth/,Gauge],[/font|text|prompt/,TextCursorInput],[/visible|display|show|hide/,Eye],[/audio|speech|voice/,Volume2],[/scope|layer/,Layers]];
  const icons:Record<string,ComponentType<any>>={task:ListTodo,skills:Library,memory:Brain,mcp:Network,providers:KeyRound,provider:KeyRound,models:Boxes,modelRoles:Boxes,modelPresets:Boxes,shell:Terminal,bash:Terminal,tools:Wrench,read:FileText,write:FileText,edit:FileCode2,files:FolderOpen,appearance:Palette,context:Library,interaction:MousePointer2,extensions:Puzzle,thinking:Brain};
  const memoryIcons:Record<string,ComponentType<any>>={"autolearn.enabled":GraduationCap,"autolearn.autoContinue":ScanLine,"memory.backend":Database,"mnemopi.dbPath":HardDrive,"mnemopi.bank":Landmark,"mnemopi.scoping":Target,"mnemopi.embeddingVariant":Layers2,"mnemopi.autoRecall":Search,"mnemopi.autoRetain":Save,"mnemopi.polyphonicRecall":GitFork,"mnemopi.enhancedRecall":WandSparkles,"mnemopi.proactiveLinking":Link2,"mnemopi.noEmbeddings":Unplug,"hindsight.apiToken":KeyRound,"hindsight.bankId":Landmark,"hindsight.scoping":Target,"hindsight.globalScope":Globe,"hindsight.autoRecall":Search,"hindsight.autoRetain":Save,"hindsight.retainMode":NotebookPen,"hindsight.mentalModelsEnabled":Brain,"hindsight.mentalModelAutoSeed":Sparkles};
- const Icon=memoryIcons[settingKey] || rules.find(([pattern])=>pattern.test(key))?.[1] || icons[group] || (type==="number"?Hash:SlidersHorizontal);
+ const Icon=toolSettingIcon(settingKey) || memoryIcons[settingKey] || rules.find(([pattern])=>pattern.test(key))?.[1] || icons[group] || (type==="number"?Hash:SlidersHorizontal);
  return <Icon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5}/>;
 }

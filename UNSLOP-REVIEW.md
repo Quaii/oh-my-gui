@@ -42,4 +42,8 @@ Latest follow-ups: Home does not mount contextual cards or their toolbar action.
 
 ## File browser audit follow-up
 
-Completed the single-file prototype with an independent entry point, root picker, lazy folder tree, folder-filtering and full pagination, tab drafts and undo history, guarded close/save/reload, theme-aware CodeMirror, shared scroll-edge blur, and both resize handles. Browser checks saved only a newly created temporary fixture, retained an unsaved second fixture across Settings and chat changes, discarded it explicitly, and confirmed no horizontal overflow at 390 × 844. The request audit documents the global scope of native permission defaults and the editor's UTF-8/2 MB boundary. Type checking and all 37 focused tests pass.
+Completed the single-file prototype with an independent entry point, root picker, lazy folder tree, folder-filtering and full pagination, tab drafts and undo history, guarded close/save/reload, theme-aware CodeMirror and both resize handles. Browser checks saved only a newly created temporary fixture, retained an unsaved second fixture across Settings and chat changes, discarded it explicitly, and confirmed no horizontal overflow at 390 × 844. The request audit documents the global scope of native permission defaults and the editor's UTF-8/2 MB boundary. Type checking and all 37 focused tests pass.
+
+### Floating surfaces and clear scroll edges
+
+Removed automatic blur overlays from cards, galleries, file panes, and other ordinary scroll lists. The composer fade follows the composer width; toolbar actions float independently with an 8 px gap. Platform-aware keyboard hints show the Windows logo or Command symbol while retaining the actual Ctrl/Cmd shortcuts. Native tools and tool behavior settings now use semantic icons. Persona actions use the floating menu material, while the empty state and editor use the solid sidebar surface. Radix scrollbars fade in and out and honor reduced motion.

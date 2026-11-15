@@ -1,4 +1,4 @@
-import { ToolIcon } from "../ToolCard";
+import { ToolIcon } from "../ToolIcons";
 import { Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ListSkeleton,ToolsSkeleton } from "@/components/ui/loading-shapes";

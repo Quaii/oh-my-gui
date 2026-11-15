@@ -1,4 +1,4 @@
-import {ScrollFade} from "../ScrollFade";
+import {ScrollFrame} from "../ScrollFrame";
 "use client"
 
 import * as React from "react"
@@ -88,14 +88,14 @@ function CommandList({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
-    <ScrollFade><CommandPrimitive.List
+    <ScrollFrame><CommandPrimitive.List
       data-slot="command-list"
       className={cn(
         "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
         className
       )}
       {...props}
-    /></ScrollFade>
+    /></ScrollFrame>
   )
 }
 

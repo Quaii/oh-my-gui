@@ -1,5 +1,4 @@
 import {supportsFastMode} from "../lib/model-capabilities";
-import {ScrollFade} from "../components/ScrollFade";
 import { SettingsNavigation, savedSettingsPanel, SettingGlyph, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
 import { ProviderIcon } from "../components/ProviderIcon";
 import { PanelSkeleton, ListSkeleton, ProviderSkeleton } from "@/components/ui/loading-shapes";
@@ -223,7 +222,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
 
         {/* content */}
-        <ScrollFade className="flex-1"><div ref={contentRef} className="settings-content h-full min-h-0 min-w-0 overflow-y-auto">
+        <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef} viewportClassName="settings-content min-h-0 min-w-0">
           <div className={`settings-page-content mx-auto w-full px-5 pb-10 sm:px-9 ${panel==="usage"&&!searching?"is-wide":"max-w-[920px]"}`}>
             <div className="mb-7"><h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1><p className="mt-2 text-[13px] text-muted-foreground">{panel === "usage" ? "Token trends, model usage, and activity across your workspace." : panel === "appearance" ? "Choose how your workspace looks and feels." : panel === "skills" ? "Discover and manage the skills available to OMP." : panel === "mcp" ? "Connect the tools and services your agent can use." : panel === "tools" ? "Manage the tools available to your agent." : "Manage your agent and workspace preferences."}</p></div>
             <div className="mb-4 md:hidden">
@@ -316,7 +315,7 @@ export function SettingsPage(props: SettingsPageProps) {
             </Suspense></motion.div></AnimatePresence>
             </SkeletonReveal>
           </div>
-        </div></ScrollFade>
+        </ScrollArea>
       </main>
     </div>
   );

@@ -22,7 +22,8 @@ export interface ToolRunView {
   durationMs?: number;
 }
 
-export function ToolIcon({name}:{name:string}){const icons:Record<string,any>={read:FileText,write:FilePlus2,edit:FilePenLine,ast_edit:FilePenLine,bash:Terminal,powershell:Terminal,grep:Search,glob:FolderSearch,find:FolderSearch,task:Network,todo:ListTodo,web_search:Globe,web_fetch:Globe,eval:Code2,lsp:Code2,ask:MessageCircle,wait:Timer,codemode:Code2,tool_search:Search};const Icon=icons[name] || Wrench;return <Icon className="size-4 shrink-0" strokeWidth={1.5}/>;}
+export {ToolIcon} from "./ToolIcons";
+import {ToolIcon} from "./ToolIcons";
 
 export function resultText(result: any): string {
   if (!result) return "";

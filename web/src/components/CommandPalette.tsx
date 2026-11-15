@@ -1,3 +1,4 @@
+import {shortcutLabel} from "../lib/platform";
 import { useEffect } from "react";
 import {
   CommandDialog,
@@ -52,12 +53,12 @@ export function CommandPalette(props: CommandPaletteProps) {
         <CommandGroup heading="Actions">
           <CommandItem value="new session create" onSelect={() => run(props.onNew)}>
             <MessageSquarePlus className="size-3.5" /> New session
-            <CommandShortcut>⌘N</CommandShortcut>
+            <CommandShortcut>{shortcutLabel("N")}</CommandShortcut>
           </CommandItem>
-          <CommandItem value="open files file browser explorer editor" onSelect={() => run(props.onOpenFiles)}><FolderGit2 className="size-3.5"/> Open files<CommandShortcut>Ctrl+Shift+E</CommandShortcut></CommandItem>
+          <CommandItem value="open files file browser explorer editor" onSelect={() => run(props.onOpenFiles)}><FolderGit2 className="size-3.5"/> Open files<CommandShortcut>{shortcutLabel("E",undefined,true)}</CommandShortcut></CommandItem>
           <CommandItem value="settings preferences config" onSelect={() => run(props.onOpenSettings)}>
             <Settings2 className="size-3.5" /> Settings
-            <CommandShortcut>⌘,</CommandShortcut>
+            <CommandShortcut>{shortcutLabel(",")}</CommandShortcut>
           </CommandItem>
           <CommandItem value="refresh reload sessions" onSelect={() => run(props.onRefresh)}>
             <RefreshCw className="size-3.5" /> Refresh sessions
