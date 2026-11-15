@@ -1,4 +1,4 @@
-declare global { interface Window { __OMP_DESKTOP__?:boolean } }
+declare global { interface Window { __OMP_DESKTOP__?:boolean; __OMP_CUSTOM_CHROME__?:boolean } }
 export function isDesktopHost(){return typeof window!=='undefined'&&window.__OMP_DESKTOP__===true;}
 
 let pending:ReturnType<typeof setTimeout>|undefined;

@@ -1089,3 +1089,17 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 /* WebView: avoid full blurred-canvas snapshots on frequent desktop actions. */
 [data-desktop=true] .sidebar-container,[data-desktop=true] .settings-sidebar{transition:width 160ms cubic-bezier(.22,1,.36,1)}
 @media(prefers-reduced-motion:reduce){[data-desktop=true] .sidebar-container,[data-desktop=true] .settings-sidebar{transition:none!important}}
+
+/* Windows-only custom chrome replaces the native caption; web layout stays unchanged. */
+[data-desktop-chrome=true] #root{display:flex;flex-direction:column}
+[data-desktop-chrome=true] .workspace-motion-root{flex:1;height:auto;min-height:0;overflow:hidden}
+.desktop-titlebar{display:flex;align-items:stretch;height:32px;flex-shrink:0;background:var(--sidebar);color:var(--muted-foreground);user-select:none}
+.desktop-titlebar-drag{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding-left:16px;font-size:12px;touch-action:none}
+.desktop-titlebar-drag>svg,.desktop-titlebar-drag>span{pointer-events:none}
+.desktop-titlebar-error{margin-left:12px;font-size:10px}
+.desktop-caption-buttons{display:flex;flex-shrink:0}
+.desktop-caption-buttons button{display:grid;place-items:center;width:46px;height:32px;border:0;background:transparent;color:var(--foreground)}
+.desktop-caption-buttons button:hover{background:var(--sidebar-accent)}
+.desktop-caption-buttons svg{width:12px;height:12px;stroke-width:1.5}
+.desktop-caption-buttons button:focus-visible{outline:2px solid var(--primary);outline-offset:-3px}
+.desktop-caption-buttons .desktop-caption-close:hover{background:#c42b1c;color:white}

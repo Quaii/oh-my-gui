@@ -46,3 +46,14 @@ acceptance and clean-machine/upgrade checks remain, so this is a development bui
 - [x] Add release-version consistency and installer checksum verification.
 - [ ] Configure certificate-based Windows signing and signed update manifests (owner credentials/keys required).
 - [ ] Verify other platforms on their own build/test hosts before claiming support.
+
+## Custom Windows title bar
+
+- [x] Replace native decorations with a theme-aware custom caption and window controls.
+- [x] Reserve caption height above the shared workspace; retain native chrome on other platforms.
+- [x] Verify authenticated window-action allowlist, rejected actions, and unauthenticated requests.
+- [ ] Verify native drag, double-click maximize/restore, minimize, close and OS resize behavior.
+
+The frontend type check, 49 tests and desktop backend smoke checks pass. The Windows release and
+installer include the custom caption. Rendered preview verification was interrupted by browser-control
+connection timeouts; native control acceptance remains pending because app automation is unavailable.

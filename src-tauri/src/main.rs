@@ -90,6 +90,32 @@ fn start_backend(app: &tauri::AppHandle) -> Result<(Backend, String), Box<dyn st
                 {
                     let _ = send.send(());
                 }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_WINDOW ") {
+                if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
+                    if let Some(window) = native_app.get_webview_window("main") {
+                        match value["action"].as_str() {
+                            Some("drag") => {
+                                let _ = window.start_dragging();
+                            }
+                            Some("minimize") => {
+                                let _ = window.minimize();
+                            }
+                            Some("toggle-maximize") => {
+                                if window.is_maximized().unwrap_or(false) {
+                                    let _ = window.unmaximize();
+                                } else {
+                                    let _ = window.maximize();
+                                }
+                                sync_window_state(&window);
+                            }
+                            Some("close") => {
+                                let _ = window.close();
+                            }
+                            Some("sync-state") => sync_window_state(&window),
+                            _ => {}
+                        }
+                    }
+                }
             } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_APPEARANCE ") {
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
                     if let Some(bytes) = value["accent"].as_str().and_then(native_icon::pixels) {
@@ -108,6 +134,13 @@ fn start_backend(app: &tauri::AppHandle) -> Result<(Backend, String), Box<dyn st
         backend,
         format!("http://127.0.0.1:4319/desktop/bootstrap?token={token}"),
     ))
+}
+
+fn sync_window_state(window: &tauri::WebviewWindow) {
+    if let Ok(maximized) = window.is_maximized() {
+        let script=format!("window.dispatchEvent(new CustomEvent('omp:window-state', {{ detail: {{ maximized: {maximized} }} }}));");
+        let _ = window.eval(&script);
+    }
 }
 
 fn external(url: &tauri::Url) {
@@ -140,13 +173,18 @@ fn main() {
         .setup(|app| {
             let (backend, url) = start_backend(app.handle())?;
             app.manage(backend);
-            WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
+            let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
                 .title("omp.")
+                .decorations(!cfg!(windows))
                 .inner_size(1440.0, 960.0)
                 .min_inner_size(900.0, 640.0)
                 .center()
                 .disable_drag_drop_handler()
-                .initialization_script("window.__OMP_DESKTOP__=true;")
+                .initialization_script(if cfg!(windows) {
+                    "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;"
+                } else {
+                    "window.__OMP_DESKTOP__=true;"
+                })
                 .on_navigation(|url| {
                     if url.scheme() == "http"
                         && url.host_str() == Some("127.0.0.1")
@@ -163,6 +201,12 @@ fn main() {
                     NewWindowResponse::Deny
                 })
                 .build()?;
+            let state_window = window.clone();
+            window.on_window_event(move |event| {
+                if matches!(event, tauri::WindowEvent::Resized(_)) {
+                    sync_window_state(&state_window);
+                }
+            });
             Ok(())
         })
         .build(tauri::generate_context!());

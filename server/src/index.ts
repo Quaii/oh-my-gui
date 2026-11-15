@@ -539,6 +539,9 @@ const server = http.createServer((req, res) => {
   if(process.env.OMP_DESKTOP_TOKEN && url.pathname==="/api/desktop/appearance" && req.method==="POST"){
     void readBody(req,1024).then(body=>{if(!/^#[0-9a-f]{6}$/i.test(body.accent||"")){json(res,400,{error:"Invalid accent"});return;}process.stdout.write("OMP_DESKTOP_APPEARANCE "+JSON.stringify({accent:body.accent})+"\n");res.writeHead(204);res.end();}).catch(()=>json(res,400,{error:"Invalid appearance request"}));return;
   }
+  if(process.env.OMP_DESKTOP_TOKEN && url.pathname==="/api/desktop/window" && req.method==="POST"){
+    void readBody(req,1024).then(body=>{if(!["drag","minimize","toggle-maximize","close","sync-state"].includes(body.action)){json(res,400,{error:"Invalid window action"});return;}process.stdout.write("OMP_DESKTOP_WINDOW "+JSON.stringify({action:body.action})+"\n");res.writeHead(204);res.end();}).catch(()=>json(res,400,{error:"Invalid window request"}));return;
+  }
   handleApi(req, res, url).then((handled) => {
     if (!handled) serveStatic(res, url.pathname);
   }).catch((err) => json(res, 500, { error: String(err) }));

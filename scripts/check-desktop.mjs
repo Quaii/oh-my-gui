@@ -33,6 +33,9 @@ try{
   assert.equal((await fetch(base+asset[1],{headers})).status,200);
   assert.equal((await fetch(base+'/api/desktop/appearance',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({accent:'#aabbcc'})})).status,204);
   assert.equal((await fetch(base+'/api/desktop/appearance',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({accent:'invalid'})})).status,400);
+  assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'sync-state'})})).status,204);
+  assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'arbitrary-command'})})).status,400);
+  assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'close'})})).status,403);
   child.stdin.end('shutdown\n');
   const [code]=await Promise.race([exited,new Promise((_,reject)=>setTimeout(()=>reject(Error('Desktop did not stop')),6500))]);
   assert.equal(code,0);

@@ -54,7 +54,7 @@ in the WebView. Do not call the installer publicly release-ready until those che
 
 This is a Windows-first, unsigned development build. Installer signing, automatic updates, an OMP
 onboarding/bundling policy, crash/restart UX, native close handling for unsaved documents, and macOS/Linux
-packaging remain release work. There is no custom titlebar or redesigned desktop UI in this milestone.
+packaging remain release work. Windows uses a 32px custom title bar with a drag region, double-click maximize/restore, and keyboard-accessible caption buttons. The existing workspace UI is preserved. Native drag/minimize/maximize/close still require interactive verification.
 
 Official references: [Tauri resources](https://v2.tauri.app/develop/resources/),
 [external binaries](https://v2.tauri.app/develop/sidecar/), and
