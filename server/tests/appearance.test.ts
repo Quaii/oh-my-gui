@@ -13,3 +13,5 @@ test("workspace theme options round-trip and reject invalid styles",()=>{
  assert.deepEqual(validateAppearance(JSON.parse(JSON.stringify(custom))),custom);
  for(const invalid of [{foreground:"red"},{radius:999},{uiFont:"url(bad)"},{glass:"false"},{chatSize:-1},{backgroundOpacity:101},{backgroundOpacity:-1},{backgroundOpacity:NaN},{image:"https://example.com/image.png"}])assert.throws(()=>validateAppearance(invalid));
 });
+
+test('all five workspace icon sets survive theme export and import',()=>{for(const icons of ['lucide','phosphor','tabler','heroicons','remix']){const a=validateAppearance({...DEFAULT_APPEARANCE,icons});assert.equal(validateAppearance(JSON.parse(JSON.stringify(a))).icons,icons);}assert.throws(()=>validateAppearance({icons:'missing-set'}));});

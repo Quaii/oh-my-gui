@@ -57,6 +57,7 @@ export default function App() {
   const inSettings = route.startsWith("/settings");
   const openSettings = useCallback(() => navigate("/settings"), []);
   const closeSettings = useCallback(() => navigate("/"), []);
+  const [focusedEditor,setFocusedEditor]=useState<string|null>(null);
   const [fileWorkspaces,setFileWorkspaces]=useState<Record<string,{cwd:string;request:{path?:string;n:number}}>>({});
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -91,6 +92,7 @@ export default function App() {
 
   const cwd = boot?.cwd ?? localStorage.getItem(LS_CWD) ?? "";
   const fileRequest=chat.key?fileWorkspaces[chat.key]?.request:null;
+
   const openFiles=useCallback((path?:string)=>{const key=keyRef.current;if(!key)return;setHome(false);setFileWorkspaces(previous=>({...previous,[key]:{cwd,request:{path,n:Date.now()}}}));},[cwd]);
 
   const [paletteVersion, setPaletteVersion] = useState(0);
@@ -429,7 +431,7 @@ export default function App() {
 
   return (
     <FileOpenContext.Provider value={openFiles}><div className="app-shell relative isolate flex h-full w-full overflow-hidden bg-background text-foreground">
-      <AnimatePresence mode="wait" initial={false}><motion.div key={inSettings?"settings":"workspace"} className="flex h-full min-h-0 min-w-0 flex-1" initial={{opacity:0,x:reducedMotion?0:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:reducedMotion?0:-8}} transition={{duration:reducedMotion?0:.18,ease:[.22,1,.36,1]}}>
+      <AnimatePresence mode="wait" initial={false}><motion.div key={inSettings?"settings":"workspace"} className={`workspace-route flex h-full min-h-0 min-w-0 flex-1 ${fileRequest&&focusedEditor===chat.key&&!inSettings&&!home?"editor-focused":""}`} initial={{opacity:0,x:reducedMotion?0:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:reducedMotion?0:-8}} transition={{duration:reducedMotion?0:.18,ease:[.22,1,.36,1]}}>
       {inSettings ? (
         <SettingsPage
           onBack={closeSettings}
@@ -517,7 +519,7 @@ export default function App() {
       </Sheet>
 
       <main className={`workspace-main relative isolate flex min-w-0 flex-1 flex-col ${home?"is-home":empty?"is-empty":""}`}>
-        <WorkspaceBackground />
+        {!(fileRequest&&focusedEditor===chat.key)&&<WorkspaceBackground />}
         <TopBar
           title={home ? "Home" : chat.title || boot?.sessions?.find((s:any)=>s.path===activePath)?.name || (chat.messages.length ? "Untitled session" : "New session")}
           cwd={cwd}
@@ -681,7 +683,7 @@ export default function App() {
       )}
 
       </motion.div></AnimatePresence>
-      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={<aside hidden={home||inSettings||key!==chat.key} className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={key} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;})}/></Suspense>)}
+      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={<aside hidden={home||inSettings||key!==chat.key} className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>setFocusedEditor(current=>current===key?null:key)} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
       <CommandPalette
         open={paletteOpen}

@@ -199,7 +199,7 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
             </ActionButton>
           )}
           {usage && usage.totalTokens > 0 && (
-            <span className="ml-1 font-mono text-[10.5px] text-muted-foreground">
+            <span className="message-usage font-mono text-[10.5px] text-muted-foreground">
               {usage.input ?? 0} in · {usage.output ?? 0} out
               {usage.cacheRead ? ` · ${usage.cacheRead} cached` : ""}
               {usage.cost?.total ? ` · $${usage.cost.total.toFixed(4)}` : ""}
