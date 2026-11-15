@@ -528,8 +528,8 @@ export default function App() {
           running={running}
           notice={chat.notice}
           contextPercent={chat.state?.contextUsage?.percent}
-          showWorkspaceCards={!home}
-          inspector={home?null:<RightRail enabled={!home} manual={railOpen} chat={chat} stats={stats} cwd={cwd} onCancelSubagent={id=>sendCmd({type:"cancel_subagent",subagentId:id})} onRequestPlan={()=>{setHome(false);setRailOpen(false);setSeed({text:"Help me create a step-by-step plan for ",n:Date.now()});}} />}
+          showWorkspaceCards={!home&&!fileRequest}
+          inspector={home||fileRequest?null:<RightRail enabled={!home} manual={railOpen} chat={chat} stats={stats} cwd={cwd} onCancelSubagent={id=>sendCmd({type:"cancel_subagent",subagentId:id})} onRequestPlan={()=>{setHome(false);setRailOpen(false);setSeed({text:"Help me create a step-by-step plan for ",n:Date.now()});}} />}
           railOpen={railOpen}
           onOpenSidebar={() => setMobileNav(true)}
           onOpenPalette={() => setPaletteOpen(true)}
