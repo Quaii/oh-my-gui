@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["web/src/*"],
+      "next/link": ["web/src/lib/next-shims.tsx"],
+      "next/navigation": ["web/src/lib/next-shims.tsx"]
+    },
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "server/src",
+    "web/src"
+  ]
+}

@@ -1,0 +1,14 @@
+node_modules/
+web/dist/
+dist/
+.tmp/
+.omp/
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+ui-overhaul-preview.png
+usage-hover-preview.png
+.DS_Store
+Thumbs.db

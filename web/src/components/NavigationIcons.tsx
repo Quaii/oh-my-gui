@@ -1,0 +1,31 @@
+import { Cpu as PhSettingsCpu, ChartLineUp as PhSettingsChartLineUp, Chats as PhSettingsChats, FlowArrow as PhSettingsFlowArrow, TerminalWindow as PhSettingsTerminalWindow, Cube as PhSettingsCube, Key as PhSettingsKey, Cursor as PhSettingsCursor, Wrench as PhSettingsWrench, ListChecks as PhSettingsListChecks, Sparkle as PhSettingsSparkle, PuzzlePiece as PhSettingsPuzzlePiece, FileText as PhSettingsFileText, Graph as PhSettingsGraph, Books as PhSettingsBooks, Brain as PhSettingsBrain, HardDrives as PhSettingsHardDrives, SlidersHorizontal as PhSettingsSlidersHorizontal, FileCode as PhSettingsFileCode, ShieldCheck as PhSettingsShieldCheck, Info as PhSettingsInfo, CaretDoubleLeft as PhSettingsCaretDoubleLeft, CaretDoubleRight as PhSettingsCaretDoubleRight } from "@phosphor-icons/react";
+import { useEffect, useState } from 'react';
+import * as Lucide from 'lucide-react';
+import { House as PhHouse, GearSix, FolderOpen as PhFolder, FolderPlus as PhFolderPlus, Palette as PhPalette, Pulse as PhActivity, Command as PhCommand, List as PhList, ArrowsClockwise, Plus as PhPlus, MagnifyingGlass } from '@phosphor-icons/react';
+function adaptive(Original:any,Alternative:any){return function NavigationIcon(props:any){const [other,setOther]=useState(()=>document.documentElement.dataset.icons==='phosphor');useEffect(()=>{const update=()=>setOther(document.documentElement.dataset.icons==='phosphor');window.addEventListener('omp:appearance',update);return()=>window.removeEventListener('omp:appearance',update)},[]);return other?<Alternative weight="regular" {...props}/>:<Original {...props}/>}}
+export * from 'lucide-react';
+export const House=adaptive(Lucide.House,PhHouse),Settings2=adaptive(Lucide.Settings2,GearSix),FolderOpen=adaptive(Lucide.FolderOpen,PhFolder),FolderPlus=adaptive(Lucide.FolderPlus,PhFolderPlus),Palette=adaptive(Lucide.Palette,PhPalette),Activity=adaptive(Lucide.Activity,PhActivity),Command=adaptive(Lucide.Command,PhCommand),Menu=adaptive(Lucide.Menu,PhList),RefreshCw=adaptive(Lucide.RefreshCw,ArrowsClockwise),Plus=adaptive(Lucide.Plus,PhPlus),Search=adaptive(Lucide.Search,MagnifyingGlass);
+
+export const Cpu=adaptive(Lucide.Cpu,PhSettingsCpu);
+export const ChartNoAxesCombined=adaptive(Lucide.ChartNoAxesCombined,PhSettingsChartLineUp);
+export const MessagesSquare=adaptive(Lucide.MessagesSquare,PhSettingsChats);
+export const Workflow=adaptive(Lucide.Workflow,PhSettingsFlowArrow);
+export const Terminal=adaptive(Lucide.Terminal,PhSettingsTerminalWindow);
+export const Boxes=adaptive(Lucide.Boxes,PhSettingsCube);
+export const KeyRound=adaptive(Lucide.KeyRound,PhSettingsKey);
+export const MousePointer2=adaptive(Lucide.MousePointer2,PhSettingsCursor);
+export const Wrench=adaptive(Lucide.Wrench,PhSettingsWrench);
+export const ListTodo=adaptive(Lucide.ListTodo,PhSettingsListChecks);
+export const Sparkles=adaptive(Lucide.Sparkles,PhSettingsSparkle);
+export const Puzzle=adaptive(Lucide.Puzzle,PhSettingsPuzzlePiece);
+export const FileText=adaptive(Lucide.FileText,PhSettingsFileText);
+export const Network=adaptive(Lucide.Network,PhSettingsGraph);
+export const Library=adaptive(Lucide.Library,PhSettingsBooks);
+export const Brain=adaptive(Lucide.Brain,PhSettingsBrain);
+export const HardDrive=adaptive(Lucide.HardDrive,PhSettingsHardDrives);
+export const SlidersHorizontal=adaptive(Lucide.SlidersHorizontal,PhSettingsSlidersHorizontal);
+export const FileCode2=adaptive(Lucide.FileCode2,PhSettingsFileCode);
+export const ShieldCheck=adaptive(Lucide.ShieldCheck,PhSettingsShieldCheck);
+export const Info=adaptive(Lucide.Info,PhSettingsInfo);
+export const ChevronsLeft=adaptive(Lucide.ChevronsLeft,PhSettingsCaretDoubleLeft);
+export const ChevronsRight=adaptive(Lucide.ChevronsRight,PhSettingsCaretDoubleRight);

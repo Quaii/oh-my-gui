@@ -1,0 +1,408 @@
+{
+  "anthropic": {
+    "src": "/provider-icons/anthropic.svg",
+    "mono": true
+  },
+  "aiand": {
+    "favicon": "https://aiand.com/favicon.ico",
+    "src": "/provider-icons/aiand-favicon.ico"
+  },
+  "alibaba-coding-plan": {
+    "src": "/provider-icons/qwen-color.svg",
+    "mono": false
+  },
+  "abliteration": {
+    "favicon": "https://abliteration.ai/favicon.ico",
+    "src": "/provider-icons/abliteration-favicon.ico"
+  },
+  "azure": {
+    "src": "/provider-icons/azure-color.svg",
+    "mono": false
+  },
+  "amazon-bedrock": {
+    "src": "/provider-icons/bedrock-color.svg",
+    "mono": false
+  },
+  "alibaba-token-plan": {
+    "src": "/provider-icons/qwen-color.svg",
+    "mono": false
+  },
+  "aimlapi": {
+    "src": "/provider-icons/aimlapi.svg",
+    "mono": true
+  },
+  "apple": {
+    "src": "/provider-icons/apple.svg",
+    "mono": true
+  },
+  "coralbricks": {
+    "favicon": "https://www.coralbricks.ai/favicon.ico"
+  },
+  "commandcode": {
+    "src": "/provider-icons/commandcode.svg",
+    "mono": true
+  },
+  "baseten": {
+    "src": "/provider-icons/baseten.svg",
+    "mono": true
+  },
+  "cerebras": {
+    "src": "/provider-icons/cerebras-color.svg",
+    "mono": false
+  },
+  "cloudflare-ai-gateway": {
+    "src": "/provider-icons/cloudflare-color.svg",
+    "mono": false
+  },
+  "cline-pass": {
+    "src": "/provider-icons/cline.svg",
+    "mono": true
+  },
+  "cloudflare-workers-ai": {
+    "src": "/provider-icons/cloudflare-color.svg",
+    "mono": false
+  },
+  "charm-hyper": {
+    "favicon": "https://hyper.charm.land/favicon.ico",
+    "src": "/provider-icons/charm-hyper-favicon.ico"
+  },
+  "chutes": {
+    "src": "/provider-icons/chutes.svg",
+    "mono": true
+  },
+  "cursor": {
+    "src": "/provider-icons/cursor.svg",
+    "mono": true
+  },
+  "deepinfra": {
+    "src": "/provider-icons/deepinfra-color.svg",
+    "mono": false
+  },
+  "devin-windsurf": {
+    "src": "/provider-icons/windsurf.svg",
+    "mono": true
+  },
+  "exa": {
+    "src": "/provider-icons/exa-color.svg",
+    "mono": false
+  },
+  "firepass": {
+    "src": "/provider-icons/fireworks-color.svg",
+    "mono": false
+  },
+  "coreweave": {
+    "favicon": "https://www.coreweave.com/favicon.ico"
+  },
+  "devin": {
+    "src": "/provider-icons/devin-color.svg",
+    "mono": false
+  },
+  "devin-cli": {
+    "src": "/provider-icons/devin-color.svg",
+    "mono": false
+  },
+  "factory-droid": {
+    "favicon": "https://factory.ai/favicon.ico",
+    "src": "/provider-icons/factory-droid-favicon.ico"
+  },
+  "deepseek": {
+    "src": "/provider-icons/deepseek-color.svg",
+    "mono": false
+  },
+  "gitlab-duo-agent": {
+    "favicon": "https://gitlab.com/favicon.ico",
+    "src": "/provider-icons/gitlab-duo-agent-favicon.png"
+  },
+  "github-copilot": {
+    "src": "/provider-icons/githubcopilot.svg",
+    "mono": true
+  },
+  "fireworks": {
+    "src": "/provider-icons/fireworks-color.svg",
+    "mono": false
+  },
+  "groq": {
+    "src": "/provider-icons/groq.svg",
+    "mono": true
+  },
+  "google-antigravity": {
+    "src": "/provider-icons/antigravity-color.svg",
+    "mono": false
+  },
+  "google": {
+    "src": "/provider-icons/gemini-color.svg",
+    "mono": false
+  },
+  "google-gemini-cli": {
+    "src": "/provider-icons/gemini-color.svg",
+    "mono": false
+  },
+  "google-vertex": {
+    "src": "/provider-icons/vertexai-color.svg",
+    "mono": false
+  },
+  "gitlab-duo": {
+    "favicon": "https://gitlab.com/favicon.ico",
+    "src": "/provider-icons/gitlab-duo-favicon.png"
+  },
+  "gmi-cloud": {
+    "src": "/provider-icons/gmicloud.svg",
+    "mono": true
+  },
+  "huggingface": {
+    "src": "/provider-icons/huggingface-color.svg",
+    "mono": false
+  },
+  "helmcode": {
+    "favicon": "https://cloud.helmcode.com/favicon.ico"
+  },
+  "lm-studio": {
+    "src": "/provider-icons/lmstudio.svg",
+    "mono": true
+  },
+  "inception": {
+    "src": "/provider-icons/inception.svg",
+    "mono": true
+  },
+  "kimi-code": {
+    "src": "/provider-icons/kimi-color.svg",
+    "mono": false
+  },
+  "litellm": {
+    "favicon": "https://docs.litellm.ai/favicon.ico"
+  },
+  "liquid": {
+    "src": "/provider-icons/liquid.svg",
+    "mono": true
+  },
+  "kagi": {
+    "src": "/provider-icons/kagi.svg",
+    "mono": true
+  },
+  "minimax-code-cn": {
+    "src": "/provider-icons/minimax-color.svg",
+    "mono": false
+  },
+  "modular": {
+    "favicon": "https://modular.com/favicon.ico"
+  },
+  "muse-code": {
+    "favicon": "https://meta.com/favicon.ico",
+    "src": "/provider-icons/muse-code-favicon.ico"
+  },
+  "minimax-code": {
+    "src": "/provider-icons/minimax-color.svg",
+    "mono": false
+  },
+  "meta": {
+    "src": "/provider-icons/meta-color.svg",
+    "mono": false
+  },
+  "nace": {
+    "favicon": "https://nace.ai/favicon.ico",
+    "src": "/provider-icons/nace-favicon.ico"
+  },
+  "mistral": {
+    "src": "/provider-icons/mistral-color.svg",
+    "mono": false
+  },
+  "moonshot": {
+    "src": "/provider-icons/kimi-color.svg",
+    "mono": false
+  },
+  "minimax": {
+    "src": "/provider-icons/minimax-color.svg",
+    "mono": false
+  },
+  "openai-codex": {
+    "src": "/provider-icons/openai.svg",
+    "mono": true
+  },
+  "openai-codex-device": {
+    "src": "/provider-icons/openai.svg",
+    "mono": true
+  },
+  "novita": {
+    "src": "/provider-icons/novita-color.svg",
+    "mono": false
+  },
+  "nanogpt": {
+    "favicon": "https://nano-gpt.com/favicon.ico",
+    "src": "/provider-icons/nanogpt-favicon.ico"
+  },
+  "opencode-go": {
+    "src": "/provider-icons/opencode.svg",
+    "mono": true
+  },
+  "ollama-cloud": {
+    "src": "/provider-icons/ollama.svg",
+    "mono": true
+  },
+  "openai": {
+    "src": "/provider-icons/openai.svg",
+    "mono": true
+  },
+  "nvidia": {
+    "src": "/provider-icons/nvidia-color.svg",
+    "mono": false
+  },
+  "opencode-zen": {
+    "src": "/provider-icons/opencode.svg",
+    "mono": true
+  },
+  "ollama": {
+    "src": "/provider-icons/ollama.svg",
+    "mono": true
+  },
+  "parallel": {
+    "favicon": "https://parallel.ai/favicon.ico",
+    "src": "/provider-icons/parallel-favicon.ico"
+  },
+  "openrouter": {
+    "src": "/provider-icons/openrouter-color.svg",
+    "mono": false
+  },
+  "qwen-portal": {
+    "src": "/provider-icons/qwen-color.svg",
+    "mono": false
+  },
+  "scaleway": {
+    "favicon": "https://scaleway.com/favicon.ico"
+  },
+  "sambanova": {
+    "src": "/provider-icons/sambanova-color.svg",
+    "mono": false
+  },
+  "otari": {
+    "favicon": "https://app.otari.ai/favicon.ico"
+  },
+  "perplexity": {
+    "src": "/provider-icons/perplexity-color.svg",
+    "mono": false
+  },
+  "qianfan": {
+    "src": "/provider-icons/baiducloud-color.svg",
+    "mono": false
+  },
+  "siliconflow-cn": {
+    "src": "/provider-icons/siliconcloud-color.svg",
+    "mono": false
+  },
+  "sakana": {
+    "src": "/provider-icons/sakana-color.svg",
+    "mono": false
+  },
+  "stencil": {
+    "favicon": "https://stencil.so/favicon.ico",
+    "src": "/provider-icons/stencil-favicon.ico"
+  },
+  "snowflake": {
+    "src": "/provider-icons/snowflake-color.svg",
+    "mono": false
+  },
+  "siliconflow": {
+    "src": "/provider-icons/siliconcloud-color.svg",
+    "mono": false
+  },
+  "typesafe": {
+    "favicon": "https://typesafe.ai/favicon.ico"
+  },
+  "stepfun": {
+    "src": "/provider-icons/stepfun-color.svg",
+    "mono": false
+  },
+  "synthetic": {
+    "favicon": "https://dev.synthetic.new/favicon.ico",
+    "src": "/provider-icons/synthetic-favicon.ico"
+  },
+  "singularityapi-dev": {
+    "favicon": "https://app.singularityapi.dev/favicon.ico"
+  },
+  "together": {
+    "src": "/provider-icons/together-color.svg",
+    "mono": false
+  },
+  "tavily": {
+    "src": "/provider-icons/tavily-color.svg",
+    "mono": false
+  },
+  "singularityapi-tech": {
+    "favicon": "https://app.singularityapi.tech/favicon.ico"
+  },
+  "xai-oauth": {
+    "src": "/provider-icons/grok.svg",
+    "mono": true
+  },
+  "xai": {
+    "src": "/provider-icons/xai.svg",
+    "mono": true
+  },
+  "xiaomi-token-plan-cn": {
+    "src": "/provider-icons/xiaomimimo.svg",
+    "mono": true
+  },
+  "xiaomi-token-plan-ams": {
+    "src": "/provider-icons/xiaomimimo.svg",
+    "mono": true
+  },
+  "vllm": {
+    "src": "/provider-icons/vllm-color.svg",
+    "mono": false
+  },
+  "wafer-serverless": {
+    "src": "/provider-icons/wafer.svg",
+    "mono": true
+  },
+  "vercel-ai-gateway": {
+    "src": "/provider-icons/vercel.svg",
+    "mono": true
+  },
+  "umans": {
+    "favicon": "https://app.umans.ai/favicon.ico",
+    "src": "/provider-icons/umans-favicon.ico"
+  },
+  "venice": {
+    "src": "/provider-icons/venice-color.svg",
+    "mono": false
+  },
+  "xiaomi-token-plan-sgp": {
+    "src": "/provider-icons/xiaomimimo.svg",
+    "mono": true
+  },
+  "zai": {
+    "src": "/provider-icons/zai.svg",
+    "mono": true
+  },
+  "zhipu-coding-plan": {
+    "src": "/provider-icons/zhipu-color.svg",
+    "mono": false
+  },
+  "zenmux": {
+    "src": "/provider-icons/zenmux.svg",
+    "mono": true
+  },
+  "yolo-auto": {
+    "favicon": "https://yolo-auto.com/favicon.ico",
+    "src": "/provider-icons/yolo-auto-favicon.ico"
+  },
+  "zai-coding-plan": {
+    "src": "/provider-icons/zai.svg",
+    "mono": true
+  },
+  "xiaomi": {
+    "src": "/provider-icons/xiaomimimo.svg",
+    "mono": true
+  },
+  "kilo": {
+    "src": "/provider-icons/kilocode.svg",
+    "mono": true
+  },
+  "bedrock-mantle": {
+    "src": "/provider-icons/bedrock-color.svg",
+    "mono": false
+  },
+  "llama.cpp": {
+    "favicon": "https://github.com/favicon.ico",
+    "src": "/provider-icons/llama.cpp-favicon.ico"
+  }
+}

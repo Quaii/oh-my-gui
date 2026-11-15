@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <title>omp.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      html, body { background: #202020; margin: 0; }
+      html[data-theme="slate"], html[data-theme="slate"] body { background: #171b24; }
+      html[data-theme="daylight"], html[data-theme="daylight"] body { background: #f7f8fa; }
+      html:not(.dark), html:not(.dark) body { background:#f7f8fa; }
+      #root:empty::after {content:"";position:fixed;inset:0;background:var(--boot-image,none) center/cover no-repeat;opacity:var(--background-opacity,.25);filter:blur(var(--background-blur,0px));mask-image:var(--background-mask,none);}
+
+    </style>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("ompfe.theme");
+          if (!["dark","slate","forest","plum","espresso","carbon","daylight","linen","sage","mist","rose","sand"].includes(t)) t = "dark";
+          document.documentElement.setAttribute("data-theme", t);
+          document.documentElement.classList.toggle("dark", !["daylight","linen","sage","mist","rose","sand"].includes(t));
+          var a=JSON.parse(localStorage.getItem("ompfe.custom-appearance")||"{}"),bg=localStorage.getItem("ompfe.ambience"),r=document.documentElement.style;
+          var bits={"rb-gradient-ascii":"gradient-ascii","rb-flux-lines":"flux-lines","rb-pattern-waves":"pattern-waves","rb-micro-slats":"micro-slats","rb-shape-waves":"shape-waves","rb-aero-shards":"aero-shards","rb-ghost-fibers":"ghost-fibers","rb-crt-warp":"crt-warp","rb-molten-metal":"molten-metal","rb-gradient-waves":"gradient-waves","rb-web-threads":"web-threads","rb-topography":"topography","rb-light-tunnel":"light-tunnel","rb-sliced-waves":"sliced-waves","rb-acid-squares":"acid-squares","rb-scanner":"scanner","rb-ferrofluid":"ferrofluid","rb-lightfall":"lightfall","rb-liquid-ether":"liquid-ether","rb-prism":"prism","rb-dark-veil":"dark-veil","rb-light-pillar":"light-pillar","rb-antigravity":"antigravity","rb-silk":"silk","rb-floating-lines":"floating-lines","rb-side-rays":"side-rays","rb-light-rays":"light-rays","rb-pixel-blast":"pixel-blast","rb-color-bends":"color-bends","rb-line-waves":"line-waves","rb-radar":"radar","rb-soft-aurora":"soft-aurora","rb-magic-rings":"magic-rings","rb-aurora":"aurora","rb-plasma":"plasma","rb-plasma-wave":"plasma-wave","rb-particles":"particles","rb-gradient-blinds":"gradient-blinds","rb-grainient":"grainient","rb-grid-scan":"grid-scan","rb-beams":"beams","rb-pixel-snow":"pixel-snow","rb-lightning":"lightning","rb-prismatic-burst":"prismatic-burst","rb-galaxy":"galaxy","rb-dither":"dither","rb-faulty-terminal":"faulty-terminal","rb-ripple-grid":"ripple-grid","rb-dot-field":"dot-field","rb-dot-grid":"dot-grid","rb-threads":"threads","rb-hyperspeed":"hyperspeed","rb-iridescence":"iridescence","rb-waves":"waves","rb-magnet-lines":"magnet-lines","rb-grid-distortion":"grid-distortion","rb-ballpit":"ballpit","rb-orb":"orb","rb-letter-glitch":"letter-glitch","rb-grid-motion":"grid-motion","rb-shape-grid":"shape-grid","rb-liquid-chrome":"liquid-chrome","rb-balatro":"balatro"};
+          var image=bits[bg]?"/backgrounds/react-bits/"+bits[bg]+".jpg":["ember","ocean","aurora","dusk","moss","blush","silver"].includes(bg)?"/backgrounds/23rd/"+bg+".jpg":"";
+          if(typeof a.image==="string"&&/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(a.image))image=a.image;
+          if(image)r.setProperty("--boot-image",'url("'+image+'")');
+          if(typeof a.backgroundOpacity==="number")r.setProperty("--background-opacity",String(Math.max(0,Math.min(100,a.backgroundOpacity))/100));
+          if(typeof a.backgroundBlur==="number")r.setProperty("--background-blur",Math.max(0,Math.min(40,a.backgroundBlur))+"px");
+          var fade=typeof a.backgroundFade==="number"?Math.max(0,Math.min(100,a.backgroundFade)):85;r.setProperty("--background-mask",fade===0?"none":"linear-gradient(#000 "+(100-fade)+"%,transparent 100%)");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

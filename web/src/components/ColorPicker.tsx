@@ -1,0 +1,12 @@
+import {useEffect,useState} from "react";
+import {HexColorPicker,HexAlphaColorPicker} from "react-colorful";
+import {Popover,PopoverTrigger,PopoverContent} from "@/components/ui/popover";
+export function ColorPicker({value,onChange,label,opacity}:{value:string;onChange:(value:string,opacity?:number)=>void;label:string;opacity?:number}) {
+ const [open,setOpen]=useState(false),[draft,setDraft]=useState(value),[hex,setHex]=useState(value.slice(1)),[alpha,setAlpha]=useState(opacity??100);
+ useEffect(()=>{if(open){setDraft(value);setHex(value.slice(1));setAlpha(opacity??100);}},[open,value,opacity]);
+ const change=(next:string)=>{const color=next.slice(0,7),a=next.length===9?Math.round(parseInt(next.slice(7,9),16)/255*100):100;setDraft(color);setHex(color.slice(1));setAlpha(a);onChange(color,opacity===undefined?undefined:a);};
+ return <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild><button aria-label={label} className="color-picker-trigger" style={{background:value}}><span className="sr-only">{value}</span></button></PopoverTrigger><PopoverContent aria-label={label} align="end" sideOffset={12} className="color-picker-popover w-[min(224px,calc(100vw-32px))] overflow-hidden rounded-xl p-3">
+  <div className="workspace-color-picker">{opacity===undefined?<HexColorPicker color={draft} onChange={change}/>:<HexAlphaColorPicker color={draft+Math.round(alpha/100*255).toString(16).padStart(2,"0")} onChange={change}/>}</div>
+  <div className="color-value-row mt-3 flex h-9 items-center gap-2 rounded-lg border border-border px-2.5"><span className="size-4 shrink-0 rounded" style={{background:draft}}/><span className="text-xs text-muted-foreground">#</span><input aria-label={`${label} hex value`} value={hex.toUpperCase()} onChange={e=>{const next=e.target.value.replace(/^#/,"");setHex(next);if(/^[0-9a-f]{6}$/i.test(next))change("#"+next+(opacity===undefined?"":Math.round(alpha/100*255).toString(16).padStart(2,"0")));}} onBlur={()=>setHex(draft.slice(1))} maxLength={6} className="color-hex-input"/>{opacity===undefined?<span className="text-[11px] tabular-nums text-muted-foreground">100%</span>:<label className="flex items-center gap-0.5 border-l border-border pl-2"><input aria-label="Tint opacity" type="number" min={0} max={100} value={alpha} onChange={e=>{const a=Math.max(0,Math.min(100,Number(e.target.value)));setAlpha(a);onChange(draft,a);}} className="color-alpha-input"/><span className="text-[11px] text-muted-foreground">%</span></label>}</div>
+ </PopoverContent></Popover>;
+}

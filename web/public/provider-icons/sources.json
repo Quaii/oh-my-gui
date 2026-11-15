@@ -1,0 +1,508 @@
+{
+  "anthropic": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/anthropic.kdl",
+    "icon": "anthropic.svg",
+    "domain": "claude.ai"
+  },
+  "aiand": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/aiand.kdl",
+    "icon": null,
+    "domain": "aiand.com"
+  },
+  "alibaba-coding-plan": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/alibaba-coding-plan.kdl",
+    "icon": "qwen-color.svg"
+  },
+  "abliteration": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/abliteration.kdl",
+    "icon": null,
+    "domain": "abliteration.ai"
+  },
+  "azure": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/azure.kdl",
+    "icon": "azure-color.svg"
+  },
+  "amazon-bedrock": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/amazon-bedrock.kdl",
+    "icon": "bedrock-color.svg"
+  },
+  "_order": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/_order.kdl",
+    "icon": null
+  },
+  "alibaba-token-plan": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/alibaba-token-plan.kdl",
+    "icon": "qwen-color.svg"
+  },
+  "aimlapi": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/aimlapi.kdl",
+    "icon": "aimlapi.svg"
+  },
+  "apple": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/apple.kdl",
+    "icon": "apple.svg"
+  },
+  "bedrock-mantle": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/bedrock-mantle.kdl",
+    "icon": null
+  },
+  "coralbricks": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/coralbricks.kdl",
+    "icon": null,
+    "domain": "www.coralbricks.ai"
+  },
+  "commandcode": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/commandcode.kdl",
+    "icon": "commandcode.svg",
+    "domain": "commandcode.ai"
+  },
+  "baseten": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/baseten.kdl",
+    "icon": "baseten.svg",
+    "domain": "app.baseten.co"
+  },
+  "cerebras": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/cerebras.kdl",
+    "icon": "cerebras-color.svg",
+    "domain": "cloud.cerebras.ai"
+  },
+  "cloudflare-ai-gateway": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/cloudflare-ai-gateway.kdl",
+    "icon": "cloudflare-color.svg"
+  },
+  "cline-pass": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/cline-pass.kdl",
+    "icon": "cline.svg",
+    "domain": "app.cline.bot"
+  },
+  "cloudflare-workers-ai": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/cloudflare-workers-ai.kdl",
+    "icon": "cloudflare-color.svg"
+  },
+  "charm-hyper": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/charm-hyper.kdl",
+    "icon": null,
+    "domain": "hyper.charm.land"
+  },
+  "chutes": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/chutes.kdl",
+    "icon": "chutes.svg",
+    "domain": "chutes.ai"
+  },
+  "cursor": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/cursor.kdl",
+    "icon": "cursor.svg"
+  },
+  "deepinfra": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/deepinfra.kdl",
+    "icon": "deepinfra-color.svg",
+    "domain": "deepinfra.com"
+  },
+  "devin-windsurf": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/devin-windsurf.kdl",
+    "icon": "windsurf.svg"
+  },
+  "exa": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/exa.kdl",
+    "icon": "exa-color.svg",
+    "domain": "dashboard.exa.ai"
+  },
+  "firepass": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/firepass.kdl",
+    "icon": "fireworks-color.svg",
+    "domain": "docs.fireworks.ai"
+  },
+  "coreweave": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/coreweave.kdl",
+    "icon": null,
+    "domain": "wandb.ai"
+  },
+  "devin": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/devin.kdl",
+    "icon": "devin-color.svg",
+    "domain": "app.devin.ai"
+  },
+  "devin-cli": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/devin-cli.kdl",
+    "icon": "devin-color.svg"
+  },
+  "factory-droid": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/factory-droid.kdl",
+    "icon": null,
+    "domain": "workos.com"
+  },
+  "deepseek": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/deepseek.kdl",
+    "icon": "deepseek-color.svg",
+    "domain": "deepseek.com"
+  },
+  "gitlab-duo-agent": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/gitlab-duo-agent.kdl",
+    "icon": null,
+    "domain": "gitlab.com"
+  },
+  "github-copilot": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/github-copilot.kdl",
+    "icon": "githubcopilot.svg"
+  },
+  "fireworks": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/fireworks.kdl",
+    "icon": "fireworks-color.svg",
+    "domain": "app.fireworks.ai"
+  },
+  "groq": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/groq.kdl",
+    "icon": "groq.svg"
+  },
+  "google-antigravity": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/google-antigravity.kdl",
+    "icon": "antigravity-color.svg",
+    "domain": "accounts.google.com"
+  },
+  "google": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/google.kdl",
+    "icon": "gemini-color.svg"
+  },
+  "google-gemini-cli": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/google-gemini-cli.kdl",
+    "icon": "gemini-color.svg",
+    "domain": "accounts.google.com"
+  },
+  "google-vertex": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/google-vertex.kdl",
+    "icon": "vertexai-color.svg"
+  },
+  "gitlab-duo": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/gitlab-duo.kdl",
+    "icon": null,
+    "domain": "gitlab.com"
+  },
+  "gmi-cloud": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/gmi-cloud.kdl",
+    "icon": "gmicloud.svg",
+    "domain": "gmicloud.ai"
+  },
+  "huggingface": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/huggingface.kdl",
+    "icon": "huggingface-color.svg",
+    "domain": "huggingface.co"
+  },
+  "helmcode": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/helmcode.kdl",
+    "icon": null,
+    "domain": "cloud.helmcode.com"
+  },
+  "lm-studio": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/lm-studio.kdl",
+    "icon": "lmstudio.svg"
+  },
+  "inception": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/inception.kdl",
+    "icon": "inception.svg",
+    "domain": "inceptionlabs.ai"
+  },
+  "kimi-code": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/kimi-code.kdl",
+    "icon": "kimi-color.svg",
+    "domain": "kimi.com"
+  },
+  "litellm": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/litellm.kdl",
+    "icon": null,
+    "domain": "docs.litellm.ai"
+  },
+  "liquid": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/liquid.kdl",
+    "icon": "liquid.svg",
+    "domain": "liquid.ai"
+  },
+  "llama.cpp": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/llama.cpp.kdl",
+    "icon": null
+  },
+  "kagi": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/kagi.kdl",
+    "icon": "kagi.svg",
+    "domain": "kagi.com"
+  },
+  "kilo": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/kilo.kdl",
+    "icon": null
+  },
+  "minimax-code-cn": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/minimax-code-cn.kdl",
+    "icon": "minimax-color.svg",
+    "domain": "minimaxi.com"
+  },
+  "modular": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/modular.kdl",
+    "icon": null,
+    "domain": "modular.com"
+  },
+  "muse-code": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/muse-code.kdl",
+    "icon": null,
+    "domain": "meta.com"
+  },
+  "minimax-code": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/minimax-code.kdl",
+    "icon": "minimax-color.svg",
+    "domain": "minimax.io"
+  },
+  "meta": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/meta.kdl",
+    "icon": "meta-color.svg",
+    "domain": "developer.meta.com"
+  },
+  "nace": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/nace.kdl",
+    "icon": null,
+    "domain": "nace.ai"
+  },
+  "mistral": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/mistral.kdl",
+    "icon": "mistral-color.svg"
+  },
+  "moonshot": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/moonshot.kdl",
+    "icon": "kimi-color.svg",
+    "domain": "moonshot.ai"
+  },
+  "local": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/local.kdl",
+    "icon": null
+  },
+  "minimax": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/minimax.kdl",
+    "icon": "minimax-color.svg"
+  },
+  "openai-codex": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/openai-codex.kdl",
+    "icon": "openai.svg",
+    "domain": "openai.com"
+  },
+  "openai-codex-device": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/openai-codex-device.kdl",
+    "icon": "openai.svg",
+    "domain": "openai.com"
+  },
+  "novita": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/novita.kdl",
+    "icon": "novita-color.svg",
+    "domain": "novita.ai"
+  },
+  "nanogpt": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/nanogpt.kdl",
+    "icon": null,
+    "domain": "nano-gpt.com"
+  },
+  "opencode-go": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/opencode-go.kdl",
+    "icon": "opencode.svg",
+    "domain": "opencode.ai"
+  },
+  "ollama-cloud": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/ollama-cloud.kdl",
+    "icon": "ollama.svg",
+    "domain": "ollama.com"
+  },
+  "openai": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/openai.kdl",
+    "icon": "openai.svg"
+  },
+  "nvidia": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/nvidia.kdl",
+    "icon": "nvidia-color.svg",
+    "domain": "org.ngc.nvidia.com"
+  },
+  "opencode-zen": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/opencode-zen.kdl",
+    "icon": "opencode.svg",
+    "domain": "opencode.ai"
+  },
+  "ollama": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/ollama.kdl",
+    "icon": "ollama.svg"
+  },
+  "parallel": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/parallel.kdl",
+    "icon": null,
+    "domain": "parallel.ai"
+  },
+  "openrouter": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/openrouter.kdl",
+    "icon": "openrouter-color.svg",
+    "domain": "openrouter.ai"
+  },
+  "qwen-portal": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/qwen-portal.kdl",
+    "icon": "qwen-color.svg",
+    "domain": "chat.qwen.ai"
+  },
+  "scaleway": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/scaleway.kdl",
+    "icon": null,
+    "domain": "scaleway.com"
+  },
+  "sambanova": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/sambanova.kdl",
+    "icon": "sambanova-color.svg",
+    "domain": "cloud.sambanova.ai"
+  },
+  "otari": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/otari.kdl",
+    "icon": null,
+    "domain": "app.otari.ai"
+  },
+  "perplexity": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/perplexity.kdl",
+    "icon": "perplexity-color.svg"
+  },
+  "qianfan": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/qianfan.kdl",
+    "icon": "baiducloud-color.svg",
+    "domain": "bce.baidu.com"
+  },
+  "siliconflow-cn": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/siliconflow-cn.kdl",
+    "icon": "siliconcloud-color.svg",
+    "domain": "cloud.siliconflow.cn"
+  },
+  "sakana": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/sakana.kdl",
+    "icon": "sakana-color.svg",
+    "domain": "sakana.ai"
+  },
+  "stencil": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/stencil.kdl",
+    "icon": null,
+    "domain": "stencil.so"
+  },
+  "snowflake": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/snowflake.kdl",
+    "icon": "snowflake-color.svg"
+  },
+  "siliconflow": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/siliconflow.kdl",
+    "icon": "siliconcloud-color.svg",
+    "domain": "cloud.siliconflow.com"
+  },
+  "typesafe": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/typesafe.kdl",
+    "icon": null,
+    "domain": "typesafe.ai"
+  },
+  "stepfun": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/stepfun.kdl",
+    "icon": "stepfun-color.svg",
+    "domain": "stepfun.ai"
+  },
+  "synthetic": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/synthetic.kdl",
+    "icon": null,
+    "domain": "dev.synthetic.new"
+  },
+  "singularityapi-dev": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/singularityapi-dev.kdl",
+    "icon": null,
+    "domain": "app.singularityapi.dev"
+  },
+  "together": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/together.kdl",
+    "icon": "together-color.svg",
+    "domain": "together.xyz"
+  },
+  "tavily": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/tavily.kdl",
+    "icon": "tavily-color.svg",
+    "domain": "app.tavily.com"
+  },
+  "singularityapi-tech": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/singularityapi-tech.kdl",
+    "icon": null,
+    "domain": "app.singularityapi.tech"
+  },
+  "xai-oauth": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/xai-oauth.kdl",
+    "icon": "grok.svg",
+    "domain": "x.ai"
+  },
+  "xai": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/xai.kdl",
+    "icon": "xai.svg",
+    "domain": "x.ai"
+  },
+  "xiaomi-token-plan-cn": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/xiaomi-token-plan-cn.kdl",
+    "icon": null,
+    "domain": "xiaomimimo.com"
+  },
+  "xiaomi-token-plan-ams": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/xiaomi-token-plan-ams.kdl",
+    "icon": null,
+    "domain": "xiaomimimo.com"
+  },
+  "vllm": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/vllm.kdl",
+    "icon": "vllm-color.svg",
+    "domain": "docs.vllm.ai"
+  },
+  "web": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/web.kdl",
+    "icon": null
+  },
+  "wafer-serverless": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/wafer-serverless.kdl",
+    "icon": "wafer.svg",
+    "domain": "app.wafer.ai"
+  },
+  "vercel-ai-gateway": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/vercel-ai-gateway.kdl",
+    "icon": "vercel.svg",
+    "domain": "vercel.com"
+  },
+  "umans": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/umans.kdl",
+    "icon": null,
+    "domain": "app.umans.ai"
+  },
+  "venice": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/venice.kdl",
+    "icon": "venice-color.svg",
+    "domain": "venice.ai"
+  },
+  "xiaomi-token-plan-sgp": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/xiaomi-token-plan-sgp.kdl",
+    "icon": null,
+    "domain": "xiaomimimo.com"
+  },
+  "zai": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/zai.kdl",
+    "icon": "zai.svg",
+    "domain": "z.ai"
+  },
+  "zhipu-coding-plan": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/zhipu-coding-plan.kdl",
+    "icon": "zhipu-color.svg",
+    "domain": "bigmodel.cn"
+  },
+  "zenmux": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/zenmux.kdl",
+    "icon": "zenmux.svg",
+    "domain": "zenmux.ai"
+  },
+  "yolo-auto": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/yolo-auto.kdl",
+    "icon": null,
+    "domain": "yolo-auto.com"
+  },
+  "zai-coding-plan": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/zai-coding-plan.kdl",
+    "icon": "zai.svg",
+    "domain": "chat.z.ai"
+  },
+  "xiaomi": {
+    "nativeDefinition": "packages/catalog/src/compat/rules/auth/xiaomi.kdl",
+    "icon": null
+  }
+}
