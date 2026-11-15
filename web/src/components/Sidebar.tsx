@@ -1,8 +1,9 @@
+import {LayoutMotion} from "./transitions/WorkspaceMotion";
+import {transitionUpdate} from "../lib/motion";
 import {Collapsible,CollapsibleTrigger,CollapsibleContent} from "@/components/ui/collapsible";
 import { ListSkeleton } from "@/components/ui/loading-shapes";
 import { useEffect, useMemo, useState, useRef } from "react";
 import {useSmoothWheel} from "@/lib/use-smooth-wheel";
-import { AnimatePresence,motion,useReducedMotion } from "motion/react";
 import { ago } from "../lib/api";
 import {
   archivedCount,
@@ -85,9 +86,9 @@ const NAV = [
 ];
 
 export function Sidebar(props: SidebarProps) {
-  const reduce=useReducedMotion();
   const scrollRoot=useRef<HTMLElement|null>(null);useSmoothWheel(scrollRoot,'[data-slot=scroll-area-viewport]',props.collapsed);
   const [q, setQ] = useState("");
+  const [filterQuery,setFilterQuery]=useState("");
   const [closedProjects,setClosedProjects]=useState<Record<string,boolean>>({});
   const [cwdOpen, setCwdOpen] = useState(false);
   const [cwdDraft, setCwdDraft] = useState(props.cwd);
@@ -99,12 +100,12 @@ export function Sidebar(props: SidebarProps) {
   useEffect(() => subscribeSessionMeta(() => bump((n) => n + 1)), []);
 
   const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase();
+    const query = filterQuery.trim().toLowerCase();
     if (!query) return props.sessions;
     return props.sessions.filter((s) =>
       `${s.name ?? ""} ${s.preview ?? ""} ${s.id} ${s.cwd ?? ""}`.toLowerCase().includes(query)
     );
-  }, [props.sessions, q]);
+  }, [props.sessions, filterQuery]);
 
   const groups = useMemo(() => groupSessions(filtered, showArchived), [filtered, showArchived, metaVersion]);
   const archived = useMemo(() => archivedCount(props.sessions), [props.sessions, metaVersion]);
@@ -127,8 +128,7 @@ export function Sidebar(props: SidebarProps) {
                 const active = s.path === props.activeSessionPath;
                 const meta = getSessionMeta(s.path);
                 return (
-                  <motion.div layout="position" initial={reduce?false:{opacity:0,y:5}} animate={{opacity:1,y:0}} exit={{opacity:0,height:0,marginBottom:0}} transition={{duration:reduce?0:.16}}
-                    key={s.path}
+                  <LayoutMotion key={s.path}><div
                     data-active={active}
                     className={`session-row group relative mb-1 rounded-md px-3 py-2.5 pr-10 transition-colors t-fast ${
                       active
@@ -186,14 +186,14 @@ export function Sidebar(props: SidebarProps) {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </motion.div>
+                  </div></LayoutMotion>
                 );
 
   }
 
   if (props.collapsed) {
     return (
-      <motion.aside ref={scrollRoot} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="collapsed-sidebar flex h-full w-full shrink-0 flex-col items-center gap-1 bg-sidebar py-4">
+      <aside ref={scrollRoot} className="collapsed-sidebar flex h-full w-full shrink-0 flex-col items-center gap-1 bg-sidebar py-4">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -243,12 +243,12 @@ export function Sidebar(props: SidebarProps) {
         <div className="mt-auto flex flex-col items-center gap-2">
           <Button variant="ghost" size="icon" aria-label="Settings" onClick={props.onOpenSettings}><Settings2 className="size-4" /></Button>
         </div>
-      </motion.aside>
+      </aside>
     );
   }
 
   return (
-    <motion.aside ref={scrollRoot} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .2 }} className="session-sidebar flex h-full w-full min-w-0 shrink-0 flex-col bg-sidebar">
+    <aside ref={scrollRoot} className="session-sidebar flex h-full w-full min-w-0 shrink-0 flex-col bg-sidebar">
       <div className="flex h-18 items-center gap-2.5 px-5">
         <Brand className="size-7 shrink-0" />
         <div className="min-w-0 flex-1">
@@ -277,7 +277,7 @@ export function Sidebar(props: SidebarProps) {
         <Search className="pointer-events-none absolute left-2 top-[19px] size-3 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => {const value=e.target.value;setQ(value);transitionUpdate(()=>setFilterQuery(value));}}
           placeholder="Search sessions"
           aria-label="Search sessions"
           className="h-8 rounded-lg border-0 bg-sidebar-accent/50 pl-7 text-[12px] focus-visible:border-border"
@@ -298,10 +298,10 @@ export function Sidebar(props: SidebarProps) {
 
       <div className="px-3 pt-2"><Button variant="ghost" onClick={props.onNewProject} className="h-9 w-full justify-start gap-2 text-[13px] font-normal text-muted-foreground"><FolderPlus className="size-3.5"/>New project</Button></div>
       <ScrollArea className="session-scroll min-h-0 min-w-0 flex-1"><div className="px-3 pb-3">
-       {projectGroups.map(({project,sessions})=><Collapsible key={project.id} open={q?true:!closedProjects[project.id]} onOpenChange={open=>setClosedProjects(v=>({...v,[project.id]:!open}))} className="project-sidebar-group mb-3 mt-2"><div className="project-folder-row group/project flex h-8 items-center rounded-lg"><CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-xs text-muted-foreground" title={project.path}><ChevronsRight className={'size-3 shrink-0 transition-transform '+(!closedProjects[project.id]||q?'rotate-90':'')}/><FolderOpen className="size-3.5 shrink-0"/><span className="truncate">{project.name}</span></CollapsibleTrigger><Button variant="ghost" size="icon-sm" aria-label={'New chat in '+project.name} onClick={()=>props.onNewProjectChat?.(project.path)} className="project-new-chat mr-1 size-6 shrink-0 text-muted-foreground"><Plus className="size-3.5"/></Button></div><CollapsibleContent><div className="project-chat-branch ml-[19px] mt-1 pl-3"><AnimatePresence initial={false}>{sessions.map(renderSession)}</AnimatePresence>{!sessions.length&&<p className="px-2 py-2 text-[11px] text-muted-foreground">No chats yet</p>}</div></CollapsibleContent></Collapsible>)}
-       <div className="sidebar-section-divider"/><div className="flex items-center gap-2 px-3 pb-2 pt-1"><h2 className="text-[13px] font-semibold">Chats</h2><span className="text-[10px] tabular-nums text-muted-foreground">{ordinaryGroups.reduce((n,g)=>n+g.items.length,0)}</span>{archived>0&&<button onClick={()=>setShowArchived(v=>!v)} className="ml-auto text-[10px] text-muted-foreground">{showArchived?"Hide archived":"Show archived"}</button>}</div>
+       {projectGroups.map(({project,sessions})=><Collapsible key={project.id} open={q?true:!closedProjects[project.id]} onOpenChange={open=>setClosedProjects(v=>({...v,[project.id]:!open}))} className="project-sidebar-group mb-3 mt-2"><div className="project-folder-row group/project flex h-8 items-center rounded-lg"><CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-xs text-muted-foreground" title={project.path}><ChevronsRight className={'size-3 shrink-0 transition-transform '+(!closedProjects[project.id]||q?'rotate-90':'')}/><FolderOpen className="size-3.5 shrink-0"/><span className="truncate">{project.name}</span></CollapsibleTrigger><Button variant="ghost" size="icon-sm" aria-label={'New chat in '+project.name} onClick={()=>props.onNewProjectChat?.(project.path)} className="project-new-chat mr-1 size-6 shrink-0 text-muted-foreground"><Plus className="size-3.5"/></Button></div><CollapsibleContent><div className="project-chat-branch ml-[19px] mt-1 pl-3">{sessions.map(renderSession)}{!sessions.length&&<p className="px-2 py-2 text-[11px] text-muted-foreground">No chats yet</p>}</div></CollapsibleContent></Collapsible>)}
+       <div className="sidebar-section-divider"/><div className="flex items-center gap-2 px-3 pb-2 pt-1"><h2 className="text-[13px] font-semibold">Chats</h2><span className="text-[10px] tabular-nums text-muted-foreground">{ordinaryGroups.reduce((n,g)=>n+g.items.length,0)}</span>{archived>0&&<button onClick={()=>transitionUpdate(()=>setShowArchived(v=>!v))} className="ml-auto text-[10px] text-muted-foreground">{showArchived?"Hide archived":"Show archived"}</button>}</div>
        {props.loading?<div aria-busy="true" className="pt-3"><ListSkeleton rows={5} logo={false}/></div>:!ordinaryGroups.length&&<p className="px-3 py-5 text-xs text-muted-foreground">{q?"No chats match":"No chats yet"}</p>}
-       <AnimatePresence initial={false}>{!props.loading&&ordinaryGroups.map(group=><motion.div layout="position" key={group.label} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduce?0:.15}}><p className="px-3 pb-1 pt-3 text-[11px] text-muted-foreground">{group.label}</p><AnimatePresence initial={false}>{group.items.map(renderSession)}</AnimatePresence></motion.div>)}</AnimatePresence>
+       {!props.loading&&ordinaryGroups.map(group=><LayoutMotion key={group.label}><div><p className="px-3 pb-1 pt-3 text-[11px] text-muted-foreground">{group.label}</p>{group.items.map(renderSession)}</div></LayoutMotion>)}
       </div></ScrollArea>
 
       <div className="mx-3 flex shrink-0 items-center gap-1 py-3"><Button variant="ghost" onClick={props.onOpenSettings} className="mr-auto h-9 justify-start gap-2 px-3 text-[13px] font-normal text-muted-foreground"><Settings2 className="size-4"/>Settings</Button>{NAV.filter(n=>n.key!=="settings").map(n=><Tooltip key={n.key}><TooltipTrigger asChild><Button variant="ghost" size="icon-sm" onClick={()=>nav(n.key)} aria-label={n.label} className="size-8 text-muted-foreground"><n.icon className="size-3.5"/></Button></TooltipTrigger><TooltipContent>{n.label}</TooltipContent></Tooltip>)}</div>
@@ -420,6 +420,6 @@ export function Sidebar(props: SidebarProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </motion.aside>
+    </aside>
   );
 }

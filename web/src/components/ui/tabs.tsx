@@ -1,3 +1,5 @@
+import {LayoutMotion} from "../transitions/WorkspaceMotion";
+import {transitionUpdate} from "../../lib/motion";
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
@@ -6,19 +8,25 @@ import { Tabs as TabsPrimitive } from "radix-ui"
 function Tabs({
   className,
   orientation = "horizontal",
+  onValueChange,
+  value:controlled,
+  defaultValue,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  const [local,setLocal]=React.useState(defaultValue);
   return (
-    <TabsPrimitive.Root
+    <LayoutMotion><TabsPrimitive.Root
       data-slot="tabs"
       data-orientation={orientation}
       orientation={orientation}
+      value={controlled??local}
+      onValueChange={value=>transitionUpdate(()=>{setLocal(value);onValueChange?.(value);})}
       className={cn(
         "group/tabs flex gap-2 data-[orientation=horizontal]:flex-col",
         className
       )}
       {...props}
-    />
+    /></LayoutMotion>
   )
 }
 

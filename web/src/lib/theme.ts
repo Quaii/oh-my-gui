@@ -20,7 +20,10 @@ export const APP_THEMES:WorkspaceTheme[] = [
 export const DEFAULT_THEME="dark";
 export function getTheme():string {try{const v=localStorage.getItem(LS_THEME);return APP_THEMES.some(t=>t.value===v)?v!:DEFAULT_THEME;}catch{return DEFAULT_THEME;}}
 export function isLightTheme(value:string) {return APP_THEMES.find(t=>t.value===value)?.mode==="light";}
-export function applyTheme(value:string) {
+let transitionTheme:((value:string)=>void)|undefined;
+export function registerThemeTransition(handler:(value:string)=>void){transitionTheme=handler;return()=>{if(transitionTheme===handler)transitionTheme=undefined;};}
+export function applyTheme(value:string){if(transitionTheme&&value!==getTheme())transitionTheme(value);else applyThemeImmediately(value);}
+export function applyThemeImmediately(value:string) {
  const t=APP_THEMES.find(t=>t.value===value)||APP_THEMES[0], root=document.documentElement,c=t.colors;
  root.dataset.theme=t.value;root.classList.toggle("dark",t.mode==="dark");root.style.colorScheme=t.mode;
  const vars:Record<string,string>={"--theme-background":c.panel,"--theme-foreground":t.foreground,"--theme-sidebar":c.sidebar,"--theme-card":c.tile,"--theme-border":c.border,"--theme-accent":c.strong,"--theme-muted":t.subtle};

@@ -1,3 +1,5 @@
+import {PageTransition} from '../components/transitions/page-transition';
+import {transitionUpdate} from '../lib/motion';
 import {supportsFastMode} from "../lib/model-capabilities";
 import { SettingsNavigation, savedSettingsPanel, SettingGlyph, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
 import { ProviderIcon } from "../components/ProviderIcon";
@@ -11,7 +13,6 @@ import {ToolbarBlur} from "../components/ToolbarBlur";
 import { RuntimePanel } from "../components/settings/RuntimePanel";
 import { CustomProvidersPanel, ModelRolesPanel } from "../components/settings/ModelsPanel";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
 import { get, post, put } from "../lib/api";
 import { fetchSettings, resetSetting, saveSetting, type Setting, type SettingsPayload } from "../lib/settings";
@@ -72,7 +73,6 @@ export interface SettingsPageProps {
 export function SettingsPage(props: SettingsPageProps) {
   const { onBack, sidebarCollapsed, onToggleSidebar, chat, config, onConfigSaved, onSend, flags, setFlags, onRestart, info, onRefreshState } = props;
 
-  const reduceMotion = useReducedMotion();
   const contentRef=useRef<HTMLDivElement>(null);
   const [panel,setPanel]=useState<PanelId>(savedSettingsPanel);
   useEffect(() => {localStorage.setItem("ompfe.settings.panel", panel);contentRef.current?.scrollTo({top:0,behavior:"instant"});}, [panel]);
@@ -162,7 +162,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
   return (
     <div className="settings-layout flex h-full min-h-0 min-w-0 flex-1">
-      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={id=>{setPanel(id);setQ("");}}/>
+      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={id=>transitionUpdate(()=>{setPanel(id);setQ("");})}/>
 
       <main className="settings-main workspace-main relative isolate flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <WorkspaceBackground />
@@ -191,7 +191,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
         {/* mobile section picker */}
         <div className="ml-auto md:hidden">
-          <Select value={panel} onValueChange={(v) => { setPanel(v as PanelId); setQ(""); }}>
+          <Select value={panel} onValueChange={(v) => transitionUpdate(()=>{ setPanel(v as PanelId); setQ(""); })}>
             <SelectTrigger size="sm" className="w-[150px] text-[12px]">
               <SelectValue />
             </SelectTrigger>
@@ -239,7 +239,7 @@ export function SettingsPage(props: SettingsPageProps) {
             </div>
 
             <SkeletonReveal loading={loading && !payload && (searching || ["all", "interaction", "tasks", "memory", "files", "shell", "context"].includes(panel))} skeleton={<PanelSkeleton panel={searching?"all":panel}/>} label="Loading settings">
-            <AnimatePresence mode="wait" initial={false}><motion.div key={searching ? "search" : panel} initial={{ opacity: 0, y: reduceMotion ? 0 : 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reduceMotion ? 0 : -4 }} transition={{ duration: reduceMotion ? 0 : .16 }}>
+            <PageTransition id={searching?"search":panel} transition="fade" duration={160}>
             <Suspense fallback={<PanelSkeleton panel={panel}/>}>
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
@@ -312,7 +312,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : (
               <Empty>Nothing here.</Empty>
             )}
-            </Suspense></motion.div></AnimatePresence>
+            </Suspense></PageTransition>
             </SkeletonReveal>
           </div>
         </ScrollArea>

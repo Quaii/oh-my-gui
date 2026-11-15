@@ -1,3 +1,7 @@
+import {useReducedMotion} from 'motion/react';
+import {PageTransition} from './components/transitions/page-transition';
+import {LayoutMotion} from './components/transitions/WorkspaceMotion';
+import {transitionUpdate} from './lib/motion';
 import {FileOpenContext} from "./lib/file-workspace";
 import {ProjectSuggestions}from"./components/ProjectSuggestions";
 import {replyVersions} from "./lib/message-versions";
@@ -12,7 +16,6 @@ import { FilesChanged } from "./components/FilesChanged";
 import { fileChangeSummaries } from "./lib/file-changes";
 import { HomeOverview, ProjectDialog } from "./components/Projects";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { get, post, del, subscribeEvents } from "./lib/api";
 import { chatReducer, initialChat, dismissToast, type ChatState } from "./lib/store";
 import { Sidebar } from "./components/Sidebar";
@@ -46,7 +49,6 @@ const LS_RAIL = "ompfe.rail";
 const LS_SIDEBAR = "ompfe.sidebar.collapsed";
 
 export default function App() {
-  const reducedMotion = useReducedMotion();
   const [chat, dispatch] = useState<ChatState>(initialChat);
   const [boot, setBoot] = useState<any>(null);
   const [models, setModels] = useState<any[]>([]);
@@ -93,7 +95,7 @@ export default function App() {
   const cwd = boot?.cwd ?? localStorage.getItem(LS_CWD) ?? "";
   const fileRequest=chat.key?fileWorkspaces[chat.key]?.request:null;
 
-  const openFiles=useCallback((path?:string)=>{const key=keyRef.current;if(!key)return;setHome(false);setFileWorkspaces(previous=>({...previous,[key]:{cwd,request:{path,n:Date.now()}}}));},[cwd]);
+  const openFiles=useCallback((path?:string)=>{const key=keyRef.current;if(!key)return;transitionUpdate(()=>{setHome(false);setFileWorkspaces(previous=>({...previous,[key]:{cwd,request:{path,n:Date.now()}}}));});},[cwd]);
 
   const [paletteVersion, setPaletteVersion] = useState(0);
   useEffect(() => subscribePalette(() => setPaletteVersion((v) => v + 1)), []);
@@ -340,7 +342,7 @@ export default function App() {
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
-        setSidebarCollapsed((v) => !v);
+        transitionUpdate(()=>setSidebarCollapsed((v) => !v));
       }
       if (e.key === "Escape" && !typing) {
         if (inSettings) navigate("/");
@@ -431,12 +433,12 @@ export default function App() {
 
   return (
     <FileOpenContext.Provider value={openFiles}><div className="app-shell relative isolate flex h-full w-full overflow-hidden bg-background text-foreground">
-      <AnimatePresence mode="wait" initial={false}><motion.div key={inSettings?"settings":"workspace"} className={`workspace-route flex h-full min-h-0 min-w-0 flex-1 ${fileRequest&&focusedEditor===chat.key&&!inSettings&&!home?"editor-focused":""}`} initial={{opacity:0,x:reducedMotion?0:10}} animate={{opacity:1,x:0}} exit={{opacity:0,x:reducedMotion?0:-8}} transition={{duration:reducedMotion?0:.18,ease:[.22,1,.36,1]}}>
+      <PageTransition id={inSettings?"settings":"workspace"} transition="fade" duration={180} >
       {inSettings ? (
         <SettingsPage
           onBack={closeSettings}
           sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={()=>setSidebarCollapsed(v=>!v)}
+          onToggleSidebar={()=>transitionUpdate(()=>setSidebarCollapsed(v=>!v))}
           chat={chat}
           config={boot?.config}
           onConfigSaved={(c) => setBoot((b: any) => ({ ...b, config: c }))}
@@ -449,11 +451,11 @@ export default function App() {
         />
       ) : (
         <>
-      <motion.div className="sidebar-container hidden h-full shrink-0 overflow-hidden md:flex" initial={false} animate={{ width: sidebarCollapsed ? 64 : 264 }} transition={reducedMotion ? { duration: 0 } : { duration: .26, ease: [.22,1,.36,1] }}>
+      <LayoutMotion><div className="sidebar-container hidden h-full shrink-0 overflow-hidden md:flex" style={{width:sidebarCollapsed?64:264}}>
         <Sidebar
           cwd={cwd}
           loading={!boot}
-          onHome={()=>setHome(true)}
+          onHome={()=>transitionUpdate(()=>setHome(true))}
           onNewProject={()=>setProjectDialog(true)}
           onLeaveProject={leaveProject}
           onNewProjectChat={newProjectChat}
@@ -473,9 +475,9 @@ export default function App() {
             refreshSessions();
             refreshState();
           }}
-          onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
+          onToggleCollapsed={() => transitionUpdate(()=>setSidebarCollapsed((v) => !v))}
         />
-      </motion.div>
+      </div></LayoutMotion>
 
       <Sheet open={mobileNav} onOpenChange={setMobileNav}>
         <SheetContent side="left" className="w-[280px] border-sidebar-border bg-sidebar p-0">
@@ -539,7 +541,7 @@ export default function App() {
           onOpenSidebar={() => setMobileNav(true)}
           onOpenPalette={() => setPaletteOpen(true)}
           onOpenSettings={openSettings}
-          onToggleRail={() => setRailOpen((v) => !v)}
+          onToggleRail={() => transitionUpdate(()=>setRailOpen((v) => !v))}
         />
 
         <div className="transcript-region relative min-h-0 flex-1">
@@ -682,8 +684,8 @@ export default function App() {
         </>
       )}
 
-      </motion.div></AnimatePresence>
-      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={<aside hidden={home||inSettings||key!==chat.key} className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>setFocusedEditor(current=>current===key?null:key)} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
+      </PageTransition>
+      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={<aside hidden={home||inSettings||key!==chat.key} className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
       <CommandPalette
         open={paletteOpen}
