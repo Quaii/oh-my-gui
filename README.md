@@ -2,6 +2,10 @@
 
 React interface for the local OMP harness, using `omp --mode rpc` over JSONL and SSE.
 
+Contributors: start with [AGENTS.md](AGENTS.md), the current [design guide](DESIGN.md), and the
+[project skills](.agents/skills/README.md). `CLAUDE.md` imports the same root instructions.
+Run `npm run docs:check` to validate local documentation links and skill discovery entries.
+
 ```sh
 npm install
 npm run dev        # API :4317, frontend :5317
@@ -16,7 +20,7 @@ The server runs locally with the user's filesystem and OMP access. Keep it bound
 
 ## Interface
 
-Chat and Settings share the same sidebar geometry and floating main panel. Page changes use a short fade and slide, with reduced-motion support. Settings stays at the bottom of expanded and collapsed navigation. Task plans, GitHub projects, and active subagents appear as independent, dismissible floating cards under the toolbar when relevant. Workspace cards opens session statistics on demand. Sidebar New chat starts a workspace chat; each project has its own New chat action, and the breadcrumb offers Leave project. Context usage appears beside Send. Connection failures use one centered recovery panel.
+Chat and Settings share the same sidebar geometry and floating main panel. Page changes use a short transition-kit fade, with reduced-motion support. Settings stays at the bottom of expanded and collapsed navigation. Task plans, GitHub projects, and active subagents appear as independent, dismissible floating cards under the toolbar when relevant. Workspace cards opens session statistics on demand. Sidebar New chat starts a workspace chat; each project has its own New chat action, and the breadcrumb offers Leave project. Context usage appears beside Send. Connection failures use one centered recovery panel.
 
 Settings and conversation loading use shadcn Skeleton shapes and Transitions.dev's reveal treatment, driven by actual request state. Empty/error states appear after the request settles. Conversation rows have ellipsis and thin scrollbars. Floating header and composer controls sit over continuous blur fades. Native tool iterations share one supplied Trace-based Agent activity disclosure per request; thinking blocks merge, and the final answer stays outside it. Fast mode requires an advertised priority tier and a provider route that realizes it; Rare UI response/status/search components use native stream and tool data.
 
@@ -46,7 +50,7 @@ Rare UI attribution is available in Settings → About & credits. ObsidianUI and
 - Opt-in persona library: prepend or append instructions, optionally remove the exact OMP identity sentence, retain project rules and tool schemas, persist the chosen persona with the session.
 - Advanced RPC console and an honest runtime capability check. See [CAPABILITIES.md](CAPABILITIES.md) for coverage and limitations.
 
-Host configuration is saved as `web-control.json` in the OMP agent directory. Native provider configuration stays in `models.yml`/`models.yaml`. File writes preserve unrelated configuration and make backups. Appearance includes twelve presets, 70 backgrounds plus None, Lucide/Phosphor icon previews, nine color overrides, contrast, UI/code/heading fonts, chat text size and line height, corner radius, shadows, background fade/blur/tint, independent menu and card glass, and sidebar translucency. Cards default to the solid sidebar color. The compact live color picker supports hex and tint opacity. The favicon follows the current accent. Version 2 theme exports include the selected background and animation preference. The tab is named `omp.`. Older exports gain safe defaults. Preferences and image data stay in browser storage.
+Host configuration is saved as `web-control.json` in the OMP agent directory. Native provider configuration stays in `models.yml`/`models.yaml`. File writes preserve unrelated configuration and make backups. Appearance includes twelve presets, 70 backgrounds plus None, six workspace icon sets and three independent editor icon styles, nine color overrides, contrast, UI/code/heading fonts, chat text size and line height, corner radius, shadows, background fade/blur/tint, independent menu and card glass, and sidebar translucency. Cards default to the solid sidebar color. The compact live color picker supports hex and tint opacity. The favicon follows the current accent. Version 2 theme exports include the selected background and animation preference. The tab is named `omp.`. Older exports gain safe defaults. Preferences and image data stay in browser storage.
 
 ## Validation
 
@@ -79,7 +83,7 @@ Open Files is available from the chat toolbar, command palette, and Ctrl/Cmd+Shi
 
 [Recent requests audit](RECENT-REQUESTS-AUDIT.md) records the last ten feature requests, their implementation evidence, and remaining native/runtime limits. The permission selector remains OMP's global default, not a per-chat override.
 
-The editor shares the workspace background and floating breadcrumb toolbar. Focus editor hides the chat without closing its draft or file tabs; Show chat restores the split. The resize grip preserves enough chat width for the composer controls, using an overlay when the window cannot fit both panes. Workspace icons offer Lucide, Phosphor, Tabler, Heroicons, and Remix with live previews. File icons use the bundled Material Icon Theme associations.
+The editor shares the workspace background and floating breadcrumb toolbar. Focus editor hides the chat without closing its draft or file tabs; Show chat restores the split. The resize grip preserves enough chat width for the composer controls, using an overlay when the window cannot fit both panes. Workspace icons offer Lucide, Phosphor, Tabler, Heroicons, Bootstrap, and Remix with live previews. Editor icons independently offer Material, Monochrome, and Minimal across the explorer, tabs, and changed files.
 
 Markdown files offer Source and Visual editing modes. Visual mode loads editorcn on demand, shares the current file draft and guarded Save action, and serializes Markdown through Tiptap. Merely opening Visual mode does not modify the file. Frontmatter and embedded HTML stay in Source mode to preserve source-only syntax. Standard headings, formatting, links, lists, tasks, images, tables, and fenced code are supported. Switching modes keeps the source editor mounted and its undo history. Source/Visual controls use transition-kit tabs with reduced-motion support.
 
