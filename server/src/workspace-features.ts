@@ -72,10 +72,8 @@ export async function projectActivity(cwd: string) {
   if (!match) return { repository: null, branch: branch.trim(), authenticated: false, issues: [], contributors: [], reason: "This project does not use a GitHub origin." };
   const repository = `${match[1]}/${match[2]}`;
   try {
-    const account = JSON.parse(await runCommand("gh", ["api", "user"], cwd, 15_000));
-    const [issues, contributors] = await Promise.all([runCommand("gh", ["api", `repos/${repository}/issues?state=open&per_page=8`], cwd, 20_000), runCommand("gh", ["api", `repos/${repository}/contributors?per_page=8`], cwd, 20_000)]);
-    let contributions:any[]=[];
-    try { const calendar=JSON.parse(await runCommand("gh",["api","graphql","-f","query={ viewer { contributionsCollection { contributionCalendar { weeks { contributionDays { date contributionCount contributionLevel } } } } } }"],cwd,20000));const levels=["NONE","FIRST_QUARTILE","SECOND_QUARTILE","THIRD_QUARTILE","FOURTH_QUARTILE"];contributions=(calendar.data?.viewer?.contributionsCollection?.contributionCalendar?.weeks || []).flatMap((w:any)=>w.contributionDays).map((d:any)=>({date:d.date,count:d.contributionCount,level:Math.max(0,levels.indexOf(d.contributionLevel))})); }catch{}
-    return { contributions, repository, branch: branch.trim(), authenticated: true, account: { login: account.login, avatar_url: account.avatar_url }, issues: JSON.parse(issues).map((i: any) => ({ id: i.id, number: i.number, title: i.title, url: i.html_url, pullRequest: !!i.pull_request })), contributors: JSON.parse(contributors).map((c: any) => ({ login: c.login, avatar_url: c.avatar_url, url: c.html_url, contributions: c.contributions })) };
+    const [repo, issues, contributors] = await Promise.all([runCommand("gh", ["api", `repos/${repository}`], cwd, 20_000), runCommand("gh", ["api", `repos/${repository}/issues?state=open&per_page=8`], cwd, 20_000), runCommand("gh", ["api", `repos/${repository}/contributors?per_page=100`], cwd, 20_000)]);
+    const owner=JSON.parse(repo).owner;
+    return { repository, branch: branch.trim(), owner:{login:owner.login,avatar_url:owner.avatar_url,url:owner.html_url}, authenticated: true, issues: JSON.parse(issues).map((i: any) => ({ id: i.id, number: i.number, title: i.title, url: i.html_url, pullRequest: !!i.pull_request })), contributors: JSON.parse(contributors).map((c: any) => ({ login: c.login, avatar_url: c.avatar_url, url: c.html_url, contributions: c.contributions })) };
   } catch {try{return await gitLoginActivity(repository,branch.trim(),cwd);}catch{return { repository, branch: branch.trim(), authenticated: false, issues: [], contributors: [], reason: "Sign in with Git or GitHub CLI to show verified repository activity." };}}
 }

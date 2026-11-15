@@ -559,7 +559,7 @@ export default function App() {
               <SkeletonReveal loading={!chat.loaded} skeleton={<ChatSkeleton/>} label="Loading conversation history">
               <div className="transcript-list">
                 {renderedMessages.map(({message:m,index:i,firstIndex,streaming,continuation}) => (
-                  <div key={`msg-${firstIndex}`} id={`msg-${i}`} className={`transcript-message scroll-mt-24 ${continuation?"is-continuation":""}`}>
+                  <div key={`msg-${firstIndex}`} id={`msg-${i}`} className={`transcript-message scroll-mt-24 ${continuation?"is-continuation":""} ${["developer","custom","hookMessage"].includes(m.role)?"is-note":""}`}>
                     {m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1?(<MessageVersions
                       versions={replyVersions(entries,m.timestamp)} currentTimestamp={m.timestamp} files={changes.get(i)}
                       onContinue={async id=>{const r=await sendCmd({type:"navigate_tree",entryId:id,summarize:false});if(r?.ok&&!r.data?.cancelled)await attach(keyRef.current!,activePath||undefined);}}

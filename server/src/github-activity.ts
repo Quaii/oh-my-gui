@@ -7,7 +7,7 @@ export async function gitLoginActivity(repository:string,branch:string,cwd:strin
  const key=cwd+'|'+repository+'|'+branch,hit=cache.get(key);if(hit&&hit.expires>Date.now())return hit.value;
  const value=(async()=>{const credential=await githubCredential(cwd),headers={Authorization:'Bearer '+credential,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'omp-frontend'};
   const request=async(path:string)=>{const response=await fetch('https://api.github.com/'+path,{headers,redirect:'error',signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('GitHub request failed ('+response.status+')');return response.json();};
-  const [account,issues,contributors]=await Promise.all([request('user'),request('repos/'+repository+'/issues?state=open&per_page=8'),request('repos/'+repository+'/contributors?per_page=8')]);
-  return {repository,branch,authenticated:true,contributions:[],account:{login:account.login,avatar_url:account.avatar_url},issues:issues.map((i:any)=>({id:i.id,number:i.number,title:i.title,url:i.html_url,pullRequest:!!i.pull_request})),contributors:contributors.map((c:any)=>({login:c.login,avatar_url:c.avatar_url,url:c.html_url,contributions:c.contributions}))};
+  const [repo,issues,contributors]=await Promise.all([request('repos/'+repository),request('repos/'+repository+'/issues?state=open&per_page=8'),request('repos/'+repository+'/contributors?per_page=100')]);
+  return {repository,branch,owner:{login:repo.owner.login,avatar_url:repo.owner.avatar_url,url:repo.owner.html_url},authenticated:true,issues:issues.map((i:any)=>({id:i.id,number:i.number,title:i.title,url:i.html_url,pullRequest:!!i.pull_request})),contributors:contributors.map((c:any)=>({login:c.login,avatar_url:c.avatar_url,url:c.html_url,contributions:c.contributions}))};
  })();cache.set(key,{expires:Date.now()+15000,value});try{return await value;}catch(error){cache.delete(key);throw error;}
 }

@@ -214,11 +214,11 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
 export function AssistantTurn({message,...props}:AssistantViewProps){
   const messages=message.turnMessages||[message],last=messages.at(-1);
   const hasTools=messages.some((m:any)=>coalesceAssistantBlocks(m.content).some(b=>b.type==='toolCall'));
-  if(!hasTools)return <AssistantMessage message={{...last,content:coalesceAssistantBlocks(messages.flatMap((m:any)=>coalesceAssistantBlocks(m.content)))}} {...props}/>;
+  if(!hasTools&&!messages.some((m:any)=>m.role!=="assistant"))return <AssistantMessage message={{...last,content:coalesceAssistantBlocks(messages.flatMap((m:any)=>coalesceAssistantBlocks(m.content)))}} {...props}/>;
   const thoughts=messages.flatMap((m:any)=>coalesceAssistantBlocks(m.content).filter(b=>b.type==='thinking').map(b=>b.thinking)).filter(Boolean).join('\n\n');
   const activity=messages.map((m:any,i:number)=>({...m,content:coalesceAssistantBlocks(m.content).filter(b=>b.type!=='thinking'&&(i<messages.length-1||b.type==='toolCall'))})).filter((m:any)=>m.content.length);
   const reply={...last,content:coalesceAssistantBlocks(last.content).filter(b=>b.type!=='thinking'&&b.type!=='toolCall')};
-  return <div className="assistant-turn space-y-3"><TraceRow title="Agent activity" icon={<ListChecks className="size-3.5"/>}><Reasoning text={thoughts} running={false}/><div className="space-y-2">{activity.map((m:any,i:number)=><AssistantMessage key={i} message={m} tools={props.tools} results={props.results} compact/>)}</div></TraceRow>{reply.content.length>0&&<AssistantMessage message={reply} {...props}/>}</div>;
+  return <div className="assistant-turn space-y-3"><TraceRow title="Agent activity" icon={<ListChecks className="size-3.5"/>}><Reasoning text={thoughts} running={false}/><div className="space-y-2">{activity.map((m:any,i:number)=>m.role==="assistant"?<AssistantMessage key={i} message={m} tools={props.tools} results={props.results} compact/>:<NoteLine key={i} message={m}/>)}</div></TraceRow>{reply.content.length>0&&<AssistantMessage message={reply} {...props}/>}</div>;
 }
 
 export function parseArgs(args: any): any {

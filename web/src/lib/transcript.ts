@@ -27,7 +27,13 @@ export function responsePhase(live:any,tools:any[]):'thinking'|'researching'|'an
 /** One visible assistant turn per user request, retaining the native end index for file/checkpoint actions. */
 export function groupedTranscript(messages:any[],live?:any){
  const input=transcriptItems(live?[...messages,live]:messages),output:any[]=[];
- for(const item of input){const previous=output.at(-1);const streaming=!!live&&item.index===messages.length;
+ for(const [position,item] of input.entries()){const previous=output.at(-1);const streaming=!!live&&item.index===messages.length;
+  const taskReminder=(message:any)=>['developer','custom','hookMessage'].includes(message.role)&&/incomplete todo|unfinished/i.test(text(message.content)||message.text||'');
+  // Automatic todo reminders belong to the ongoing turn, rather than creating
+  // another top-level answer/thought pair. Keep the original messages intact.
+  if(taskReminder(item.message)&&previous?.message.role==='assistant'&&input.slice(position+1).find(next=>!taskReminder(next.message))?.message.role==='assistant'){
+   previous.message={...previous.message,turnMessages:[...(previous.message.turnMessages||[previous.message]),item.message]};continue;
+  }
   if(item.message.role==='assistant'&&previous?.message.role==='assistant'){
    const turnMessages=[...(previous.message.turnMessages||[previous.message]),item.message];
    previous.message={...item.message,turnMessages};previous.index=item.index;previous.streaming=streaming;
