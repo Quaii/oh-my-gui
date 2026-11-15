@@ -1,12 +1,11 @@
 import {useOpenFile} from "../lib/file-workspace";
-import {fileIconName} from '../lib/file-icons';
-import {useState,useEffect} from "react";
-import {File,ChevronRight,Folder} from "lucide-react";
+import {FileIcon} from './FileIcon';
+export {FileIcon} from './FileIcon';
+import {ChevronRight,Folder} from "lucide-react";
 import {Artifact,ArtifactHeader,ArtifactTitle,ArtifactDescription,ArtifactContent} from "@/components/ui/artifact";
 import {Collapsible,CollapsibleContent,CollapsibleTrigger} from "@/components/ui/collapsible";
 import CodeBlock from "@/components/ui/code-block";
 import type {FileChange} from "@/lib/file-changes";
-export function FileIcon({path}:{path:string}){const [failed,setFailed]=useState(false),icon=fileIconName(path),ext=path.split('.').pop()?.toUpperCase()||'File';useEffect(()=>setFailed(false),[icon]);return icon&&!failed?<img src={'/file-icons/'+icon+'.svg'} alt={ext+' file'} className="size-4 shrink-0" onError={()=>setFailed(true)}/>:<File className="size-4 shrink-0 text-muted-foreground"/>;}
 
 type Node={name:string;path:string;children:Map<string,Node>;file?:FileChange};
 function tree(files:FileChange[]){const root:Node={name:'',path:'',children:new Map()},parts=files.map(f=>f.path.replaceAll('\\','/').split('/').filter(Boolean));let prefix=0;while(parts[0]?.[prefix]&&parts.every(p=>p.length>prefix+1&&p[prefix]===parts[0][prefix]))prefix++;files.forEach((file,i)=>{let parent=root;for(const name of parts[i].slice(prefix)){if(!parent.children.has(name))parent.children.set(name,{name,path:parent.path+'/'+name,children:new Map()});parent=parent.children.get(name)!;}parent.file=file;});return root;}

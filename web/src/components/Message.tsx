@@ -65,9 +65,9 @@ function ActionButton({
   );
 }
 
-function ActionBar({ children }: { children: React.ReactNode }) {
+function ActionBar({ children, inline=false }: { children: React.ReactNode; inline?:boolean }) {
   return (
-    <div className="message-actions absolute left-0 top-full z-10 mt-1 flex items-center gap-0.5 rounded-lg bg-background/90 opacity-0 transition-opacity t-base focus-within:opacity-100 group-hover/msg:opacity-100">
+    <div className={"message-actions absolute left-0 top-full z-10 mt-1 flex items-center gap-0.5 rounded-lg bg-background/90 opacity-0 transition-opacity t-base focus-within:opacity-100 group-hover/msg:opacity-100 "+(inline?"message-actions-inline":"")}>
       {children}
     </div>
   );
@@ -187,7 +187,7 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
       )}
 
       {!compact && !streaming && plain.trim() && !content.some(b=>b.type==="toolCall") && (
-        <ActionBar>
+        <ActionBar inline>
           {plain && (
             <ActionButton label="Copy response" onClick={() => actions?.onCopy?.(plain)}>
               <Copy className="size-3" />

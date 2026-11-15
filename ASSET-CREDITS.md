@@ -22,3 +22,5 @@
 - transition-kit: https://transition-kit.space/ . Source/Visual tabs and their UI transition core/CSS come from the official shadcn registry, with local theme styling. React 19.3 is already installed. The existing twelve-theme system and route transitions are preserved.
 
 - Global transition-kit adoption uses the official page-transition core, page fade CSS, tabs and UI transition helpers. Disclosure/layout/list adapters retain the existing Radix APIs; the theme adapter supports the workspace's twelve themes. Official reference: https://transition-kit.space/llms.txt . CSS and source headers retain attribution.
+
+- Bootstrap Icons (MIT), included through React Icons: https://github.com/twbs/icons . Material and monochrome editor icon modes share the locally bundled Material Icon Theme assets; Minimal uses Lucide file-category outlines.

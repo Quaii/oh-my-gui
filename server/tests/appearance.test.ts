@@ -14,4 +14,6 @@ test("workspace theme options round-trip and reject invalid styles",()=>{
  for(const invalid of [{foreground:"red"},{radius:999},{uiFont:"url(bad)"},{glass:"false"},{chatSize:-1},{backgroundOpacity:101},{backgroundOpacity:-1},{backgroundOpacity:NaN},{image:"https://example.com/image.png"}])assert.throws(()=>validateAppearance(invalid));
 });
 
-test('all five workspace icon sets survive theme export and import',()=>{for(const icons of ['lucide','phosphor','tabler','heroicons','remix']){const a=validateAppearance({...DEFAULT_APPEARANCE,icons});assert.equal(validateAppearance(JSON.parse(JSON.stringify(a))).icons,icons);}assert.throws(()=>validateAppearance({icons:'missing-set'}));});
+test('all six workspace icon sets survive theme export and import',()=>{for(const icons of ['lucide','phosphor','tabler','heroicons','remix','bootstrap']){const a=validateAppearance({...DEFAULT_APPEARANCE,icons});assert.equal(validateAppearance(JSON.parse(JSON.stringify(a))).icons,icons);}assert.throws(()=>validateAppearance({icons:'missing-set'}));});
+
+test('editor icon preferences import independently with a compatible default',()=>{assert.equal(validateAppearance({icons:'bootstrap'}).fileIcons,'material');for(const fileIcons of ['material','monochrome','minimal']){const result=validateAppearance({icons:'tabler',fileIcons});assert.equal(validateAppearance(JSON.parse(JSON.stringify(result))).fileIcons,fileIcons);assert.equal(result.icons,'tabler');}assert.throws(()=>validateAppearance({fileIcons:'unknown'}));});
