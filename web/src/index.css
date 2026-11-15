@@ -1026,7 +1026,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .file-root-picker{background:var(--sidebar-accent)}.file-browser-section-label{margin:0 12px;padding:14px 0 10px;border-top:1px solid color-mix(in srgb,var(--foreground) 7%,transparent);font-size:11px;font-weight:500;color:var(--muted-foreground)}
 .file-browser-entry{min-height:32px;font-size:12px;border-radius:8px}.file-browser-entry img{width:16px;height:16px;object-fit:contain}
 .file-panel-resizer{position:relative;top:auto;bottom:auto;align-self:stretch;flex:0 0 8px;width:8px;margin-left:-8px;touch-action:none}
-.file-resize-handle::before{content:'';position:absolute;left:50%;top:50%;width:3px;height:32px;border-radius:8px;background:var(--muted-foreground);opacity:.4;transform:translate(-50%,-50%);transition:opacity 160ms,width 160ms,height 160ms}
+.file-resize-handle::before{content:'';position:absolute;left:50%;top:50%;width:3px;height:32px;border-radius:8px;background:var(--muted-foreground);opacity:0;transform:translate(-50%,-50%);transition:opacity 160ms,width 160ms,height 160ms}
 .file-resize-handle:hover::before,.file-resize-handle:focus-visible::before,.file-resize-handle[data-dragging=true]::before{width:4px;height:44px;opacity:.9}
 @container file-pane (max-width:640px){.file-breadcrumb-root,.file-breadcrumb-parent{display:none}.file-workspace-actions{gap:4px}}
 @media(prefers-reduced-motion:reduce){.file-resize-handle::before{transition:none}}
