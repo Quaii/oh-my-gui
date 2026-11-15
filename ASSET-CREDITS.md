@@ -17,3 +17,6 @@
 
 - Tabler Icons (MIT), Heroicons (MIT), and Remix Icon (Apache 2.0) are included through React Icons: https://github.com/react-icons/react-icons . Upstreams: https://github.com/tabler/tabler-icons , https://github.com/tailwindlabs/heroicons , https://github.com/Remix-Design/RemixIcon . Each workspace choice uses its actual glyphs for navigation and previews.
 - File extension icons use 47 locally bundled Material Icon Theme SVGs; the pinned upstream revision and asset names are recorded in `web/public/file-icons/sources.json`. Filename associations include package managers, TypeScript configuration, Git files, README, environment files, and licenses. No VS Code extension executes in the app.
+
+- editorcn by shadcn-labs (MIT): https://github.com/shadcn-labs/editorcn . The optional Markdown visual editor uses the official npm UI and Tiptap Markdown extensions.
+- transition-kit: https://transition-kit.space/ . Source/Visual tabs and their UI transition core/CSS come from the official shadcn registry, with local theme styling. React 19.3 is already installed. The existing twelve-theme system and route transitions are preserved.

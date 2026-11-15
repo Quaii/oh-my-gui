@@ -21,6 +21,8 @@
   "registries": {
     "@rare-ui": "https://raw.githubusercontent.com/swamimalode07/rare-ui/main/public/r/{name}.json",
     "@23rd": "https://www.23rd.dev/r/{name}.json",
-    "@react-bits": "https://reactbits.dev/r/{name}.json"
+    "@react-bits": "https://reactbits.dev/r/{name}.json",
+    "@editorcn": "https://www.rtecn.space/r/{name}.json",
+    "@transition-kit": "https://transition-kit.space/r/{name}.json"
   }
 }
