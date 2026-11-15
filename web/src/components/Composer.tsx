@@ -340,9 +340,7 @@ export function Composer(props: ComposerProps) {
         }
       />
 
-      <div className="mt-1.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
-        <span>{running ? "running — Esc to stop" : "Enter to send · Shift+Enter newline · / for commands"}</span>
-      </div>
+
     </div>
   );
 }
