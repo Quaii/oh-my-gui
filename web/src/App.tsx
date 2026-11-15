@@ -433,7 +433,7 @@ export default function App() {
 
   return (
     <FileOpenContext.Provider value={openFiles}><div className="app-shell relative isolate flex h-full w-full overflow-hidden bg-background text-foreground">
-      <PageTransition id={inSettings?"settings":"workspace"} transition="fade" duration={180} >
+      <PageTransition id={inSettings?"settings":"workspace"} transition="fade" duration={180} className={`workspace-route flex h-full min-h-0 min-w-0 flex-1 ${fileRequest&&focusedEditor===chat.key&&!inSettings&&!home?"editor-focused":""}`}>
       {inSettings ? (
         <SettingsPage
           onBack={closeSettings}
