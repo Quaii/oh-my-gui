@@ -10,6 +10,7 @@ export function RuntimePanel({ chatKey }: { chatKey: string | null }) {
   const { data, loading, error, refresh } = useRemote(chatKey ? `/api/runtime?key=${encodeURIComponent(chatKey)}` : null);
   const agents = data?.subagents?.subagents ?? (Array.isArray(data?.subagents) ? data.subagents : []);
   return <div>
+    {window.__OMP_DESKTOP__ && <div className="mb-4"><Button variant="outline" size="sm" onClick={() => window.dispatchEvent(new Event('omp:desktop-setup'))}>Open desktop setup</Button></div>}
     <div className="mb-5 flex justify-end"><Button variant="outline" size="sm" onClick={refresh} disabled={loading}><RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />Refresh runtime</Button></div>
     <Notice error={error} />
     <SkeletonReveal loading={loading && !data} skeleton={<PanelSkeleton panel="runtime"/>} label="Inspecting OMP runtime">

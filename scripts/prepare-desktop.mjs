@@ -23,6 +23,7 @@ const digest=async file=>{const hash=createHash('sha256');for await(const chunk 
 let sameRuntime=false;
 try{sameRuntime=await digest(process.execPath)===await digest(runtimeNode);}catch(error){if(error.code!=='ENOENT')throw error;}
 if(!sameRuntime)await fs.copyFile(process.execPath,runtimeNode);
+if(process.platform!=='win32')await fs.chmod(runtimeNode,0o755);
 await fs.mkdir(path.join(runtime,'licenses'),{recursive:true});
 await fs.copyFile(path.join(root,'node_modules/yaml/LICENSE'),path.join(runtime,'licenses/yaml.txt'));
 const licenseFile=path.join(runtime,'licenses/node-'+process.versions.node+'.txt');

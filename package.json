@@ -18,10 +18,11 @@
     "typecheck": "tsc --noEmit",
     "docs:check": "node scripts/check-agent-docs.mjs",
     "desktop:dev": "tauri dev",
-    "desktop:build": "tauri build",
+    "desktop:build": "node scripts/build-desktop.mjs",
     "desktop:prepare": "node scripts/prepare-desktop.mjs",
     "desktop:check": "node scripts/check-desktop.mjs",
-    "desktop:release-check": "node scripts/desktop-release-check.mjs"
+    "desktop:release-check": "node scripts/desktop-release-check.mjs",
+    "desktop:installer": "node scripts/build-desktop-installer.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.6",

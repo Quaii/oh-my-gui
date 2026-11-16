@@ -1,4 +1,6 @@
 import {desktopAccess} from "./desktop.ts";
+import { desktopSetupStatus, completeDesktopSetup, installDesktopOmp } from './desktop-setup.ts';
+import { desktopInstallerStatus, installDesktopApplication, launchInstalledDesktop } from './desktop-installer.ts';
 import os from "node:os";
 import {listEditorFiles,readEditorFile,saveEditorFile,reportedFileRoots} from "./editor.ts";
 import {projectSuggestions}from"./suggestions.ts";
@@ -142,6 +144,31 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
   if (!p.startsWith("/api/")) return false;
 
   try {
+    if (p === '/api/desktop/installer') {
+      if (!process.env.OMP_DESKTOP_TOKEN || !process.env.OMP_INSTALLER_PAYLOAD) {
+        json(res, 404, { error: 'Installer mode is unavailable.' }); return true;
+      }
+      if (req.method === 'GET') json(res, 200, await desktopInstallerStatus());
+      else if (req.method === 'POST') {
+        const body = await readBody(req, 1024);
+        if (body.action === 'install') await installDesktopApplication();
+        else if (body.action === 'launch') await launchInstalledDesktop();
+        else { json(res, 400, { error: 'Invalid installer action.' }); return true; }
+        json(res, 200, await desktopInstallerStatus());
+      } else json(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
+    if (p === '/api/desktop/setup' || p === '/api/desktop/setup/install') {
+      if (!process.env.OMP_DESKTOP_TOKEN || !process.env.OMP_DESKTOP_DATA) {
+        json(res, 404, { error: 'Desktop setup is unavailable.' }); return true;
+      }
+      if (p.endsWith('/install') && req.method === 'POST') json(res, 200, await installDesktopOmp());
+      else if (p.endsWith('/install')) json(res, 405, { error: 'Method not allowed' });
+      else if (req.method === 'GET') json(res, 200, await desktopSetupStatus());
+      else if (req.method === 'POST') { await completeDesktopSetup(); json(res, 200, { completed: true }); }
+      else json(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
     if(p==='/api/files'||p==='/api/file'){
       if(req.method!=='GET'&&!(p==='/api/file'&&req.method==='PUT')){json(res,405,{error:'Method not allowed'});return true;}
       const body=req.method==='PUT'?await readBody(req):{},key=String(body.key||url.searchParams.get('key')||''),slot=slots.get(key);

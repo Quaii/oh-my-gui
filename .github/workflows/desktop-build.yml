@@ -1,0 +1,57 @@
+name: Desktop packages
+
+# Manual development builds only. No releases, tags, or public publication.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            label: windows-x64
+          - runner: macos-15
+            label: macos-arm64
+          - runner: macos-15-intel
+            label: macos-x64
+          - runner: ubuntu-22.04
+            label: linux-x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.1
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Linux prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run docs:check
+      - run: npm run desktop:build
+      - run: npm run desktop:check
+      - run: npm run desktop:release-check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: omp-${{ matrix.label }}-unsigned
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/bundle/custom/*.exe
+            src-tauri/target/release/bundle/nsis/*-setup.exe
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/SHA256SUMS

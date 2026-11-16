@@ -7,7 +7,9 @@ The ordinary browser app remains available with `npm run dev` / `npm start`.
 ## Commands
 
 - `npm run desktop:dev` — prepare shared assets and run the native debug shell.
-- `npm run desktop:build` — prepare resources, build a release executable and Windows NSIS installer.
+- `npm run desktop:build` — prepare resources and build native packages. Windows also wraps the silent
+  NSIS payload in the custom React installer; macOS builds app/DMG and Linux builds deb/AppImage.
+- `npm run desktop:installer` — rebuild only the custom Windows wrapper after a complete native build.
 - `npm run desktop:prepare` — build the UI and bundle the backend/resources without compiling Rust.
 - `npm run desktop:check` — test the prepared backend on an ephemeral loopback port. Checks private
   bootstrap, health, UI assets and shutdown; makes no model requests or file writes.
@@ -24,7 +26,8 @@ copied with the web build. Resources, Rust targets and generated schemas are ign
 
 The shell launches the bundled Node executable and ESM backend, rather than requiring a system Node
 installation. It preserves the backend resource layout for RPC metadata and the persona extension.
-OMP itself is **not bundled**: install OMP normally, or configure `OMP_BIN` in the launching environment.
+OMP itself is **not bundled**. First-launch setup detects an existing installation or offers an explicit
+installation from the official build service. `OMP_BIN` still overrides discovery.
 Git/GitHub-dependent functions still require Git and an existing login, just as in the web version.
 No credentials or private chats are packaged.
 
@@ -39,7 +42,8 @@ rejected. The bootstrap redirects to `/` and suppresses referrer forwarding. The
 IPC capabilities. Native navigation remains in this origin; HTTP/HTTPS external links open with the
 system browser, and other navigation schemes are refused. Stable port and app identity preserve
 WebView storage between runs; desktop preferences are separate from existing browser-profile storage.
-Only one desktop instance can own port 4319; a second launch fails rather than attaching to an
+The custom installer uses a separate private backend on 4320. Cookie names are scoped by port so
+opening it cannot invalidate the app session. Only one desktop instance can own port 4319; a second launch fails rather than attaching to an
 unverified process. This initial version does not yet focus an existing window on a second launch.
 
 The shell owns backend stdin. Closing it requests graceful OMP/backend shutdown, with a bounded wait
@@ -52,20 +56,50 @@ See [TAURI-TASKS.md](TAURI-TASKS.md) for verified milestones. A successful build
 not establish native rendering, live chat streaming or editor behavior. Those need interactive checks
 in the WebView. Do not call the installer publicly release-ready until those checks are recorded.
 
-This is a Windows-first, unsigned development build. Installer signing, automatic updates, an OMP
-onboarding/bundling policy, crash/restart UX, native close handling for unsaved documents, and macOS/Linux
-packaging remain release work. Windows uses a 32px custom title bar with a drag region, double-click maximize/restore, and keyboard-accessible caption buttons. The existing workspace UI is preserved. Native drag/minimize/maximize/close still require interactive verification.
+This is a Windows-first, unsigned development build. Signing, automatic updates, crash/restart UX,
+native close handling for unsaved documents and native macOS/Linux acceptance remain release work.
+Windows uses a 32px custom title bar with a drag region, double-click maximize/restore and
+keyboard-accessible caption buttons. Native window interactions still require interactive verification.
 
 Official references: [Tauri resources](https://v2.tauri.app/develop/resources/),
 [external binaries](https://v2.tauri.app/develop/sidecar/), and
 [WebviewWindowBuilder](https://docs.rs/tauri/latest/tauri/webview/struct.WebviewWindowBuilder.html).
 
-## First development artifact
+## Installation and initial setup
 
-The unsigned Windows x64 installer is generated at
-`src-tauri/target/release/bundle/nsis/omp_0.1.0_x64-setup.exe`. An isolated install/uninstall and
-installed-runtime smoke check passed. The installer is NotSigned; do not describe it as trusted,
-SmartScreen-approved or publicly release-ready. Nothing is published automatically.
+The user-facing Windows package is `src-tauri/target/release/bundle/custom/omp_0.1.0_x64.exe`.
+It silently extracts a temporary copy of the shared Tauri host, Node backend and React assets. This
+opens `DesktopInstaller` rather than a standard installer wizard. No installation begins until the
+user clicks Install. The fixed per-user destination is `%LOCALAPPDATA%/Programs/omp`; the embedded
+NSIS payload manages files, shortcuts, upgrade detection and Windows uninstall registration silently.
+Its SHA-256 is checked against the packaged manifest before execution. Both layers remain unsigned;
+this integrity check is not a substitute for code signing. The native host blocks closing while the
+installation engine is active, and refuses to replace a running app. WebView2 is required to show
+the custom UI; clean-device bootstrap and upgrade/uninstall acceptance still need native testing.
+The underlying NSIS artifact remains in `bundle/nsis` for diagnostics and silent enterprise installs.
+
+First launch shows three steps using the shared Brand, Button, ThemeSelector and theme tokens:
+welcome, OMP connection/installation, and appearance with an optional handoff to Providers. The
+workspace does not start a bridge until setup finishes. No provider login, permission change or model
+request is performed automatically. Existing OMP configuration is reused. Setup can be reopened from
+Settings → Installation without unmounting the workspace or discarding editor drafts.
+
+Completion is versioned in the native app data directory, independently of browser storage. A missing
+runtime reopens setup even after completion. The optional OMP download follows the official stable
+build-service target/metadata format, streams into a uniquely named temporary executable, verifies the
+published SHA-256 and runs `--version` before moving it into the app-managed runtime directory.
+No shell install script is executed and PATH is not modified. Existing working installations are
+reused. Failed downloads never replace the selected runtime. Linux packages target glibc hosts.
+
+## Native platform builds
+
+`.github/workflows/desktop-build.yml` is manual-only and builds Windows x64, macOS arm64/x64 and Linux
+x64 on their respective native runners. It uploads development artifacts to the private repository;
+it does not create tags, publish releases or change repository visibility. Platform-specific Tauri
+configuration chooses NSIS/custom, DMG/app or deb/AppImage. The matching host Node executable is
+packaged, including its license and Unix executable permissions; do not cross-package a Windows Node
+binary into a macOS or Linux build. Apple signing/notarization and Windows signing require owner keys.
+These workflows establish build coverage only after their actual jobs pass, not native UI acceptance.
 
 For the next release, update package.json, src-tauri/tauri.conf.json and src-tauri/Cargo.toml together,
 run the web/native checks, build, and run desktop:release-check. Keep build artifacts out of Git.

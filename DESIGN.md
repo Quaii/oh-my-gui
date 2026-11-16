@@ -241,3 +241,13 @@ maximize/restore and close are independently focusable buttons; close uses a red
 Maximize state follows native resize events, including OS-driven changes. The caption reserves its
 own row, so it does not cover the existing floating workspace toolbar. Browser and non-Windows
 window chrome are unchanged. The controls use authenticated, allowlisted local window actions.
+
+## Desktop installation and setup
+
+The custom installer and first-launch setup reuse the workspace brand, semantic colors, floating
+surface, buttons and theme previews. A centered card has equal 32px padding, a 680px maximum width,
+16px corners and a separate caption row. Setup uses three progress segments for actual steps, never
+fabricated download percentages. Runtime checks, installation errors and retry controls remain visible.
+Theme previews use a three-column grid inside a bounded scroll area; the page must never grow wider
+than its window. Appearance choices update immediately. Provider connection remains an explicit action
+in the existing Settings screen. Reopening setup hides the workspace without unmounting it.

@@ -42,7 +42,8 @@ acceptance and clean-machine/upgrade checks remain, so this is a development bui
 ## 4. Distribution
 
 - [x] Document the current architecture, commands and limits in DESKTOP.md.
-- [ ] Decide OMP onboarding/bundling policy and public release requirements with the owner.
+- [x] Offer app-managed OMP installation during first launch; reuse existing installations.
+- [ ] Decide public release requirements with the owner.
 - [x] Add release-version consistency and installer checksum verification.
 - [ ] Configure certificate-based Windows signing and signed update manifests (owner credentials/keys required).
 - [ ] Verify other platforms on their own build/test hosts before claiming support.
@@ -57,3 +58,19 @@ acceptance and clean-machine/upgrade checks remain, so this is a development bui
 The frontend type check, 49 tests and desktop backend smoke checks pass. The Windows release and
 installer include the custom caption. Rendered preview verification was interrupted by browser-control
 connection timeouts; native control acceptance remains pending because app automation is unavailable.
+
+## Custom installer and multi-platform packaging
+
+- [x] Implement the installer UI using the shared React components and themes, with a silent NSIS engine.
+- [x] Add explicit first-launch setup, official OMP download verification, runtime checks and retry.
+- [x] Keep setup reopening from discarding workspace drafts.
+- [x] Add native-runner build configurations and a manual private-artifact CI workflow.
+- [ ] Run the custom Windows installer on a clean machine, test upgrades and uninstall through Settings.
+- [ ] Run the macOS/Linux CI jobs and verify packages on their native desktops.
+- [ ] Establish signed Windows and notarized macOS distribution.
+
+Windows packages compile successfully. Typecheck, 53 tests, docs validation and the authenticated
+bundled-backend smoke check pass. Browser fixture checks covered missing/connected runtime, setup
+navigation, theme selection and the corrected theme grid in dark/light appearance. No live OMP
+installation or model requests were made. Automatic approval review rejected launching the custom
+installer as unrecognized software; explicit user confirmation is required for that native check.

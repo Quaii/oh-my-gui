@@ -15,7 +15,10 @@ export interface BridgeOptions {
 }
 
 const localBinary = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp", "omp.exe");
-export const OMP_BINARY = process.env.OMP_BIN || (process.platform === "win32" && existsSync(localBinary) ? localBinary : "omp");
+const managedBinary = process.env.OMP_DESKTOP_DATA && path.join(process.env.OMP_DESKTOP_DATA, 'runtime', process.platform === 'win32' ? 'omp.exe' : 'omp');
+const userBinaries = [managedBinary, process.platform === 'win32' ? localBinary : path.join(os.homedir(), '.local/bin/omp'), path.join(os.homedir(), '.bun/bin', process.platform === 'win32' ? 'omp.exe' : 'omp')];
+export let OMP_BINARY = process.env.OMP_BIN || userBinaries.find((file): file is string => !!file && existsSync(file)) || 'omp';
+export function selectOmpBinary(executable: string) { OMP_BINARY = executable; }
 
 interface Pending {
   resolve: (v: any) => void;

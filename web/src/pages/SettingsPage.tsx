@@ -75,6 +75,11 @@ export function SettingsPage(props: SettingsPageProps) {
 
   const contentRef=useRef<HTMLDivElement>(null);
   const [panel,setPanel]=useState<PanelId>(savedSettingsPanel);
+  useEffect(() => {
+    const selectSavedPanel = () => setPanel(savedSettingsPanel());
+    window.addEventListener('omp:settings-panel', selectSavedPanel);
+    return () => window.removeEventListener('omp:settings-panel', selectSavedPanel);
+  }, []);
   useEffect(() => {localStorage.setItem("ompfe.settings.panel", panel);contentRef.current?.scrollTo({top:0,behavior:"instant"});}, [panel]);
   const [payload, setPayload] = useState<SettingsPayload | null>(null);
   const [loading, setLoading] = useState(true);

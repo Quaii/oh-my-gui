@@ -6,7 +6,10 @@ use std::{
     io::{BufRead, BufReader, Write},
     path::PathBuf,
     process::{Child, Command, Stdio},
-    sync::{mpsc, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc, Mutex,
+    },
     thread,
     time::{Duration, Instant},
 };
@@ -15,6 +18,7 @@ use tauri::{webview::NewWindowResponse, Manager, WebviewUrl, WebviewWindowBuilde
 struct Backend {
     child: Mutex<Child>,
 }
+struct InstallerBusy(AtomicBool);
 impl Backend {
     fn stop(&self) {
         let Ok(mut child) = self.child.lock() else {
@@ -51,23 +55,37 @@ impl Drop for Backend {
     }
 }
 
-fn start_backend(app: &tauri::AppHandle) -> Result<(Backend, String), Box<dyn std::error::Error>> {
+fn start_backend(
+    app: &tauri::AppHandle,
+    installer: bool,
+) -> Result<(Backend, String), Box<dyn std::error::Error>> {
     let runtime: PathBuf = if cfg!(debug_assertions) {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/runtime")
     } else {
         app.path().resource_dir()?.join("runtime")
     };
     let token = uuid::Uuid::new_v4().simple().to_string();
+    let port: u64 = if installer { 4320 } else { 4319 };
     let mut command = Command::new(runtime.join(if cfg!(windows) { "node.exe" } else { "node" }));
     command
         .arg(runtime.join("server/src/index.mjs"))
         .current_dir(app.path().home_dir()?)
         .env("HOST", "127.0.0.1")
-        .env("PORT", "4319")
+        .env("PORT", port.to_string())
         .env("OMP_DESKTOP_TOKEN", &token)
+        .env("OMP_DESKTOP_DATA", app.path().app_data_dir()?)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
+    if installer {
+        command.env(
+            "OMP_INSTALLER_PAYLOAD",
+            std::env::current_exe()?
+                .parent()
+                .ok_or("Missing installer directory")?
+                .join("install-payload.exe"),
+        );
+    }
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
@@ -86,10 +104,15 @@ fn start_backend(app: &tauri::AppHandle) -> Result<(Backend, String), Box<dyn st
                 if serde_json::from_str::<serde_json::Value>(data)
                     .ok()
                     .and_then(|v| v["port"].as_u64())
-                    == Some(4319)
+                    == Some(port)
                 {
                     let _ = send.send(());
                 }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_INSTALLING ") {
+                native_app
+                    .state::<InstallerBusy>()
+                    .0
+                    .store(data == "true", Ordering::SeqCst);
             } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_WINDOW ") {
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
                     if let Some(window) = native_app.get_webview_window("main") {
@@ -129,10 +152,10 @@ fn start_backend(app: &tauri::AppHandle) -> Result<(Backend, String), Box<dyn st
             }
         }
     });
-    receive.recv_timeout(Duration::from_secs(30)).map_err(|_| "The desktop backend could not start. Port 4319 may already be in use. Close the other desktop instance and try again.")?;
+    receive.recv_timeout(Duration::from_secs(30)).map_err(|_| "The desktop backend could not start. Close the other app or installer instance and try again.")?;
     Ok((
         backend,
-        format!("http://127.0.0.1:4319/desktop/bootstrap?token={token}"),
+        format!("http://127.0.0.1:{port}/desktop/bootstrap?token={token}"),
     ))
 }
 
@@ -169,26 +192,31 @@ fn startup_error(message: &str) {
 }
 
 fn main() {
+    let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
+    let port = if installer { 4320 } else { 4319 };
     let result = tauri::Builder::default()
-        .setup(|app| {
-            let (backend, url) = start_backend(app.handle())?;
+        .setup(move |app| {
+            app.manage(InstallerBusy(AtomicBool::new(false)));
+            let (backend, url) = start_backend(app.handle(), installer)?;
             app.manage(backend);
             let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
-                .title("omp.")
+                .title(if installer { "Install omp." } else { "omp." })
                 .decorations(!cfg!(windows))
-                .inner_size(1440.0, 960.0)
-                .min_inner_size(900.0, 640.0)
+                .inner_size(if installer { 900.0 } else { 1440.0 }, if installer { 720.0 } else { 960.0 })
+                .min_inner_size(if installer { 680.0 } else { 900.0 }, 640.0)
                 .center()
                 .disable_drag_drop_handler()
-                .initialization_script(if cfg!(windows) {
+                .initialization_script(if installer {
+                    "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;window.__OMP_INSTALLER__=true;"
+                } else if cfg!(windows) {
                     "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;"
                 } else {
                     "window.__OMP_DESKTOP__=true;"
                 })
-                .on_navigation(|url| {
+                .on_navigation(move |url| {
                     if url.scheme() == "http"
                         && url.host_str() == Some("127.0.0.1")
-                        && url.port() == Some(4319)
+                        && url.port() == Some(port)
                     {
                         true
                     } else {
@@ -203,6 +231,11 @@ fn main() {
                 .build()?;
             let state_window = window.clone();
             window.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    if state_window.app_handle().state::<InstallerBusy>().0.load(Ordering::SeqCst) {
+                        api.prevent_close();
+                    }
+                }
                 if matches!(event, tauri::WindowEvent::Resized(_)) {
                     sync_window_state(&state_window);
                 }

@@ -1,5 +1,7 @@
 import React from "react";
 import {DesktopTitleBar} from "./components/DesktopTitleBar";
+import {DesktopSetup} from './components/DesktopSetup';
+import {DesktopInstaller} from './components/DesktopInstaller';
 import { createRoot } from "react-dom/client";
 import {WorkspaceMotion} from "./components/transitions/WorkspaceMotion";
 import App from "./App";
@@ -16,7 +18,7 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <TooltipProvider delayDuration={300}>
       {window.__OMP_CUSTOM_CHROME__&&<DesktopTitleBar/>}
-      {location.pathname==="/background-preview"?<React.Suspense fallback={null}><BackgroundPreview/></React.Suspense>:<WorkspaceMotion><App /></WorkspaceMotion>}
+      {location.pathname==="/background-preview"?<React.Suspense fallback={null}><BackgroundPreview/></React.Suspense>:<WorkspaceMotion>{window.__OMP_INSTALLER__ ? <DesktopInstaller /> : window.__OMP_DESKTOP__ ? <DesktopSetup><App /></DesktopSetup> : <App />}</WorkspaceMotion>}
     </TooltipProvider>
   </React.StrictMode>
 );

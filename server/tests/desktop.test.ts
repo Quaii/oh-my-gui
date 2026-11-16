@@ -19,10 +19,11 @@ test('desktop bootstrap establishes a private cookie and rejects unauthenticated
     assert.equal(bootstrap.status,303);assert.equal(bootstrap.headers.get('location'),'/');
     assert.match(bootstrap.headers.get('set-cookie')||'',/HttpOnly; SameSite=Strict; Path=\//);
     assert.equal(bootstrap.headers.get('referrer-policy'),'no-referrer');
-    const headers={Cookie:'omp_desktop='+token};
+    const headers={Cookie:bootstrap.headers.get('set-cookie')!.split(';')[0]};
     assert.equal(await (await fetch(base+'/api/health',{headers})).text(),'ready');
     assert.equal((await fetch(base+'/api/health',{headers:{...headers,Origin:'https://example.com'}})).status,403);
     assert.equal((await fetch(base+'/api/health',{headers:{Cookie:'omp_desktop=short'}})).status,403);
+    assert.equal((await fetch(base+'/api/health',{headers:{Cookie:'omp_desktop_4320='+token}})).status,403);
   }finally{server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
 
