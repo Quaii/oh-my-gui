@@ -6,6 +6,7 @@ import { DesktopSetupFrame } from './DesktopSetupFrame';
 import { APP_THEMES, applyTheme, getTheme } from '../lib/theme';
 import { get, post } from '../lib/api';
 import { navigate } from '../lib/route';
+import { revealDesktop } from '../lib/desktop';
 
 type SetupStatus = { completed: boolean; available: boolean; version: string | null; executable: string; installSupported: boolean };
 
@@ -29,6 +30,11 @@ export function DesktopSetup({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => { void refresh(true); }, []);
+  useEffect(() => {
+    document.documentElement.dataset.desktopSetup = String(!ready);
+    if (!status && !error) return;
+    return revealDesktop(!activated ? 'setup' : 'workspace');
+  }, [status, error, ready, activated]);
   useEffect(() => {
     const reopen = () => { setTheme(getTheme()); setReady(false); setStep(0); void refresh(); };
     window.addEventListener('omp:desktop-setup', reopen);

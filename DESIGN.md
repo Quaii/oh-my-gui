@@ -57,6 +57,9 @@ accent-colored panels. Task completion and progress follow the active accent, ne
 Reserve destructive styling for destructive actions. Verify muted text, borders, provider marks and
 tooltips in light themes as well as dark. The favicon uses the sidebar brand shape and current accent;
 the browser title is `omp.`.
+Desktop icon tiles center the visible brand bounds on both axes and scale the mark uniformly to
+75% of its sidebar geometry. Keep equal opposing padding in both packaged and accent-updated icons;
+the mark must not touch the tile edge. Packaged icons use Carbon's accent and background.
 
 ## Geometry and type
 
@@ -250,10 +253,13 @@ ignore these Windows 11 compositor attributes.
 ## Desktop installation and setup
 
 The custom installer and first-launch setup are a compact workspace: a left progress rail and one
-floating content panel, with 12px outer padding and gap. The Windows installer window is 780×540,
+floating content panel, with 12px outer padding and gap. The Windows setup window is 680×460,
 with no separate caption strip or large canvas around a centered card. Its panel has 14px corners
-and 28px horizontal padding; the top-right X cancels before installation begins. Closing is disabled
-while the installation engine is active. The brand/header area provides window dragging.
+and 24px horizontal padding; the top-right X is the only close control. Once installation starts,
+closing asks for confirmation. If the installation engine is already writing, Finish and exit waits
+for that operation to finish safely without opening setup. Never kill NSIS mid-write. The brand/header
+area provides window dragging. First-run setup uses the same compact window without a caption strip,
+then expands into the workspace. The themed view commits before the hidden native window is revealed.
 The installer always uses Carbon and has no theme selector. Carbon is also the application default
 for new profiles; explicit saved themes are retained. Completed steps use accent checkmarks in the
 left rail, the active step uses the sidebar selection surface, and future steps remain muted.

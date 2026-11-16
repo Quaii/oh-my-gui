@@ -22,7 +22,8 @@
     "desktop:prepare": "node scripts/prepare-desktop.mjs",
     "desktop:check": "node scripts/check-desktop.mjs",
     "desktop:release-check": "node scripts/desktop-release-check.mjs",
-    "desktop:installer": "node scripts/build-desktop-installer.mjs"
+    "desktop:installer": "node scripts/build-desktop-installer.mjs",
+    "desktop:icons": "node scripts/generate-desktop-icons.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.6",

@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod backend_path;
 mod native_icon;
 mod window_frame;
 
@@ -20,6 +21,8 @@ struct Backend {
     child: Mutex<Child>,
 }
 struct InstallerBusy(AtomicBool);
+struct InstallerCloseAllowed(AtomicBool);
+struct WindowMode(Mutex<Option<String>>);
 impl Backend {
     fn stop(&self) {
         let Ok(mut child) = self.child.lock() else {
@@ -65,23 +68,27 @@ fn start_backend(
     } else {
         app.path().resource_dir()?.join("runtime")
     };
+    let runtime = backend_path::for_child(&runtime);
     let token = uuid::Uuid::new_v4().simple().to_string();
     let port: u64 = if installer { 4320 } else { 4319 };
     let mut command = Command::new(runtime.join(if cfg!(windows) { "node.exe" } else { "node" }));
     command
         .arg(runtime.join("server/src/index.mjs"))
-        .current_dir(app.path().home_dir()?)
+        .current_dir(backend_path::for_child(&app.path().home_dir()?))
         .env("HOST", "127.0.0.1")
         .env("PORT", port.to_string())
         .env("OMP_DESKTOP_TOKEN", &token)
-        .env("OMP_DESKTOP_DATA", app.path().app_data_dir()?)
+        .env(
+            "OMP_DESKTOP_DATA",
+            backend_path::for_child(&app.path().app_data_dir()?),
+        )
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
     if installer {
         command.env(
             "OMP_INSTALLER_PAYLOAD",
-            std::env::current_exe()?
+            backend_path::for_child(&std::env::current_exe()?)
                 .parent()
                 .ok_or("Missing installer directory")?
                 .join("install-payload.exe"),
@@ -118,6 +125,24 @@ fn start_backend(
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
                     if let Some(window) = native_app.get_webview_window("main") {
                         match value["action"].as_str() {
+                            Some("ready") => {
+                                let mode = if installer {
+                                    "installer"
+                                } else if value["mode"] == "setup" {
+                                    "setup"
+                                } else {
+                                    "workspace"
+                                };
+                                let display_window = window.clone();
+                                let _ = window.run_on_main_thread(move || {
+                                    if let Err(error) = reveal_window(&display_window, mode) {
+                                        startup_error(&format!(
+                                            "The window could not open: {error}"
+                                        ));
+                                        display_window.app_handle().exit(1);
+                                    }
+                                });
+                            }
                             Some("drag") => {
                                 let _ = window.start_dragging();
                             }
@@ -133,6 +158,19 @@ fn start_backend(
                                 sync_window_state(&window);
                             }
                             Some("close") => {
+                                let _ = window.close();
+                            }
+                            Some("close-confirmed")
+                                if installer
+                                    && !native_app
+                                        .state::<InstallerBusy>()
+                                        .0
+                                        .load(Ordering::SeqCst) =>
+                            {
+                                native_app
+                                    .state::<InstallerCloseAllowed>()
+                                    .0
+                                    .store(true, Ordering::SeqCst);
                                 let _ = window.close();
                             }
                             Some("sync-state") => sync_window_state(&window),
@@ -192,60 +230,124 @@ fn startup_error(message: &str) {
     }
 }
 
+fn reveal_window(window: &tauri::WebviewWindow, mode: &str) -> tauri::Result<()> {
+    let app = window.app_handle();
+    let mode_state = app.state::<WindowMode>();
+    let mut current = mode_state.0.lock().unwrap();
+    if current.as_deref() != Some(mode) {
+        let compact = mode != "workspace";
+        window.set_min_size(Some(tauri::LogicalSize::new(
+            if compact { 640.0 } else { 900.0 },
+            if compact { 440.0 } else { 640.0 },
+        )))?;
+        window.set_size(tauri::LogicalSize::new(
+            if compact { 680.0 } else { 1440.0 },
+            if compact { 460.0 } else { 960.0 },
+        ))?;
+        window.set_resizable(!compact)?;
+        window.center()?;
+        *current = Some(mode.to_owned());
+    }
+    window_frame::apply(window);
+    window.show()
+}
+
+fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let port = if installer { 4320 } else { 4319 };
+    app.manage(InstallerBusy(AtomicBool::new(false)));
+    app.manage(InstallerCloseAllowed(AtomicBool::new(false)));
+    app.manage(WindowMode(Mutex::new(None)));
+    let (backend, url) = start_backend(app.handle(), installer)?;
+    app.manage(backend);
+    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
+        .title(if installer { "Install omp." } else { "omp." })
+        .decorations(!cfg!(windows))
+        .shadow(true)
+        .visible(false)
+        .inner_size(680.0, 460.0)
+        .min_inner_size(640.0, 440.0)
+        .resizable(!installer)
+        .center()
+        .disable_drag_drop_handler()
+        .initialization_script(if installer {
+            "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;window.__OMP_INSTALLER__=true;"
+        } else if cfg!(windows) {
+            "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;"
+        } else {
+            "window.__OMP_DESKTOP__=true;"
+        })
+        .on_navigation(move |url| {
+            if url.scheme() == "http"
+                && url.host_str() == Some("127.0.0.1")
+                && url.port() == Some(port)
+            {
+                true
+            } else {
+                external(url);
+                false
+            }
+        })
+        .on_new_window(|url, _| {
+            external(&url);
+            NewWindowResponse::Deny
+        })
+        .build()?;
+    window_frame::apply(&window);
+    let state_window = window.clone();
+    window.on_window_event(move |event| {
+        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            if installer
+                && (!state_window
+                    .app_handle()
+                    .state::<InstallerCloseAllowed>()
+                    .0
+                    .swap(false, Ordering::SeqCst)
+                    || state_window
+                        .app_handle()
+                        .state::<InstallerBusy>()
+                        .0
+                        .load(Ordering::SeqCst))
+            {
+                api.prevent_close();
+                let _ =
+                    state_window.eval("window.dispatchEvent(new Event('omp:close-requested'));");
+            }
+        }
+        if matches!(event, tauri::WindowEvent::Resized(_)) {
+            sync_window_state(&state_window);
+        }
+    });
+    let startup_app = app.handle().clone();
+    thread::spawn(move || {
+        thread::sleep(Duration::from_secs(20));
+        if startup_app
+            .state::<WindowMode>()
+            .0
+            .lock()
+            .unwrap()
+            .is_none()
+        {
+            let failed_app = startup_app.clone();
+            let _ = startup_app.run_on_main_thread(move || {
+                startup_error("The interface could not load. Close this copy and run the packaged omp. installer or app again.");
+                failed_app.exit(1);
+            });
+        }
+    });
+    Ok(())
+}
+
 fn main() {
     let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
-    let port = if installer { 4320 } else { 4319 };
     let result = tauri::Builder::default()
         .setup(move |app| {
-            app.manage(InstallerBusy(AtomicBool::new(false)));
-            let (backend, url) = start_backend(app.handle(), installer)?;
-            app.manage(backend);
-            let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
-                .title(if installer { "Install omp." } else { "omp." })
-                .decorations(!cfg!(windows))
-                .shadow(true)
-                .visible(false)
-                .inner_size(if installer { 780.0 } else { 1440.0 }, if installer { 540.0 } else { 960.0 })
-                .min_inner_size(if installer { 700.0 } else { 900.0 }, if installer { 500.0 } else { 640.0 })
-                .resizable(!installer)
-                .center()
-                .disable_drag_drop_handler()
-                .initialization_script(if installer {
-                    "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;window.__OMP_INSTALLER__=true;"
-                } else if cfg!(windows) {
-                    "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;"
-                } else {
-                    "window.__OMP_DESKTOP__=true;"
-                })
-                .on_navigation(move |url| {
-                    if url.scheme() == "http"
-                        && url.host_str() == Some("127.0.0.1")
-                        && url.port() == Some(port)
-                    {
-                        true
-                    } else {
-                        external(url);
-                        false
-                    }
-                })
-                .on_new_window(|url, _| {
-                    external(&url);
-                    NewWindowResponse::Deny
-                })
-                .build()?;
-            window_frame::apply(&window);
-            window.show()?;
-            let state_window = window.clone();
-            window.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    if state_window.app_handle().state::<InstallerBusy>().0.load(Ordering::SeqCst) {
-                        api.prevent_close();
-                    }
-                }
-                if matches!(event, tauri::WindowEvent::Resized(_)) {
-                    sync_window_state(&state_window);
-                }
-            });
+            // Setup runs during the event loop, after Builder::build. Handle failures
+            // here so the GUI-subsystem installer does not disappear in a Tauri panic.
+            let setup_result = setup_window(app, installer);
+            if let Err(error) = setup_result {
+                startup_error(&error.to_string());
+                app.handle().exit(1);
+            }
             Ok(())
         })
         .build(tauri::generate_context!());

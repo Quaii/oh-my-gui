@@ -2136,6 +2136,7 @@ dependencies = [
 name = "omp-desktop"
 version = "0.1.0"
 dependencies = [
+ "dunce",
  "open",
  "serde_json",
  "tauri",

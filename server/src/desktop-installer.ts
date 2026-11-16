@@ -21,8 +21,21 @@ function isRunning() {
 
 let installed = false;
 let installing: Promise<void> | undefined;
+export async function installerManifest(payload: string) {
+  try {
+    const [file, manifest] = await Promise.all([
+      fs.stat(payload),
+      fs.readFile(path.join(path.dirname(payload), 'installer-manifest.json'), 'utf8').then(JSON.parse),
+    ]);
+    if (!file.isFile() || file.size === 0 || !/^[a-f0-9]{64}$/.test(manifest.sha256)) throw new Error('Invalid payload');
+    return manifest as { version: string; sha256: string };
+  } catch {
+    throw new Error('Installation files are missing or damaged. Close this copy and run the packaged omp. installer again.');
+  }
+}
 export async function desktopInstallerStatus() {
   if (!process.env.OMP_INSTALLER_PAYLOAD || process.platform !== 'win32') throw new Error('Installer mode is unavailable.');
+  await installerManifest(process.env.OMP_INSTALLER_PAYLOAD);
   return { destination: desktopInstallDirectory(), installed, installing: !!installing };
 }
 
@@ -34,7 +47,7 @@ async function install() {
   const { destination } = await desktopInstallerStatus();
   if (await isRunning()) throw new Error('Close the running omp. app, then try again. Your work will be kept.');
   const payload = process.env.OMP_INSTALLER_PAYLOAD!;
-  const manifest = JSON.parse(await fs.readFile(path.join(path.dirname(payload), 'installer-manifest.json'), 'utf8'));
+  const manifest = await installerManifest(payload);
   const hash = createHash('sha256');
   for await (const chunk of createReadStream(payload)) hash.update(chunk);
   if (!/^[a-f0-9]{64}$/.test(manifest.sha256) || hash.digest('hex') !== manifest.sha256) throw new Error('Installer integrity check failed. Download a fresh copy.');

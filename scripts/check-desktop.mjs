@@ -36,6 +36,8 @@ try{
   assert.equal((await fetch(base+'/api/desktop/appearance',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({accent:'#aabbcc'})})).status,204);
   assert.equal((await fetch(base+'/api/desktop/appearance',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({accent:'invalid'})})).status,400);
   assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'sync-state'})})).status,204);
+  assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'ready',mode:'installer'})})).status,204);
+  assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'ready',mode:'arbitrary'})})).status,400);
   assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'arbitrary-command'})})).status,400);
   assert.equal((await fetch(base+'/api/desktop/window',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'close'})})).status,403);
   child.stdin.end('shutdown\n');

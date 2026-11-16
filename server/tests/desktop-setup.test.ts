@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup } from '../src/desktop-setup.ts';
-import { desktopInstallDirectory } from '../src/desktop-installer.ts';
+import { desktopInstallDirectory, installerManifest } from '../src/desktop-installer.ts';
 import { OMP_BINARY, selectOmpBinary } from '../src/omp.ts';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
@@ -26,6 +26,20 @@ test('OMP build metadata requires a release version, checksum and credential-fre
 test('the installer destination is derived from an absolute user directory, never request input', () => {
   assert.throws(() => desktopInstallDirectory('relative/path'));
   assert.ok(desktopInstallDirectory(process.cwd()).endsWith('omp'));
+});
+
+test('installer preflight rejects missing or damaged payloads before offering installation', async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'omp-installer-test-'));
+  const payload = path.join(directory, 'install-payload.exe');
+  try {
+    await assert.rejects(installerManifest(payload), /run the packaged omp/);
+    await fs.writeFile(payload, 'inert test fixture');
+    await fs.writeFile(path.join(directory, 'installer-manifest.json'), '{"sha256":"wrong"}');
+    await assert.rejects(installerManifest(payload), /missing or damaged/);
+    const manifest = { version: '0.1.0', sha256: 'a'.repeat(64) };
+    await fs.writeFile(path.join(directory, 'installer-manifest.json'), JSON.stringify(manifest));
+    assert.deepEqual(await installerManifest(payload), manifest);
+  } finally { await fs.rm(directory, { recursive: true, force: true }); }
 });
 
 test('setup completion persists in native app data and cannot complete with an unavailable runtime', async () => {
