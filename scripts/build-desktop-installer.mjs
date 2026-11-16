@@ -32,12 +32,13 @@ OutFile "${quote(output)}"
 Section
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
-  File "${quote(path.join(release, 'omp-desktop.exe'))}"
+  File /oname=omp-installer.exe "${quote(path.join(release, 'omp-desktop.exe'))}"
   File /oname=install-payload.exe "${quote(payload)}"
   File "${quote(manifest)}"
   SetOutPath "$PLUGINSDIR\\runtime"
   File /r "${quote(path.join(root, 'src-tauri/resources/runtime'))}\\*"
-  ExecWait '"$PLUGINSDIR\\omp-desktop.exe" --installer' $0
+  ExecWait '"$PLUGINSDIR\\omp-installer.exe" --installer' $0
+  SetOutPath "$TEMP"
   SetErrorLevel $0
 SectionEnd
 `;
