@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   package:
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -42,6 +43,7 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
+          cache-on-failure: true
       - name: Linux prerequisites
         if: runner.os == 'Linux'
         run: |

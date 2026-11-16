@@ -69,7 +69,7 @@ connection timeouts; native control acceptance remains pending because app autom
 - [ ] Run the macOS/Linux CI jobs and verify packages on their native desktops.
 - [ ] Establish signed Windows and notarized macOS distribution.
 
-Windows packages compile successfully. Typecheck, 53 tests, docs validation and the authenticated
+Windows packages compile successfully. Typecheck, 54 tests, docs validation and the authenticated
 bundled-backend smoke check pass. Browser fixture checks covered missing/connected runtime, setup
 navigation, theme selection and the corrected theme grid in dark/light appearance. No live OMP
 installation or model requests were made. Automatic approval review rejected launching the custom
