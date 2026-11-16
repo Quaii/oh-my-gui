@@ -258,7 +258,8 @@ with no separate caption strip or large canvas around a centered card. Its panel
 and 24px horizontal padding; the top-right X is the only close control. Once installation starts,
 closing asks for confirmation. If the installation engine is already writing, Finish and exit waits
 for that operation to finish safely without opening setup. Never kill NSIS mid-write. The brand/header
-area provides window dragging. First-run setup uses the same compact window without a caption strip,
+area provides window dragging, including its label. A transparent 24px grab area spans the top edge
+without adding a title bar or covering the close control. First-run setup uses the same compact window without a caption strip,
 then expands into the workspace. The themed view commits before the hidden native window is revealed.
 The installer always uses Carbon and has no theme selector. Carbon is also the application default
 for new profiles; explicit saved themes are retained. Completed steps use accent checkmarks in the

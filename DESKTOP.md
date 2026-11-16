@@ -98,6 +98,8 @@ workspace. Native windows wait for a validated ready/mode event from the committ
 being revealed; a timeout displays a startup error rather than leaving an invisible process.
 Carbon is the application
 default for new profiles; existing chosen themes remain saved.
+An invisible 24px area across the setup window's top edge starts native dragging. The brand and panel
+header label also allow dragging, while buttons and form controls are excluded. No title bar is added.
 
 The X and OS close requests share one exit path. After installation starts, a themed confirmation
 offers to stay or exit. During NSIS writes, Finish and exit waits for the installation callback before
