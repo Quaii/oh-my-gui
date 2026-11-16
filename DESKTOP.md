@@ -93,13 +93,16 @@ reused. Failed downloads never replace the selected runtime. Linux packages targ
 
 ## Native platform builds
 
-`.github/workflows/desktop-build.yml` is manual-only and builds Windows x64, macOS arm64/x64 and Linux
+`.github/workflows/desktop-build.yml` builds Windows x64, macOS arm64/x64 and Linux
 x64 on their respective native runners. It uploads development artifacts to the private repository;
 it does not create tags, publish releases or change repository visibility. Platform-specific Tauri
 configuration chooses NSIS/custom, DMG/app or deb/AppImage. The matching host Node executable is
 packaged, including its license and Unix executable permissions; do not cross-package a Windows Node
 binary into a macOS or Linux build. Apple signing/notarization and Windows signing require owner keys.
 These workflows establish build coverage only after their actual jobs pass, not native UI acceptance.
+Packaging changes pushed to `tauri` trigger builds. Manual dispatch is also declared; GitHub exposes
+that control once the workflow exists on the repository's default branch. The preserved baseline is
+not modified just to enable that control.
 
 For the next release, update package.json, src-tauri/tauri.conf.json and src-tauri/Cargo.toml together,
 run the web/native checks, build, and run desktop:release-check. Keep build artifacts out of Git.

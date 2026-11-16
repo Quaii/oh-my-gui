@@ -64,7 +64,7 @@ connection timeouts; native control acceptance remains pending because app autom
 - [x] Implement the installer UI using the shared React components and themes, with a silent NSIS engine.
 - [x] Add explicit first-launch setup, official OMP download verification, runtime checks and retry.
 - [x] Keep setup reopening from discarding workspace drafts.
-- [x] Add native-runner build configurations and a manual private-artifact CI workflow.
+- [x] Add native-runner build configurations and a private-artifact CI workflow for packaging changes.
 - [ ] Run the custom Windows installer on a clean machine, test upgrades and uninstall through Settings.
 - [ ] Run the macOS/Linux CI jobs and verify packages on their native desktops.
 - [ ] Establish signed Windows and notarized macOS distribution.

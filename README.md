@@ -1,7 +1,7 @@
 # OMP Web Frontend
 
 Desktop packaging and first-launch setup are documented in [DESKTOP.md](DESKTOP.md). Windows has a
-custom React installer; native macOS/Linux packaging is configured through the private manual build
+custom React installer; native macOS/Linux packaging is configured through the private development build
 workflow. Platform acceptance and signing remain release requirements.
 
 React interface for the local OMP harness, using `omp --mode rpc` over JSONL and SSE.

@@ -1,8 +1,14 @@
 name: Desktop packages
 
-# Manual development builds only. No releases, tags, or public publication.
+# Development artifacts only. No releases, tags, or public publication.
 on:
   workflow_dispatch:
+  push:
+    branches: [tauri]
+    paths:
+      - .github/workflows/desktop-build.yml
+      - src-tauri/**
+      - scripts/*desktop*.mjs
 
 permissions:
   contents: read
