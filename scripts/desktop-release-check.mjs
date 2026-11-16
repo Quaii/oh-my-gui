@@ -14,7 +14,7 @@ const extensions=process.platform==='win32'?['custom/.exe','nsis/.exe']:process.
 const artifacts=[];
 for(const specification of extensions){
   const [directory,extension]=specification.split('/');
-  const names=(await fs.readdir(path.join(folder,directory))).filter(name=>name.endsWith(extension)&&name.includes('_'+pkg.version+'_'));
+  const names=(await fs.readdir(path.join(folder,directory))).filter(name=>name.endsWith(extension)&&name.startsWith('omp_'+pkg.version+'_'));
   if(names.length!==1)throw Error(`Expected exactly one ${directory} package for ${pkg.version}`);
   const file=directory+'/'+names[0],hash=createHash('sha256');
   for await(const chunk of createReadStream(path.join(folder,file)))hash.update(chunk);
