@@ -66,7 +66,8 @@ connection timeouts; native control acceptance remains pending because app autom
 - [x] Keep setup reopening from discarding workspace drafts.
 - [x] Add native-runner build configurations and a private-artifact CI workflow for packaging changes.
 - [ ] Run the custom Windows installer on a clean machine, test upgrades and uninstall through Settings.
-- [ ] Run the macOS/Linux CI jobs and verify packages on their native desktops.
+- [x] Build Windows x64, macOS arm64/x64 and Linux x64 packages on native CI runners.
+- [ ] Verify the installed apps interactively on their native desktops.
 - [ ] Establish signed Windows and notarized macOS distribution.
 
 Windows packages compile successfully. Typecheck, 54 tests, docs validation and the authenticated
@@ -74,3 +75,8 @@ bundled-backend smoke check pass. Browser fixture checks covered missing/connect
 navigation, theme selection and the corrected theme grid in dark/light appearance. No live OMP
 installation or model requests were made. Automatic approval review rejected launching the custom
 installer as unrecognized software; explicit user confirmation is required for that native check.
+
+[Native package run 43836649167](https://github.com/Quaii/omp-frontend/actions/runs/43836649167) passed
+all four jobs, including the 54 tests, package checksums and the bundled backend smoke check. Private
+artifacts contain the Windows custom installer/NSIS payload, both macOS DMGs and Linux deb/AppImage.
+The Intel DMG passed on this run without requiring the CI-only mount-failure recovery.

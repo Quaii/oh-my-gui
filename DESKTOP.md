@@ -110,6 +110,16 @@ verifying a DMG directly from the successfully built app and an Applications lin
 mounting another temporary volume; it does not force-eject any disk. Compiler/signing failures still
 fail the job. The recovery is disabled when Apple signing/notarization credentials are configured.
 
+## Verified package build
+
+[Run 43836649167](https://github.com/Quaii/omp-frontend/actions/runs/43836649167) passed Windows x64,
+macOS arm64, macOS x64 and Linux x64 packaging, all 54 tests, checksum generation and the private
+bundled-backend readiness/authentication/health/assets/shutdown checks. The artifacts remain private.
+Browser fixture checks covered setup navigation, missing/connected runtime and dark/light themes.
+No live OMP installation or model request was made. Native installer launch was blocked by automatic
+approval review pending the owner's confirmation; installed-app, upgrade and clean-machine acceptance
+remain unverified. The DMG recovery is regression-tested but was not needed in the successful run.
+
 For the next release, update package.json, src-tauri/tauri.conf.json and src-tauri/Cargo.toml together,
 run the web/native checks, build, and run desktop:release-check. Keep build artifacts out of Git.
 Windows signing requires the owner's certificate/signing service; automatic updates additionally need
