@@ -44,6 +44,7 @@ export function ConfigList({ settings, query = "", onSave, onReset, hideAdvanced
 
   return (
     <div>
+      <p className="mb-4 text-xs leading-relaxed text-muted-foreground">These controls write global OMP configuration. Launch overrides can take precedence; restart the session for startup-only changes. Terminal appearance and keybinding preferences affect the native terminal interface.</p>
       {grouped.map(([group, list]) => (
         <Group key={group} title={group} hint={`${list.length}`}>
           {list.map((s) => (

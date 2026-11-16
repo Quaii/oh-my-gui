@@ -6,6 +6,7 @@ export interface SettingUi {
   group?: string;
   description?: string;
   env?: string;
+  rpcDefault?: boolean;
   values?: string[];
   options?: { value: string; label: string }[];
 }

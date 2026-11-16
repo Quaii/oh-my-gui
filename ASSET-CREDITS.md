@@ -1,5 +1,7 @@
 # Asset and component credits
 
+- OMP configuration enum choices: native definitions from [oh-my-pi v18.20.0](https://github.com/can1357/oh-my-pi/tree/v18.20.0/packages/coding-agent/src), including provider tiers, voices and task effort. `server/data/settings-enums.json` records the pinned version; the metadata generator merges them only for that version.
+
 - Rare UI official registry: https://github.com/swamimalode07/rare-ui/tree/main/public/r . Attribution is available in Settings → About & credits. Registry source components preserve their original design; adaptations connect controlled values and OMP data.
 - User-provided shadcn.io manual source for Canvas, Attachment, Artifact, and Agent. Button/Tooltip/Accordion calls are adapted from Base UI to the installed shadcn Radix primitives where necessary. Reasoning, Terminal, and Checkpoint are usage patterns, adapted from the supplied examples.
 - Transitions.dev free library patterns P14 (Skeleton Reveal) and P16 (Sliding Tabs): https://transitions.dev/library.html . Source attribution also appears in component comments.

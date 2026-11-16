@@ -83,6 +83,16 @@ for (const b of blocks(src)) {
 }
 
 const dest = path.join(import.meta.dirname, "..", "server", "data", "settings-ui.json");
+// Some native enums reference imported constants or a registration factory and
+// cannot be recovered from literal bundle blocks. Keep versioned source choices.
+const supplement = JSON.parse(fs.readFileSync(path.join(path.dirname(dest), 'settings-enums.json'), 'utf8'));
+const version = execFileSync(bin, ['--version'], { encoding: 'utf8', windowsHide: true }).match(/\d+\.\d+\.\d+/)?.[0];
+if (version === supplement.version) {
+  for (const [key, values] of Object.entries(supplement.values)) {
+    entries[key] = { ...entries[key], values, ...(supplement.options[key] ? { options: supplement.options[key] } : {}) };
+  }
+  for (const key of supplement.rpcDefaults ?? []) entries[key] = { ...entries[key], rpcDefault: true };
+} else console.warn('Native enum supplement needs review for OMP ' + version + '. Unknown choices use validated text input.');
 fs.mkdirSync(path.dirname(dest), { recursive: true });
 fs.writeFileSync(dest, JSON.stringify(entries, null, 1) + "\n");
 console.log("wrote " + Object.keys(entries).length + " settings with UI metadata -> " + dest);

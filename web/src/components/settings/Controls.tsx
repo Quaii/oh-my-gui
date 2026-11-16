@@ -122,12 +122,13 @@ export function SettingRow({
           )}
         </div>
         {desc && <div className="mt-1 ml-[26px] max-w-[60ch] text-[13px] leading-relaxed text-muted-foreground">{desc}</div>}
+        {setting.ui?.rpcDefault && <p className="mt-1 ml-[26px] max-w-[60ch] text-xs leading-relaxed text-muted-foreground">OMP uses a neutral RPC default when this preference is unset. Explicit configuration and launch/session overrides take precedence.</p>}
       </div>
 
       <div className="setting-control flex min-w-0 flex-wrap items-center gap-2">
         {setting.type === "boolean" ? (
           <Toggle value={!!setting.value} onChange={onSave} label={label} />
-        ) : setting.type === "enum" ? (
+        ) : setting.type === "enum" && enumOptions(setting).length > 0 ? (
           enumOptions(setting).length <= 3 ? (
             <Segmented value={String(setting.value ?? "")} options={enumOptions(setting)} onChange={onSave} />
           ) : (

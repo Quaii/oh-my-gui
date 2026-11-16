@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-11-16T15:58:37.437Z",
+  "checkedAt": "2026-11-16T16:50:01.733Z",
   "version": "omp/18.20.0",
-  "codeRevision": "78682bc3c03105c3c8375d768f27cd2f26b36909",
+  "codeRevision": "b5fa72dcfdc3e0f38ee2d40bdd6abb8d4424c542",
   "method": "Fresh temporary agent directory and inert keyless model; no extensions, skills, tools or context; no prompts, user configuration writes or saved sessions. Only metadata and read RPC results retained.",
   "upstream": {
     "protocol": "https://github.com/can1357/oh-my-pi/blob/v18.20.0/docs/rpc.md",
@@ -10,6 +10,8 @@
   "definitions": {
     "direct": "Direct control",
     "integrated": "Integrated route",
+    "guided": "Guided native form",
+    "handoff": "Native terminal handoff",
     "partial": "Partial",
     "console": "JSON console only",
     "missing": "Missing workflow",
@@ -17,36 +19,40 @@
   },
   "summary": {
     "rpc": {
-      "direct": 12,
-      "integrated": 11,
-      "partial": 10,
-      "console": 31,
-      "missing": 10,
+      "direct": 61,
+      "integrated": 13,
+      "guided": 0,
+      "handoff": 0,
+      "partial": 0,
+      "console": 0,
+      "missing": 0,
       "not-applicable": 0
     },
     "cli": {
-      "direct": 1,
+      "direct": 0,
       "integrated": 0,
-      "partial": 15,
+      "guided": 33,
+      "handoff": 21,
+      "partial": 0,
       "console": 0,
-      "missing": 34,
-      "not-applicable": 4
+      "missing": 0,
+      "not-applicable": 0
     },
     "settings": 615,
-    "enumControlGaps": 23,
+    "enumControlGaps": 0,
     "slash": 49,
     "tools": 30
   },
   "rpc": [
     {
       "name": "negotiate_protocol",
-      "status": "missing",
-      "surface": "No host protocol negotiation",
-      "note": "Bridge stays on v1 and has no rpc_chunk reassembly; large responses/events retain v1 limitations. Do not enable v2 until the decoder exists.",
+      "status": "integrated",
+      "surface": "Bridge startup",
+      "note": "Negotiates v2, strictly reassembles UTF-8 chunks and surfaces malformed/oversized frames. Native large-frame fixture passed.",
       "evidence": [
         {
           "file": "server/src/omp.ts",
-          "line": 101
+          "line": 157
         }
       ],
       "inCachedCatalog": true,
@@ -55,12 +61,12 @@
     {
       "name": "prompt",
       "status": "direct",
-      "surface": "Composer → Send",
-      "note": "Text and image prompts; arbitrary document/audio attachments are absent.",
+      "surface": "Composer → send, queue delivery and stop",
+      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 241
+          "line": 243
         }
       ],
       "inCachedCatalog": true,
@@ -68,9 +74,9 @@
     },
     {
       "name": "steer",
-      "status": "integrated",
-      "surface": "Composer → steer / follow-up",
-      "note": "Equivalent prompt.streamingBehavior route; queue editing is separate and absent.",
+      "status": "direct",
+      "surface": "Composer → send, queue delivery and stop",
+      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
@@ -82,9 +88,9 @@
     },
     {
       "name": "follow_up",
-      "status": "integrated",
-      "surface": "Composer → steer / follow-up",
-      "note": "Equivalent prompt.streamingBehavior route; queue editing is separate and absent.",
+      "status": "direct",
+      "surface": "Composer → send, queue delivery and stop",
+      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
@@ -96,13 +102,13 @@
     },
     {
       "name": "remove_queued_message",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Composer → queued messages / running turn controls",
+      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/QueueControls.tsx",
+          "line": 158
         }
       ],
       "inCachedCatalog": true,
@@ -110,13 +116,13 @@
     },
     {
       "name": "promote_queued_message",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Composer → queued messages / running turn controls",
+      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/QueueControls.tsx",
+          "line": 158
         }
       ],
       "inCachedCatalog": true,
@@ -125,12 +131,12 @@
     {
       "name": "abort",
       "status": "direct",
-      "surface": "Composer → Stop / Escape",
-      "note": "Native abort is sent; queue restoration/interrupt-and-resubmit are not exposed.",
+      "surface": "Composer → send, queue delivery and stop",
+      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 263
+          "line": 243
         }
       ],
       "inCachedCatalog": true,
@@ -138,13 +144,13 @@
     },
     {
       "name": "abort_and_prompt",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Composer → queued messages / running turn controls",
+      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/QueueControls.tsx",
+          "line": 158
         }
       ],
       "inCachedCatalog": true,
@@ -152,13 +158,13 @@
     },
     {
       "name": "abort_and_restore_queue",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Composer → queued messages / running turn controls",
+      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/QueueControls.tsx",
+          "line": 158
         }
       ],
       "inCachedCatalog": true,
@@ -166,13 +172,13 @@
     },
     {
       "name": "new_session",
-      "status": "partial",
-      "surface": "Sidebar New chat; Settings → Session",
-      "note": "New chat works through bridge creation. The separate Session action sends new_session without reattaching/reloading the transcript.",
+      "status": "direct",
+      "surface": "Settings → Session",
+      "note": "Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 455
+          "file": "server/src/index.ts",
+          "line": 484
         }
       ],
       "inCachedCatalog": true,
@@ -180,13 +186,13 @@
     },
     {
       "name": "open_session",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "No dedicated session-directory open control for this RPC; saved file selection uses switch_session instead.",
+      "status": "direct",
+      "surface": "Settings → Session workflows",
+      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 5
         }
       ],
       "inCachedCatalog": true,
@@ -195,12 +201,12 @@
     {
       "name": "get_state",
       "status": "integrated",
-      "surface": "Chat initialization / refresh / selectors / statistics",
-      "note": "Read RPCs are wired into normal GUI state.",
+      "surface": "Chat initialization, selectors and usage",
+      "note": "Normal GUI reads; no invented progress or totals.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 167
+          "line": 162
         }
       ],
       "inCachedCatalog": true,
@@ -209,12 +215,12 @@
     {
       "name": "set_fast_mode",
       "status": "direct",
-      "surface": "Composer model / thinking / supported Fast control",
-      "note": "Fast is capability-gated. Model routes remain native.",
+      "surface": "Composer and Settings → Session",
+      "note": "Fast mode requires both native model and provider support.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 671
+          "line": 666
         }
       ],
       "inCachedCatalog": true,
@@ -224,11 +230,11 @@
       "name": "set_slow_mode",
       "status": "direct",
       "surface": "Settings → Session",
-      "note": "Dedicated per-session controls.",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
           "file": "web/src/pages/SettingsPage.tsx",
-          "line": 389
+          "line": 444
         }
       ],
       "inCachedCatalog": true,
@@ -236,13 +242,13 @@
     },
     {
       "name": "goal",
-      "status": "partial",
-      "surface": "Task plan card + JSON console",
-      "note": "Plan/goal state is displayed. No direct goal lifecycle/budget control or todo editing/reordering/import/export interface.",
+      "status": "direct",
+      "surface": "Settings → Session workflows",
+      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
       "evidence": [
         {
-          "file": "web/src/components/GoalPlan.tsx",
-          "line": 7
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 5
         }
       ],
       "inCachedCatalog": true,
@@ -250,13 +256,13 @@
     },
     {
       "name": "set_ask_dialog",
-      "status": "missing",
-      "surface": "No multi-question ask adapter",
-      "note": "Tool UI is not enabled by the plain rpc bridge. The optional structured ask dialog is not negotiated or rendered.",
+      "status": "integrated",
+      "surface": "Bridge startup and native questions",
+      "note": "GUI uses rpc-ui and structured ask opt-in. Startup questions are replayed before initialization completes. Interactive PTYs remain a native-terminal boundary.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "line": 71
+          "file": "server/src/index.ts",
+          "line": 159
         }
       ],
       "inCachedCatalog": true,
@@ -265,12 +271,12 @@
     {
       "name": "get_available_commands",
       "status": "integrated",
-      "surface": "Chat initialization / refresh / selectors / statistics",
-      "note": "Read RPCs are wired into normal GUI state.",
+      "surface": "Chat initialization, selectors and usage",
+      "note": "Normal GUI reads; no invented progress or totals.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 167
+          "line": 162
         }
       ],
       "inCachedCatalog": true,
@@ -278,17 +284,13 @@
     },
     {
       "name": "get_entries",
-      "status": "integrated",
-      "surface": "Saved chats / transcript / inline edit / reply branches",
-      "note": "Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "server/src/snapshot.ts",
-          "line": 4
-        },
-        {
-          "file": "web/src/App.tsx",
-          "line": 397
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -296,13 +298,13 @@
     },
     {
       "name": "get_tree",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -310,13 +312,13 @@
     },
     {
       "name": "set_todos",
-      "status": "partial",
-      "surface": "Task plan card + JSON console",
-      "note": "Plan/goal state is displayed. No direct goal lifecycle/budget control or todo editing/reordering/import/export interface.",
+      "status": "direct",
+      "surface": "Settings → Session workflows",
+      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
       "evidence": [
         {
-          "file": "web/src/components/GoalPlan.tsx",
-          "line": 7
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 5
         }
       ],
       "inCachedCatalog": true,
@@ -324,13 +326,13 @@
     },
     {
       "name": "set_host_tools",
-      "status": "missing",
-      "surface": "No host request/result adapter",
-      "note": "Registration alone in JSON is insufficient: host_tool_call/cancel and host_uri_request/cancel are not serviced.",
+      "status": "direct",
+      "surface": "Settings → Session → GUI host integration",
+      "note": "Opt-in GUI notice tool and read-only runtime URI. Host adapters handle calls, updates/results, URI errors and cancellation; unknown registrations fail explicitly. Arbitrary third-party host behavior still requires an implementation.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "line": 143
+          "file": "server/src/host-adapters.ts",
+          "line": 8
         }
       ],
       "inCachedCatalog": true,
@@ -338,13 +340,13 @@
     },
     {
       "name": "set_host_uri_schemes",
-      "status": "missing",
-      "surface": "No host request/result adapter",
-      "note": "Registration alone in JSON is insufficient: host_tool_call/cancel and host_uri_request/cancel are not serviced.",
+      "status": "direct",
+      "surface": "Settings → Session → GUI host integration",
+      "note": "Opt-in GUI notice tool and read-only runtime URI. Host adapters handle calls, updates/results, URI errors and cancellation; unknown registrations fail explicitly. Arbitrary third-party host behavior still requires an implementation.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "line": 143
+          "file": "server/src/host-adapters.ts",
+          "line": 8
         }
       ],
       "inCachedCatalog": true,
@@ -352,13 +354,13 @@
     },
     {
       "name": "set_subagent_subscription",
-      "status": "partial",
-      "surface": "JSON console only; Agents card shows snapshots",
-      "note": "Subscription changes can be submitted but subagent_lifecycle/progress/event frames have no matching client presentation.",
+      "status": "direct",
+      "surface": "Runtime capabilities → Advanced event transport",
+      "note": "Bridge defaults to full native events and subagent events. Explicit controls can choose delta updates, event names and subscription level.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "line": 289
+          "file": "web/src/components/settings/TransportControls.tsx",
+          "line": 69
         }
       ],
       "inCachedCatalog": true,
@@ -366,13 +368,13 @@
     },
     {
       "name": "set_event_filter",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Runtime capabilities → Advanced event transport",
+      "note": "Bridge defaults to full native events and subagent events. Explicit controls can choose delta updates, event names and subscription level.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/TransportControls.tsx",
+          "line": 69
         }
       ],
       "inCachedCatalog": true,
@@ -380,13 +382,13 @@
     },
     {
       "name": "get_subagents",
-      "status": "partial",
-      "surface": "Workspace cards → Agents",
-      "note": "Basic list/cancel is present. Refresh is snapshot-based; structured lifecycle/progress subscriptions are not integrated.",
+      "status": "integrated",
+      "surface": "Workspace agent roster",
+      "note": "Native snapshots plus lifecycle/progress events; terminal statuses are retained as reported history.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 200
+          "line": 199
         }
       ],
       "inCachedCatalog": true,
@@ -394,13 +396,13 @@
     },
     {
       "name": "get_subagent_messages",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Workspace cards → Agents",
+      "note": "Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/SubagentControls.tsx",
+          "line": 43
         }
       ],
       "inCachedCatalog": true,
@@ -409,12 +411,12 @@
     {
       "name": "cancel_subagent",
       "status": "direct",
-      "surface": "Workspace cards → Agents → Cancel agent",
-      "note": "Visible for active agents; live child conversation/steering UI is absent.",
+      "surface": "Workspace cards → Agents",
+      "note": "Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes.",
       "evidence": [
         {
-          "file": "web/src/components/RightRail.tsx",
-          "line": 30
+          "file": "web/src/components/SubagentControls.tsx",
+          "line": 43
         }
       ],
       "inCachedCatalog": true,
@@ -422,13 +424,13 @@
     },
     {
       "name": "steer_subagent",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Workspace cards → Agents",
+      "note": "Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/SubagentControls.tsx",
+          "line": 43
         }
       ],
       "inCachedCatalog": true,
@@ -436,97 +438,97 @@
     },
     {
       "name": "live_start",
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 199
         }
       ],
-      "inCachedCatalog": false,
+      "inCachedCatalog": true,
       "readProbe": "not executed"
     },
     {
       "name": "live_connect",
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 199
         }
       ],
-      "inCachedCatalog": false,
+      "inCachedCatalog": true,
       "readProbe": "not executed"
     },
     {
       "name": "live_stop",
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 199
         }
       ],
-      "inCachedCatalog": false,
+      "inCachedCatalog": true,
       "readProbe": "not executed"
     },
     {
       "name": "live_mute",
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 199
         }
       ],
-      "inCachedCatalog": false,
+      "inCachedCatalog": true,
       "readProbe": "not executed"
     },
     {
       "name": "dictation_start",
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 199
         }
       ],
-      "inCachedCatalog": false,
+      "inCachedCatalog": true,
       "readProbe": "not executed"
     },
     {
       "name": "dictation_stop",
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 199
         }
       ],
-      "inCachedCatalog": false,
+      "inCachedCatalog": true,
       "readProbe": "not executed"
     },
     {
       "name": "set_model",
       "status": "direct",
-      "surface": "Composer model / thinking / supported Fast control",
-      "note": "Fast is capability-gated. Model routes remain native.",
+      "surface": "Composer and Settings → Session",
+      "note": "Fast mode requires both native model and provider support.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 671
+          "line": 666
         }
       ],
       "inCachedCatalog": true,
@@ -534,13 +536,13 @@
     },
     {
       "name": "cycle_model",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -549,12 +551,12 @@
     {
       "name": "get_available_models",
       "status": "integrated",
-      "surface": "Chat initialization / refresh / selectors / statistics",
-      "note": "Read RPCs are wired into normal GUI state.",
+      "surface": "Chat initialization, selectors and usage",
+      "note": "Normal GUI reads; no invented progress or totals.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 167
+          "line": 162
         }
       ],
       "inCachedCatalog": true,
@@ -563,12 +565,12 @@
     {
       "name": "set_thinking_level",
       "status": "direct",
-      "surface": "Composer model / thinking / supported Fast control",
-      "note": "Fast is capability-gated. Model routes remain native.",
+      "surface": "Composer and Settings → Session",
+      "note": "Fast mode requires both native model and provider support.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 671
+          "line": 666
         }
       ],
       "inCachedCatalog": true,
@@ -576,13 +578,13 @@
     },
     {
       "name": "cycle_thinking_level",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -591,12 +593,12 @@
     {
       "name": "get_available_thinking_levels",
       "status": "integrated",
-      "surface": "Chat initialization / refresh / selectors / statistics",
-      "note": "Read RPCs are wired into normal GUI state.",
+      "surface": "Chat initialization, selectors and usage",
+      "note": "Normal GUI reads; no invented progress or totals.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 167
+          "line": 162
         }
       ],
       "inCachedCatalog": true,
@@ -606,11 +608,11 @@
       "name": "set_steering_mode",
       "status": "direct",
       "surface": "Settings → Session",
-      "note": "Dedicated per-session controls.",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
           "file": "web/src/pages/SettingsPage.tsx",
-          "line": 389
+          "line": 444
         }
       ],
       "inCachedCatalog": true,
@@ -620,11 +622,11 @@
       "name": "set_follow_up_mode",
       "status": "direct",
       "surface": "Settings → Session",
-      "note": "Dedicated per-session controls.",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
           "file": "web/src/pages/SettingsPage.tsx",
-          "line": 389
+          "line": 444
         }
       ],
       "inCachedCatalog": true,
@@ -632,13 +634,13 @@
     },
     {
       "name": "set_interrupt_mode",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -646,13 +648,13 @@
     },
     {
       "name": "compact",
-      "status": "partial",
-      "surface": "Settings → Session → compact now",
-      "note": "Basic compaction is wired; customInstructions requires JSON. No model call was made in this audit.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 454
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -662,11 +664,11 @@
       "name": "set_auto_compaction",
       "status": "direct",
       "surface": "Settings → Session",
-      "note": "Dedicated per-session controls.",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
           "file": "web/src/pages/SettingsPage.tsx",
-          "line": 389
+          "line": 444
         }
       ],
       "inCachedCatalog": true,
@@ -674,13 +676,13 @@
     },
     {
       "name": "set_cache_warming",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -690,11 +692,11 @@
       "name": "set_auto_retry",
       "status": "direct",
       "surface": "Settings → Session",
-      "note": "Dedicated per-session controls.",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
           "file": "web/src/pages/SettingsPage.tsx",
-          "line": 389
+          "line": 444
         }
       ],
       "inCachedCatalog": true,
@@ -702,13 +704,13 @@
     },
     {
       "name": "abort_retry",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -716,13 +718,13 @@
     },
     {
       "name": "bash",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -730,13 +732,13 @@
     },
     {
       "name": "abort_bash",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -745,12 +747,12 @@
     {
       "name": "get_session_stats",
       "status": "integrated",
-      "surface": "Chat initialization / refresh / selectors / statistics",
-      "note": "Read RPCs are wired into normal GUI state.",
+      "surface": "Chat initialization, selectors and usage",
+      "note": "Normal GUI reads; no invented progress or totals.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 167
+          "line": 162
         }
       ],
       "inCachedCatalog": true,
@@ -758,13 +760,13 @@
     },
     {
       "name": "get_session_lease",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 646
         }
       ],
       "inCachedCatalog": true,
@@ -772,13 +774,13 @@
     },
     {
       "name": "export_html",
-      "status": "partial",
+      "status": "direct",
       "surface": "Settings → Session",
-      "note": "Buttons exist, but the response is not used to open the forked session or expose/download the exported file.",
+      "note": "Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 457
+          "file": "server/src/index.ts",
+          "line": 484
         }
       ],
       "inCachedCatalog": true,
@@ -787,16 +789,12 @@
     {
       "name": "switch_session",
       "status": "integrated",
-      "surface": "Saved chats / transcript / inline edit / reply branches",
-      "note": "Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap.",
+      "surface": "Saved chats and session transitions",
+      "note": "Selected saved files use switch_session. --no-session is rejected for saved-chat loading rather than displaying a false empty transcript.",
       "evidence": [
         {
           "file": "server/src/snapshot.ts",
           "line": 4
-        },
-        {
-          "file": "web/src/App.tsx",
-          "line": 397
         }
       ],
       "inCachedCatalog": true,
@@ -804,13 +802,13 @@
     },
     {
       "name": "branch",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -818,13 +816,13 @@
     },
     {
       "name": "fork",
-      "status": "partial",
+      "status": "direct",
       "surface": "Settings → Session",
-      "note": "Buttons exist, but the response is not used to open the forked session or expose/download the exported file.",
+      "note": "Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 457
+          "file": "server/src/index.ts",
+          "line": 484
         }
       ],
       "inCachedCatalog": true,
@@ -832,13 +830,13 @@
     },
     {
       "name": "navigate_tree",
-      "status": "partial",
-      "surface": "Checkpoint restore / inline edit / reply version continuation",
-      "note": "No arbitrary tree picker, branch labels, custom summary instruction or summary abort UI.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/App.tsx",
-          "line": 399
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -846,13 +844,13 @@
     },
     {
       "name": "abort_branch_summary",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -860,13 +858,13 @@
     },
     {
       "name": "set_label",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -874,13 +872,13 @@
     },
     {
       "name": "get_branch_messages",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -888,13 +886,13 @@
     },
     {
       "name": "get_last_assistant_text",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -903,12 +901,12 @@
     {
       "name": "set_session_name",
       "status": "direct",
-      "surface": "Chat rename / Settings → Session",
-      "note": "Dedicated native rename control.",
+      "surface": "Settings → Session",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
-          "file": "web/src/App.tsx",
-          "line": 370
+          "file": "web/src/pages/SettingsPage.tsx",
+          "line": 444
         }
       ],
       "inCachedCatalog": true,
@@ -916,13 +914,13 @@
     },
     {
       "name": "handoff",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ],
       "inCachedCatalog": true,
@@ -931,16 +929,12 @@
     {
       "name": "get_messages",
       "status": "integrated",
-      "surface": "Saved chats / transcript / inline edit / reply branches",
-      "note": "Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap.",
+      "surface": "Transcript snapshots",
+      "note": "Protocol v2 pages stable history; stale/busy cursors discard partial pages and fall back to a full logical frame. A 401-message native fixture passed.",
       "evidence": [
         {
           "file": "server/src/snapshot.ts",
-          "line": 4
-        },
-        {
-          "file": "web/src/App.tsx",
-          "line": 397
+          "line": 28
         }
       ],
       "inCachedCatalog": true,
@@ -948,13 +942,13 @@
     },
     {
       "name": "get_messages_page",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "integrated",
+      "surface": "Transcript snapshots",
+      "note": "Protocol v2 pages stable history; stale/busy cursors discard partial pages and fall back to a full logical frame. A 401-message native fixture passed.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "server/src/snapshot.ts",
+          "line": 28
         }
       ],
       "inCachedCatalog": true,
@@ -962,13 +956,13 @@
     },
     {
       "name": "get_login_providers",
-      "status": "integrated",
-      "surface": "Settings → Providers / Installation",
-      "note": "Provider names and signed-in state are queried; credentials stay on the server.",
+      "status": "direct",
+      "surface": "Settings → Providers",
+      "note": "Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 114
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "line": 18
         }
       ],
       "inCachedCatalog": true,
@@ -976,13 +970,13 @@
     },
     {
       "name": "login",
-      "status": "partial",
-      "surface": "Settings → Providers → login",
-      "note": "OAuth URL/non-secret prompts are partly supported; native RPC rejects secret/pre-URL prompts. Automatic window.open can be blocked.",
+      "status": "direct",
+      "surface": "Settings → Providers",
+      "note": "Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 553
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "line": 18
         }
       ],
       "inCachedCatalog": true,
@@ -990,13 +984,13 @@
     },
     {
       "name": "get_logout_accounts",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Providers",
+      "note": "Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "line": 18
         }
       ],
       "inCachedCatalog": true,
@@ -1004,13 +998,13 @@
     },
     {
       "name": "logout",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Providers",
+      "note": "Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "line": 18
         }
       ],
       "inCachedCatalog": true,
@@ -1018,13 +1012,13 @@
     },
     {
       "name": "predict_word",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "integrated",
+      "surface": "Composer → native ghost text / Tab / Escape",
+      "note": "Debounced end-of-draft prediction obeys native spelling configuration, UTF-16 cursor positions, IME/focus and stale-request guards; acceptance/rejection feedback uses the original request.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/lib/use-word-completion.ts",
+          "line": 21
         }
       ],
       "inCachedCatalog": true,
@@ -1032,13 +1026,13 @@
     },
     {
       "name": "predict_word_feedback",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "integrated",
+      "surface": "Composer → native ghost text / Tab / Escape",
+      "note": "Debounced end-of-draft prediction obeys native spelling configuration, UTF-16 cursor positions, IME/focus and stale-request guards; acceptance/rejection feedback uses the original request.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/lib/use-word-completion.ts",
+          "line": 21
         }
       ],
       "inCachedCatalog": true,
@@ -1046,13 +1040,13 @@
     },
     {
       "name": "btw",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → side questions",
+      "note": "Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 664
         }
       ],
       "inCachedCatalog": true,
@@ -1060,13 +1054,13 @@
     },
     {
       "name": "btw_cancel",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → side questions",
+      "note": "Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 664
         }
       ],
       "inCachedCatalog": true,
@@ -1074,13 +1068,13 @@
     },
     {
       "name": "get_btw_history",
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → side questions",
+      "note": "Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 664
         }
       ],
       "inCachedCatalog": true,
@@ -1090,649 +1084,865 @@
   "cli": [
     {
       "name": "acp",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → acp",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "agents",
-      "status": "partial",
-      "surface": "Tasks settings / All settings",
-      "note": "Task agent overrides can be configured; no dedicated bundled-agent inventory/editor.",
+      "status": "guided",
+      "surface": "Settings → Native operations → agents",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "anonymize",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → anonymize",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "auth",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → auth",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "auth-broker",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → auth-broker",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "auth-gateway",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → auth-gateway",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "bash",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → bash",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "bench",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → bench",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "browser-relay",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "guided",
+      "surface": "Settings → Native operations → browser-relay",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "cleanse",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → cleanse",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "clip",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → clip",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "collab",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "guided",
+      "surface": "Settings → Native operations → collab",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "commit",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → commit",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "completions",
-      "status": "not-applicable",
-      "surface": "Terminal workflow",
-      "note": "Native terminal previews/replay/shell completions are intentionally outside the graphical host.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → completions",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "compress",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → compress",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "config",
-      "status": "partial",
-      "surface": "All settings / config.yml",
-      "note": "All 615 global keys are listed, but 23 enum rows lack choices in normal controls. Raw config.yml is a fallback; project/profile scope has no dedicated manager.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → config",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "server/src/settings.ts",
-          "line": 124
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "dry-balance",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → dry-balance",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "find",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → find",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "gallery",
-      "status": "not-applicable",
-      "surface": "Terminal workflow",
-      "note": "Native terminal previews/replay/shell completions are intentionally outside the graphical host.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → gallery",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "gc",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → gc",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "git",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → git",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "grep",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → grep",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "grievances",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → grievances",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "if-bench",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → if-bench",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "images",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → images",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "install",
-      "status": "partial",
-      "surface": "Settings → Extensions",
-      "note": "Install/remove/enable/disable/upgrade, marketplace and diagnostics subset. Not every native plugin CLI option.",
+      "status": "guided",
+      "surface": "Settings → Native operations → install",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "server/src/workspace-features.ts",
-          "line": 14
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "join",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → join",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "login",
-      "status": "partial",
-      "surface": "Settings → Providers",
-      "note": "Only RPC-compatible provider login flows.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → login",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 553
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "models",
-      "status": "partial",
-      "surface": "Composer / Models / Providers",
-      "note": "Catalog, roles and custom providers exist; native refresh and account/model diagnostics are not equivalent.",
+      "status": "guided",
+      "surface": "Settings → Native operations → models",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/ModelsPanel.tsx",
-          "line": 20
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "play",
-      "status": "not-applicable",
-      "surface": "Terminal workflow",
-      "note": "Native terminal previews/replay/shell completions are intentionally outside the graphical host.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → play",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "plugin",
-      "status": "partial",
-      "surface": "Settings → Extensions",
-      "note": "Install/remove/enable/disable/upgrade, marketplace and diagnostics subset. Not every native plugin CLI option.",
+      "status": "guided",
+      "surface": "Settings → Native operations → plugin",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "server/src/workspace-features.ts",
-          "line": 14
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "predict",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → predict",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "ps",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "guided",
+      "surface": "Settings → Native operations → ps",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "read",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → read",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "render",
-      "status": "not-applicable",
-      "surface": "Terminal workflow",
-      "note": "Native terminal previews/replay/shell completions are intentionally outside the graphical host.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → render",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "say",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → say",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "search",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → search",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "session",
-      "status": "partial",
-      "surface": "Saved chats / Session settings",
-      "note": "Normal chat navigation exists; pack/unpack/moved/lease transfer workflows do not.",
+      "status": "guided",
+      "surface": "Settings → Native operations → session",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 342
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "setup",
-      "status": "partial",
-      "surface": "Desktop first-launch setup",
-      "note": "Installs/connects OMP and opens providers. Does not expose all native optional dependency/onboarding setup actions.",
+      "status": "guided",
+      "surface": "Settings → Native operations → setup",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/DesktopSetup.tsx",
-          "line": 81
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "sh",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → sh",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "share",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → share",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "shell",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → shell",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "skill",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → skill",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "ssh",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "guided",
+      "surface": "Settings → Native operations → ssh",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "stats",
-      "status": "direct",
-      "surface": "Settings → Usage",
-      "note": "Native usage statistics plus read-only host supplements.",
+      "status": "guided",
+      "surface": "Settings → Native operations → stats",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/UsagePanel.tsx",
-          "line": 26
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "stream",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → stream",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "tiny-models",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → tiny-models",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "token",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → token",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "toks",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → toks",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "ttsr",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → ttsr",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "update",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → update",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "usage",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "guided",
+      "surface": "Settings → Native operations → usage",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "worktree",
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "guided",
+      "surface": "Settings → Native operations → worktree",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "line": 46
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     },
     {
       "name": "zsh",
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → zsh",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 297
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "line": 56
         }
       ]
     }
@@ -1740,303 +1950,303 @@
   "flags": [
     {
       "name": "--model",
-      "status": "GUI equivalent",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "GUI equivalent + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--smol",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--slow",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--plan",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--goal",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--prewalk",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-prewalk",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--prewalk-into",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--plan-yolo",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--plan-yolo-into",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--provider",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--api-key",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Credential input stays in native terminal/provider configuration",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--system-prompt",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--system-prompt-template",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--append-system-prompt",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--allow-home",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--profile",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--alias",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--cwd",
-      "status": "GUI equivalent",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "GUI equivalent + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--mode",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--config",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--add-dir",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--print",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--continue",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--resume",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--restore",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--from-claude",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--from-codex",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--session-dir",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-session",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--models",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-tools",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-lsp",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-pty",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--tools",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--thinking",
-      "status": "GUI equivalent",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "GUI equivalent + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--service-tier",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--hide-thinking",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--advisor",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--wait-async",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--max-time",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--external-thinking",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--hook",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--extension",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-extensions",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-skills",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--skills",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-rules",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-context-files",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--export",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-title",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--spinner-interval",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--max-fps",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--motion",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--no-ui",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--print-thoughts",
-      "status": "Mode/terminal-specific; not general RPC launch coverage",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Native interactive launcher; incompatible GUI transport overrides are rejected",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--warn-cost",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--max-cost",
-      "status": "Raw launch flags only",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--auto-approve",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     },
     {
       "name": "--approval-mode",
-      "status": "Partial GUI equivalent + raw flags",
-      "note": "Raw flags are whitespace-split, not a quoted argument parser. Not executed in this audit."
+      "status": "Quoted GUI argv + native launcher",
+      "note": "Arguments are never evaluated as shell code. Terminal launch is explicit. No launch-flag mutation was exercised against user configuration."
     }
   ],
   "tools": [
@@ -2045,210 +2255,210 @@
       "description": "Read files, directories, URLs, archives, and databases",
       "defaultEnabled": true,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "edit",
       "description": "Edit files in place",
       "defaultEnabled": true,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "write",
       "description": "Create or overwrite files",
       "defaultEnabled": true,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "bash",
       "description": "Execute shell commands",
       "defaultEnabled": true,
       "setting": "bash.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "grep",
       "description": "Search file contents by regex",
       "defaultEnabled": true,
       "setting": "grep.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "glob",
       "description": "Find files by glob pattern",
       "defaultEnabled": true,
       "setting": "glob.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "find",
       "description": "Find code by describing what it does (when a native judge model is available)",
       "defaultEnabled": true,
       "setting": "find.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "eval",
       "description": "Run Python/JS cells; hosts the browser and computer-use helpers",
       "defaultEnabled": true,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "task",
       "description": "Launch subagents for parallel work",
       "defaultEnabled": true,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "wait",
       "description": "Wait for background jobs",
       "defaultEnabled": true,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "todo",
       "description": "Track a todo list",
       "defaultEnabled": true,
       "setting": "todo.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "ask",
       "description": "Ask the user questions (interactive mode only)",
       "defaultEnabled": true,
       "setting": "ask.enabled",
-      "gui": "Missing native tool UI activation"
+      "gui": "Native rpc-ui questions with structured answers and standard extension dialogs"
     },
     {
       "name": "web_search",
       "description": "Search the web",
       "defaultEnabled": true,
       "setting": "web_search.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "lsp",
       "description": "Language server queries (code intelligence)",
       "defaultEnabled": true,
       "setting": "lsp.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "ast_edit",
       "description": "Rewrite code with AST patterns",
       "defaultEnabled": true,
       "setting": "astEdit.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "debug",
       "description": "Debug a running process over DAP",
       "defaultEnabled": true,
       "setting": "debug.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "ida",
       "description": "Open, edit, and script IDA Pro databases (when IDA Pro is installed)",
       "defaultEnabled": true,
       "setting": "ida.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "ast_grep",
       "description": "Search code with AST patterns",
       "defaultEnabled": false,
       "setting": "astGrep.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "github",
       "description": "Query and act on GitHub repositories, issues, and PRs",
       "defaultEnabled": false,
       "setting": "github.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "checkpoint",
       "description": "Save a git-based checkpoint of session state",
       "defaultEnabled": false,
       "setting": "checkpoint.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "rewind",
       "description": "Rewind to a saved checkpoint",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "context_notes",
       "description": "Read or replace the session's persistent context notes",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "new_context",
       "description": "Request a fresh context window after the current turn",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "retain",
       "description": "Store facts in long-term memory",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "recall",
       "description": "Search long-term memory",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "reflect",
       "description": "Synthesize an answer from long-term memory",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "memory_edit",
       "description": "Edit or forget long-term memories",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "learn",
       "description": "Capture reusable lessons in long-term memory",
       "defaultEnabled": false,
       "setting": null,
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "manage_skill",
       "description": "Create, update, or delete managed skills",
       "defaultEnabled": false,
       "setting": "skills.enableSkillCommands",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     },
     {
       "name": "security_scan",
       "description": "Run security scans",
       "defaultEnabled": false,
       "setting": "security.enabled",
-      "gui": "Agent-mediated; generic output/configuration, no separate execution UI"
+      "gui": "Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies"
     }
   ],
   "slash": [
@@ -3750,7 +3960,7 @@
       "tab": "interaction",
       "group": "Input",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "autocompleteMaxVisible",
@@ -4262,7 +4472,7 @@
       "tab": "model",
       "group": "Sampling",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "tier.anthropic",
@@ -4270,7 +4480,7 @@
       "tab": "model",
       "group": "Sampling",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "tier.google",
@@ -4278,7 +4488,7 @@
       "tab": "model",
       "group": "Sampling",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "tier.subagent",
@@ -4286,7 +4496,7 @@
       "tab": "model",
       "group": "Sampling",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "tier.advisor",
@@ -4294,7 +4504,7 @@
       "tab": "model",
       "group": "Sampling",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "retry.enabled",
@@ -4413,8 +4623,8 @@
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "providers.ollama-cloud.maxConcurrency",
@@ -4454,7 +4664,7 @@
       "tab": "providers",
       "group": "Tiny Model",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "providers.tinyModelDtype",
@@ -4462,7 +4672,7 @@
       "tab": "providers",
       "group": "Tiny Model",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "providers.autoThinkingMaxEffort",
@@ -4574,7 +4784,7 @@
       "tab": "providers",
       "group": "Services",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "tts.localVoice",
@@ -4582,7 +4792,7 @@
       "tab": "providers",
       "group": "Services",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "tts.localSpeed",
@@ -4622,7 +4832,7 @@
       "tab": "providers",
       "group": "Services",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "speech.speed",
@@ -4645,16 +4855,16 @@
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "codexResets.autoRedeemWeekly",
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "codexResets.minBlockedMinutes",
@@ -4685,24 +4895,24 @@
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "claudeResets.autoRedeemWeekly",
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "claudeResets.autoRedeemFable",
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "claudeResets.minBlockedMinutes",
@@ -4822,7 +5032,7 @@
       "tab": "model",
       "group": "Advisor",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "advisor.immuneTurns",
@@ -5133,7 +5343,7 @@
       "type": "boolean",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -5613,8 +5823,8 @@
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "hindsight.recallMaxTokens",
@@ -6373,7 +6583,7 @@
       "type": "number",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -6453,8 +6663,8 @@
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "lsp.enabled",
@@ -6669,7 +6879,7 @@
       "type": "number",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -6725,7 +6935,7 @@
       "type": "number",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -6990,14 +7200,14 @@
       "tab": "tasks",
       "group": "Subagents",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "task.disabledAgents",
       "type": "array",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7005,7 +7215,7 @@
       "type": "record",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7013,7 +7223,7 @@
       "type": "record",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7021,7 +7231,7 @@
       "type": "record",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7029,7 +7239,7 @@
       "type": "record",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7037,7 +7247,7 @@
       "type": "record",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7045,7 +7255,7 @@
       "type": "record",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
+      "metadataPresent": true,
       "normalControlHasChoices": true
     },
     {
@@ -7710,7 +7920,7 @@
       "tab": "interaction",
       "group": "Speech",
       "metadataPresent": true,
-      "normalControlHasChoices": false
+      "normalControlHasChoices": true
     },
     {
       "key": "collab.relayUrl",
@@ -7997,8 +8207,8 @@
       "type": "enum",
       "tab": null,
       "group": null,
-      "metadataPresent": false,
-      "normalControlHasChoices": false
+      "metadataPresent": true,
+      "normalControlHasChoices": true
     },
     {
       "key": "spotlight.timeoutMs",
@@ -8009,233 +8219,209 @@
       "normalControlHasChoices": true
     }
   ],
-  "enumControlGaps": [
-    "treeFilterMode",
-    "tier.openai",
-    "tier.anthropic",
-    "tier.google",
-    "tier.subagent",
-    "tier.advisor",
-    "providers.anthropic.slowMode",
-    "providers.tinyModelDevice",
-    "providers.tinyModelDtype",
-    "live.voice",
-    "tts.localVoice",
-    "speech.voice",
-    "codexResets.autoRedeem5h",
-    "codexResets.autoRedeemWeekly",
-    "claudeResets.autoRedeem5h",
-    "claudeResets.autoRedeemWeekly",
-    "claudeResets.autoRedeemFable",
-    "advisor.syncBacklog",
-    "hindsight.recallBudget",
-    "dev.autoqaConsent",
-    "task.maxEffort",
-    "stt.submitTrigger",
-    "spotlight.thinking"
-  ],
+  "enumControlGaps": [],
   "features": [
     {
       "priority": "P0",
       "name": "Tool questions",
-      "status": "Missing",
-      "note": "OmpBridge hardcodes --mode rpc; upstream rpc-ui enables tool UI. A React select dialog alone does not make the native ask tool usable. rpc-ui also disables PTY, so shell behavior needs acceptance when changing modes.",
+      "status": "Implemented",
+      "note": "rpc-ui, structured ask and startup replay are connected. The trusted native startup-question fixture passed. Interactive PTYs use the native terminal.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "line": 71
+          "file": "server/src/index.ts",
+          "line": 159
         }
       ]
     },
     {
       "priority": "P0",
       "name": "Slash output and native notices",
-      "status": "Missing",
-      "note": "command_output and notice frames are discarded by chatReducer. Commands can run with no visible answer or error.",
+      "status": "Implemented",
+      "note": "Native output, notices and errors render as bounded transient output; reconnect IDs deduplicate replay.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "line": 142
+          "file": "web/src/components/RuntimeOutput.tsx",
+          "line": 48
         }
       ]
     },
     {
       "priority": "P0",
       "name": "Dialog cancellation and selection fidelity",
-      "status": "Partial",
-      "note": "cancel does not remove targetId; initialIndex/checkedIndices/checkbox markers/option descriptions are dropped; input secret hints are not propagated.",
+      "status": "Implemented",
+      "note": "Native cancellation/deadlines, focused initial option, option descriptions, checkbox round-trips, structured multi-answer questions and protected inputs are preserved.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "line": 269
+          "file": "web/src/components/Dialogs.tsx",
+          "line": 55
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Extension composer updates",
-      "status": "Missing",
-      "note": "set_editor_text displays a notice but does not put the supplied text into the composer.",
+      "status": "Implemented",
+      "note": "Composer text has an Undo backup; widgets respect above/below placement and replay coalesces their latest values.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "line": 263
+          "file": "web/src/components/Composer.tsx",
+          "line": 56
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Lossless large RPC frames",
-      "status": "Missing",
-      "note": "No negotiate_protocol/v2 decoder, and snapshot.ts uses unpaged get_messages. Large history/tool/extension payloads retain protocol-v1 limits.",
+      "status": "Implemented",
+      "note": "Native v2 chunking and 401-message paged history passed in a disposable keyless profile. Invalid frames/pages fail visibly.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "line": 101
+          "file": "server/src/rpc-frames.ts",
+          "line": 4
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Goal lifecycle and task editing",
-      "status": "Partial",
-      "note": "Display-only task plan is good; start/pause/resume/clear/budget and editable todos still need controls.",
+      "status": "Implemented",
+      "note": "Goal creation, pause/resume/drop and budget; phased task editing plus validated import/export. No live goal/model turn was started for verification.",
       "evidence": [
         {
-          "file": "web/src/components/GoalPlan.tsx",
-          "line": 7
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 152
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Queue management",
-      "status": "Partial",
-      "note": "Steer/follow-up and queued chips exist, but withdraw/promote/edit/restore operations require manual JSON.",
+      "status": "Implemented",
+      "note": "Explicit withdraw/promote/edit, image restoration, abort-and-restore and interrupt/resubmit; native queue snapshots remain authoritative.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 243
+          "file": "web/src/components/QueueControls.tsx",
+          "line": 141
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Subagent conversations and steering",
-      "status": "Partial",
-      "note": "Agent list/cancel exists; child transcripts, steering and lifecycle/progress subscriptions need dedicated integration.",
+      "status": "Implemented",
+      "note": "Native event subscription, lifecycle/progress roster, incremental child transcript, steering and cancellation. No real subagent/model was spawned for verification.",
       "evidence": [
         {
-          "file": "web/src/components/RightRail.tsx",
-          "line": 30
+          "file": "web/src/components/SubagentControls.tsx",
+          "line": 43
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Export/fork/tree completion",
-      "status": "Partial",
-      "note": "Export path and fork result are ignored; tree navigation is limited to checkpoints/reply versions.",
+      "status": "Implemented",
+      "note": "Scoped export download and refreshed native transitions; tree/append-history picker, labels, summaries and abort.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 457
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 361
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Provider accounts and MCP authentication",
-      "status": "Partial",
-      "note": "Provider logout/account selection are console-only. MCP config/probe exists, but upstream RPC does not install interactive MCP authentication handling.",
+      "status": "GUI + native handoff",
+      "note": "Account-specific sign-out and persistent login links. Secret/pre-URL OAuth and MCP interactive authentication retain the explicit native OMP terminal workflow. No real account changes were tested.",
       "evidence": [
         {
-          "file": "web/src/components/settings/McpPanel.tsx",
-          "line": 54
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "line": 18
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Settings reachability versus effect",
-      "status": "Partial",
-      "note": "615 global fields are listed; 23 enum controls have no choices, 165 fields lack UI metadata, and 167 have no tab category. TUI-only fields and RPC defaults also limit the effect of configuration.",
+      "status": "Implemented",
+      "note": "Every native field remains searchable. All 23 missing enums have version-pinned choices and unknown future enums use native-validated text input. Global-write, terminal preference and 40 RPC-default effects are identified.",
       "evidence": [
         {
-          "file": "web/src/components/settings/ConfigList.tsx",
-          "line": 28
+          "file": "web/src/components/settings/Controls.tsx",
+          "line": 125
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Launch flags",
-      "status": "Partial",
-      "note": "Launch flags are split on whitespace, so quoted paths/arguments are not preserved. Interactive/print/output-mode flags cannot be counted as working RPC features merely because the text box accepts them.",
+      "status": "Implemented",
+      "note": "Quoted argv round-trips preserve Windows paths. Incompatible transport/interactive modes are rejected in GUI launches and are available through the native interactive launcher. API keys are not saved in launch flags.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "line": 266
+          "file": "shared/launch-args.ts",
+          "line": 49
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Voice and dictation",
-      "status": "Missing",
-      "note": "No microphone/WebRTC/session/capture/mute UI or voice/dictation event consumers. Speech-related settings/model roles do not provide that workflow.",
+      "status": "Implemented; acceptance pending",
+      "note": "UI/events, browser WebRTC/host capture, mute/stop and draft ownership are wired; fixtures cover insertion and cleanup. No microphone, realtime provider, speech engine or paid request was used.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 187
+          "file": "web/src/components/VoiceControls.tsx",
+          "line": 150
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Word completion and side questions",
-      "status": "Missing",
-      "note": "No predict_word ghost text/feedback or btw streaming/history view. Project suggestions are a different host feature.",
+      "status": "Implemented; provider acceptance pending",
+      "note": "Native-configured ghost suffix/feedback and separate topic/follow-up stream/history controls are wired. No prediction engine or side-question model was invoked.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "line": 147
+          "file": "web/src/lib/use-word-completion.ts",
+          "line": 21
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Host-owned tools and virtual URIs",
-      "status": "Missing",
-      "note": "No request dispatch, cancellation, update/result or URI read/write responder. Raw JSON registration alone can leave requests unanswered.",
+      "status": "Implemented",
+      "note": "Optional concrete GUI adapters handle request/update/result/cancel and explicit errors. Runtime URI is intentionally read-only. Arbitrary custom adapters are application code, not a JSON registration promise.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "line": 143
+          "file": "server/src/host-adapters.ts",
+          "line": 57
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Native CLI services and administration",
-      "status": "Missing",
-      "note": "No profile manager, session transfer, skill registry installation/publishing, native updater/dependency installer, provider quota view, auth broker, process console or full Git UI.",
+      "status": "Guided + native handoff",
+      "note": "All 54 installed top-level commands are reachable through installed-help forms and native jobs or terminal handoffs. All 54 help routes and one isolated read-only stats job passed; mutations/services were not exercised.",
       "evidence": [
         {
-          "file": "web/src/components/settings/SettingsNavigation.tsx",
-          "line": 13
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "line": 407
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Extension terminal components",
-      "status": "Upstream boundary",
-      "note": "Native component factories/custom header/footer/editor/raw input/autocomplete/theme APIs are terminal-only. They require an adapter or an explicitly retained terminal workflow.",
+      "status": "Native handoff",
+      "note": "Custom terminal renderers/raw-input APIs run in the explicit native OMP launcher; they are not converted to React widgets. Supported standard extension UI methods have GUI adapters.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "line": 12
+          "file": "server/src/native-operations.ts",
+          "line": 228
         }
       ]
     }
@@ -8295,10 +8481,10 @@
     }
   ],
   "fixtureObservations": {
-    "slashOutputIgnored": true,
-    "nativeNoticeIgnored": true,
-    "editorTextOnlySetsNotice": true,
-    "checkboxStateDiscarded": true,
-    "cancelDoesNotRemoveTarget": true
+    "slashOutputIgnored": false,
+    "nativeNoticeIgnored": false,
+    "editorTextOnlySetsNotice": false,
+    "checkboxStateDiscarded": false,
+    "cancelDoesNotRemoveTarget": false
   }
 }

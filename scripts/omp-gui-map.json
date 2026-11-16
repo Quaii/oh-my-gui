@@ -2,72 +2,18 @@
   "rpc": [
     {
       "names": [
-        "prompt"
+        "prompt",
+        "steer",
+        "follow_up",
+        "abort"
       ],
       "status": "direct",
-      "surface": "Composer → Send",
-      "note": "Text and image prompts; arbitrary document/audio attachments are absent.",
-      "evidence": [
-        {
-          "file": "web/src/App.tsx",
-          "needle": "type: \"prompt\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "steer",
-        "follow_up"
-      ],
-      "status": "integrated",
-      "surface": "Composer → steer / follow-up",
-      "note": "Equivalent prompt.streamingBehavior route; queue editing is separate and absent.",
+      "surface": "Composer → send, queue delivery and stop",
+      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
           "needle": "cmd.streamingBehavior = behavior"
-        }
-      ]
-    },
-    {
-      "names": [
-        "abort"
-      ],
-      "status": "direct",
-      "surface": "Composer → Stop / Escape",
-      "note": "Native abort is sent; queue restoration/interrupt-and-resubmit are not exposed.",
-      "evidence": [
-        {
-          "file": "web/src/App.tsx",
-          "needle": "type: \"abort\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "new_session"
-      ],
-      "status": "partial",
-      "surface": "Sidebar New chat; Settings → Session",
-      "note": "New chat works through bridge creation. The separate Session action sends new_session without reattaching/reloading the transcript.",
-      "evidence": [
-        {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"new_session\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "open_session"
-      ],
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "No dedicated session-directory open control for this RPC; saved file selection uses switch_session instead.",
-      "evidence": [
-        {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "needle": "Advanced RPC console"
         }
       ]
     },
@@ -80,12 +26,70 @@
         "get_session_stats"
       ],
       "status": "integrated",
-      "surface": "Chat initialization / refresh / selectors / statistics",
-      "note": "Read RPCs are wired into normal GUI state.",
+      "surface": "Chat initialization, selectors and usage",
+      "note": "Normal GUI reads; no invented progress or totals.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
           "needle": "type: \"get_available_models\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "get_messages",
+        "get_messages_page"
+      ],
+      "status": "integrated",
+      "surface": "Transcript snapshots",
+      "note": "Protocol v2 pages stable history; stale/busy cursors discard partial pages and fall back to a full logical frame. A 401-message native fixture passed.",
+      "evidence": [
+        {
+          "file": "server/src/snapshot.ts",
+          "needle": "get_messages_page"
+        }
+      ]
+    },
+    {
+      "names": [
+        "negotiate_protocol"
+      ],
+      "status": "integrated",
+      "surface": "Bridge startup",
+      "note": "Negotiates v2, strictly reassembles UTF-8 chunks and surfaces malformed/oversized frames. Native large-frame fixture passed.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "negotiate_protocol"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_ask_dialog"
+      ],
+      "status": "integrated",
+      "surface": "Bridge startup and native questions",
+      "note": "GUI uses rpc-ui and structured ask opt-in. Startup questions are replayed before initialization completes. Interactive PTYs remain a native-terminal boundary.",
+      "evidence": [
+        {
+          "file": "server/src/index.ts",
+          "needle": "set_ask_dialog"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_subagent_subscription",
+        "set_event_filter"
+      ],
+      "status": "direct",
+      "surface": "Runtime capabilities → Advanced event transport",
+      "note": "Bridge defaults to full native events and subagent events. Explicit controls can choose delta updates, event names and subscription level.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/TransportControls.tsx",
+          "needle": "Apply event transport"
         }
       ]
     },
@@ -96,8 +100,8 @@
         "set_thinking_level"
       ],
       "status": "direct",
-      "surface": "Composer model / thinking / supported Fast control",
-      "note": "Fast is capability-gated. Model routes remain native.",
+      "surface": "Composer and Settings → Session",
+      "note": "Fast mode requires both native model and provider support.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
@@ -111,106 +115,123 @@
         "set_steering_mode",
         "set_follow_up_mode",
         "set_auto_compaction",
-        "set_auto_retry"
+        "set_auto_retry",
+        "set_session_name"
       ],
       "status": "direct",
       "surface": "Settings → Session",
-      "note": "Dedicated per-session controls.",
+      "note": "Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting.",
       "evidence": [
         {
           "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"set_slow_mode\""
+          "needle": "type: \"set_auto_retry\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "new_session",
+        "fork",
+        "export_html"
+      ],
+      "status": "direct",
+      "surface": "Settings → Session",
+      "note": "Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript.",
+      "evidence": [
+        {
+          "file": "server/src/index.ts",
+          "needle": "data.downloadUrl"
+        }
+      ]
+    },
+    {
+      "names": [
+        "switch_session"
+      ],
+      "status": "integrated",
+      "surface": "Saved chats and session transitions",
+      "note": "Selected saved files use switch_session. --no-session is rejected for saved-chat loading rather than displaying a false empty transcript.",
+      "evidence": [
+        {
+          "file": "server/src/snapshot.ts",
+          "needle": "switch_session"
+        }
+      ]
+    },
+    {
+      "names": [
+        "open_session",
+        "goal",
+        "set_todos"
+      ],
+      "status": "direct",
+      "surface": "Settings → Session workflows",
+      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "needle": "validateTodoPhases"
         }
       ]
     },
     {
       "names": [
         "get_entries",
-        "get_messages",
-        "switch_session"
-      ],
-      "status": "integrated",
-      "surface": "Saved chats / transcript / inline edit / reply branches",
-      "note": "Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap.",
-      "evidence": [
-        {
-          "file": "server/src/snapshot.ts",
-          "needle": "switch_session"
-        },
-        {
-          "file": "web/src/App.tsx",
-          "needle": "type:'get_entries'"
-        }
-      ]
-    },
-    {
-      "names": [
-        "cancel_subagent"
-      ],
-      "status": "direct",
-      "surface": "Workspace cards → Agents → Cancel agent",
-      "note": "Visible for active agents; live child conversation/steering UI is absent.",
-      "evidence": [
-        {
-          "file": "web/src/components/RightRail.tsx",
-          "needle": "Cancel agent"
-        }
-      ]
-    },
-    {
-      "names": [
-        "set_session_name"
-      ],
-      "status": "direct",
-      "surface": "Chat rename / Settings → Session",
-      "note": "Dedicated native rename control.",
-      "evidence": [
-        {
-          "file": "web/src/App.tsx",
-          "needle": "type: \"set_session_name\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "navigate_tree"
-      ],
-      "status": "partial",
-      "surface": "Checkpoint restore / inline edit / reply version continuation",
-      "note": "No arbitrary tree picker, branch labels, custom summary instruction or summary abort UI.",
-      "evidence": [
-        {
-          "file": "web/src/App.tsx",
-          "needle": "type:'navigate_tree'"
-        }
-      ]
-    },
-    {
-      "names": [
-        "fork",
-        "export_html"
-      ],
-      "status": "partial",
-      "surface": "Settings → Session",
-      "note": "Buttons exist, but the response is not used to open the forked session or expose/download the exported file.",
-      "evidence": [
-        {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"export_html\""
-        }
-      ]
-    },
-    {
-      "names": [
+        "get_tree",
+        "get_branch_messages",
+        "get_last_assistant_text",
+        "branch",
+        "navigate_tree",
+        "abort_branch_summary",
+        "set_label",
+        "handoff",
         "compact"
       ],
-      "status": "partial",
-      "surface": "Settings → Session → compact now",
-      "note": "Basic compaction is wired; customInstructions requires JSON. No model call was made in this audit.",
+      "status": "direct",
+      "surface": "Settings → Session workflows → branches and checkpoints",
+      "note": "Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"compact\""
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "needle": "Load branch tree"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_interrupt_mode",
+        "set_cache_warming",
+        "abort_retry",
+        "bash",
+        "abort_bash",
+        "get_session_lease",
+        "cycle_model",
+        "cycle_thinking_level"
+      ],
+      "status": "direct",
+      "surface": "Settings → Session workflows → execution",
+      "note": "Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "needle": "Run command"
+        }
+      ]
+    },
+    {
+      "names": [
+        "remove_queued_message",
+        "promote_queued_message",
+        "abort_and_prompt",
+        "abort_and_restore_queue"
+      ],
+      "status": "direct",
+      "surface": "Composer → queued messages / running turn controls",
+      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
+      "evidence": [
+        {
+          "file": "web/src/components/QueueControls.tsx",
+          "needle": "Stop and restore queue"
         }
       ]
     },
@@ -218,113 +239,46 @@
       "names": [
         "get_subagents"
       ],
-      "status": "partial",
-      "surface": "Workspace cards → Agents",
-      "note": "Basic list/cancel is present. Refresh is snapshot-based; structured lifecycle/progress subscriptions are not integrated.",
+      "status": "integrated",
+      "surface": "Workspace agent roster",
+      "note": "Native snapshots plus lifecycle/progress events; terminal statuses are retained as reported history.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "needle": "type: \"get_subagents\""
+          "needle": "subagents_snapshot"
         }
       ]
     },
     {
       "names": [
-        "goal",
-        "set_todos"
+        "get_subagent_messages",
+        "steer_subagent",
+        "cancel_subagent"
       ],
-      "status": "partial",
-      "surface": "Task plan card + JSON console",
-      "note": "Plan/goal state is displayed. No direct goal lifecycle/budget control or todo editing/reordering/import/export interface.",
+      "status": "direct",
+      "surface": "Workspace cards → Agents",
+      "note": "Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes.",
       "evidence": [
         {
-          "file": "web/src/components/GoalPlan.tsx",
-          "needle": "disabled label="
+          "file": "web/src/components/SubagentControls.tsx",
+          "needle": "get_subagent_messages"
         }
       ]
     },
     {
       "names": [
-        "login"
+        "get_login_providers",
+        "login",
+        "get_logout_accounts",
+        "logout"
       ],
-      "status": "partial",
-      "surface": "Settings → Providers → login",
-      "note": "OAuth URL/non-secret prompts are partly supported; native RPC rejects secret/pre-URL prompts. Automatic window.open can be blocked.",
+      "status": "direct",
+      "surface": "Settings → Providers",
+      "note": "Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"login\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "get_login_providers"
-      ],
-      "status": "integrated",
-      "surface": "Settings → Providers / Installation",
-      "note": "Provider names and signed-in state are queried; credentials stay on the server.",
-      "evidence": [
-        {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"get_login_providers\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "set_subagent_subscription"
-      ],
-      "status": "partial",
-      "surface": "JSON console only; Agents card shows snapshots",
-      "note": "Subscription changes can be submitted but subagent_lifecycle/progress/event frames have no matching client presentation.",
-      "evidence": [
-        {
-          "file": "web/src/lib/store.ts",
-          "needle": "t.includes(\"subagent\")"
-        }
-      ]
-    },
-    {
-      "names": [
-        "negotiate_protocol"
-      ],
-      "status": "missing",
-      "surface": "No host protocol negotiation",
-      "note": "Bridge stays on v1 and has no rpc_chunk reassembly; large responses/events retain v1 limitations. Do not enable v2 until the decoder exists.",
-      "evidence": [
-        {
-          "file": "server/src/omp.ts",
-          "needle": "Split strict JSONL"
-        }
-      ]
-    },
-    {
-      "names": [
-        "set_ask_dialog"
-      ],
-      "status": "missing",
-      "surface": "No multi-question ask adapter",
-      "note": "Tool UI is not enabled by the plain rpc bridge. The optional structured ask dialog is not negotiated or rendered.",
-      "evidence": [
-        {
-          "file": "server/src/omp.ts",
-          "needle": "const args = [\"--mode\", \"rpc\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "set_host_tools",
-        "set_host_uri_schemes"
-      ],
-      "status": "missing",
-      "surface": "No host request/result adapter",
-      "note": "Registration alone in JSON is insufficient: host_tool_call/cancel and host_uri_request/cancel are not serviced.",
-      "evidence": [
-        {
-          "file": "server/src/omp.ts",
-          "needle": "this.emit(\"event\", rec)"
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "needle": "get_logout_accounts"
         }
       ]
     },
@@ -337,56 +291,59 @@
         "dictation_start",
         "dictation_stop"
       ],
-      "status": "missing",
-      "surface": "No voice/dictation controls or events",
-      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "status": "direct",
+      "surface": "Composer → Voice and dictation",
+      "note": "Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "needle": "only images can be attached"
+          "file": "web/src/components/VoiceControls.tsx",
+          "needle": "live_connect"
         }
       ]
     },
     {
       "names": [
-        "remove_queued_message",
-        "promote_queued_message",
-        "abort_and_prompt",
-        "abort_and_restore_queue",
-        "set_event_filter",
-        "get_subagent_messages",
-        "steer_subagent",
-        "cycle_model",
-        "cycle_thinking_level",
-        "set_interrupt_mode",
-        "set_cache_warming",
-        "abort_retry",
-        "bash",
-        "abort_bash",
-        "get_session_lease",
-        "branch",
-        "abort_branch_summary",
-        "set_label",
-        "get_branch_messages",
-        "get_last_assistant_text",
-        "handoff",
-        "get_logout_accounts",
-        "logout",
         "predict_word",
-        "predict_word_feedback",
-        "btw",
-        "btw_cancel",
-        "get_btw_history",
-        "get_tree",
-        "get_messages_page"
+        "predict_word_feedback"
       ],
-      "status": "console",
-      "surface": "Settings → Runtime capabilities → JSON console",
-      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "status": "integrated",
+      "surface": "Composer → native ghost text / Tab / Escape",
+      "note": "Debounced end-of-draft prediction obeys native spelling configuration, UTF-16 cursor positions, IME/focus and stale-request guards; acceptance/rejection feedback uses the original request.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "needle": "Advanced RPC console"
+          "file": "web/src/lib/use-word-completion.ts",
+          "needle": "predict_word_feedback"
+        }
+      ]
+    },
+    {
+      "names": [
+        "btw",
+        "btw_cancel",
+        "get_btw_history"
+      ],
+      "status": "direct",
+      "surface": "Settings → Session workflows → side questions",
+      "note": "Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "needle": "Side questions"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_host_tools",
+        "set_host_uri_schemes"
+      ],
+      "status": "direct",
+      "surface": "Settings → Session → GUI host integration",
+      "note": "Opt-in GUI notice tool and read-only runtime URI. Host adapters handle calls, updates/results, URI errors and cancellation; unknown registrations fail explicitly. Arbitrary third-party host behavior still requires an implementation.",
+      "evidence": [
+        {
+          "file": "server/src/host-adapters.ts",
+          "needle": "HostRpcAdapter"
         }
       ]
     }
@@ -394,86 +351,19 @@
   "cli": [
     {
       "names": [
-        "stats"
+        "acp"
       ],
-      "status": "direct",
-      "surface": "Settings → Usage",
-      "note": "Native usage statistics plus read-only host supplements.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → acp",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/UsagePanel.tsx",
-          "needle": "/api/usage"
-        }
-      ]
-    },
-    {
-      "names": [
-        "config"
-      ],
-      "status": "partial",
-      "surface": "All settings / config.yml",
-      "note": "All 615 global keys are listed, but 23 enum rows lack choices in normal controls. Raw config.yml is a fallback; project/profile scope has no dedicated manager.",
-      "evidence": [
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
         {
-          "file": "server/src/settings.ts",
-          "needle": "[\"config\", \"set\", key"
-        }
-      ]
-    },
-    {
-      "names": [
-        "models"
-      ],
-      "status": "partial",
-      "surface": "Composer / Models / Providers",
-      "note": "Catalog, roles and custom providers exist; native refresh and account/model diagnostics are not equivalent.",
-      "evidence": [
-        {
-          "file": "web/src/components/settings/ModelsPanel.tsx",
-          "needle": "ModelRolesPanel"
-        }
-      ]
-    },
-    {
-      "names": [
-        "login"
-      ],
-      "status": "partial",
-      "surface": "Settings → Providers",
-      "note": "Only RPC-compatible provider login flows.",
-      "evidence": [
-        {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"login\""
-        }
-      ]
-    },
-    {
-      "names": [
-        "plugin",
-        "install"
-      ],
-      "status": "partial",
-      "surface": "Settings → Extensions",
-      "note": "Install/remove/enable/disable/upgrade, marketplace and diagnostics subset. Not every native plugin CLI option.",
-      "evidence": [
-        {
-          "file": "server/src/workspace-features.ts",
-          "needle": "const actions ="
-        }
-      ]
-    },
-    {
-      "names": [
-        "setup"
-      ],
-      "status": "partial",
-      "surface": "Desktop first-launch setup",
-      "note": "Installs/connects OMP and opens providers. Does not expose all native optional dependency/onboarding setup actions.",
-      "evidence": [
-        {
-          "file": "web/src/components/DesktopSetup.tsx",
-          "needle": "Install OMP"
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
         }
       ]
     },
@@ -481,13 +371,647 @@
       "names": [
         "agents"
       ],
-      "status": "partial",
-      "surface": "Tasks settings / All settings",
-      "note": "Task agent overrides can be configured; no dedicated bundled-agent inventory/editor.",
+      "status": "guided",
+      "surface": "Settings → Native operations → agents",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "panel === \"all\""
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "anonymize"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → anonymize",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "auth"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → auth",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "auth-broker"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → auth-broker",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "auth-gateway"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → auth-gateway",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "bash"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → bash",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "bench"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → bench",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "browser-relay"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → browser-relay",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "cleanse"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → cleanse",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "clip"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → clip",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "collab"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → collab",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "commit"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → commit",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "completions"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → completions",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "compress"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → compress",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "config"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → config",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "dry-balance"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → dry-balance",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "find"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → find",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "gallery"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → gallery",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "gc"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → gc",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "git"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → git",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "grep"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → grep",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "grievances"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → grievances",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "if-bench"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → if-bench",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "images"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → images",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "install"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → install",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "join"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → join",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "login"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → login",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "models"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → models",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "play"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → play",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "plugin"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → plugin",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "predict"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → predict",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "ps"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → ps",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "read"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → read",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "render"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → render",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "say"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → say",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "search"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → search",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
         }
       ]
     },
@@ -495,97 +1019,305 @@
       "names": [
         "session"
       ],
-      "status": "partial",
-      "surface": "Saved chats / Session settings",
-      "note": "Normal chat navigation exists; pack/unpack/moved/lease transfer workflows do not.",
+      "status": "guided",
+      "surface": "Settings → Native operations → session",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "function SessionPanel"
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
         }
       ]
     },
     {
       "names": [
-        "share",
-        "ssh",
-        "worktree",
-        "collab",
-        "join",
-        "ps",
-        "browser-relay"
+        "setup"
       ],
-      "status": "partial",
-      "surface": "Related slash commands can be entered",
-      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "status": "guided",
+      "surface": "Settings → Native operations → setup",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CommandsPanel.tsx",
-          "needle": "onRun(c.name)"
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
         }
       ]
     },
     {
       "names": [
-        "gallery",
-        "render",
-        "play",
-        "completions"
+        "sh"
       ],
-      "status": "not-applicable",
-      "surface": "Terminal workflow",
-      "note": "Native terminal previews/replay/shell completions are intentionally outside the graphical host.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → sh",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "panel === \"all\""
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
         }
       ]
     },
     {
       "names": [
-        "acp",
-        "anonymize",
-        "auth",
-        "auth-broker",
-        "auth-gateway",
-        "bash",
-        "bench",
-        "cleanse",
-        "clip",
-        "commit",
-        "compress",
-        "dry-balance",
-        "find",
-        "gc",
-        "git",
-        "grep",
-        "grievances",
-        "if-bench",
-        "images",
-        "predict",
-        "read",
-        "say",
-        "search",
-        "sh",
-        "shell",
-        "skill",
-        "stream",
-        "tiny-models",
-        "token",
-        "toks",
-        "ttsr",
-        "update",
-        "usage",
+        "share"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → share",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "shell"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → shell",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "skill"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → skill",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "ssh"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → ssh",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "stats"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → stats",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "stream"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → stream",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "tiny-models"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → tiny-models",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "token"
+      ],
+      "status": "handoff",
+      "surface": "Settings → Native operations → token",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "toks"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → toks",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "ttsr"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → ttsr",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "update"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → update",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "usage"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → usage",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
+        "worktree"
+      ],
+      "status": "guided",
+      "surface": "Settings → Native operations → worktree",
+      "note": "Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
+        }
+      ]
+    },
+    {
+      "names": [
         "zsh"
       ],
-      "status": "missing",
-      "surface": "No dedicated native CLI workflow",
-      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "status": "handoff",
+      "surface": "Settings → Native operations → zsh",
+      "note": "Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "panel === \"all\""
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
+        },
+        {
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeDescriptor"
         }
       ]
     }
@@ -594,204 +1326,204 @@
     {
       "priority": "P0",
       "name": "Tool questions",
-      "status": "Missing",
-      "note": "OmpBridge hardcodes --mode rpc; upstream rpc-ui enables tool UI. A React select dialog alone does not make the native ask tool usable. rpc-ui also disables PTY, so shell behavior needs acceptance when changing modes.",
+      "status": "Implemented",
+      "note": "rpc-ui, structured ask and startup replay are connected. The trusted native startup-question fixture passed. Interactive PTYs use the native terminal.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "needle": "const args = [\"--mode\", \"rpc\""
+          "file": "server/src/index.ts",
+          "needle": "set_ask_dialog"
         }
       ]
     },
     {
       "priority": "P0",
       "name": "Slash output and native notices",
-      "status": "Missing",
-      "note": "command_output and notice frames are discarded by chatReducer. Commands can run with no visible answer or error.",
+      "status": "Implemented",
+      "note": "Native output, notices and errors render as bounded transient output; reconnect IDs deduplicate replay.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "needle": "switch (rec.type)"
+          "file": "web/src/components/RuntimeOutput.tsx",
+          "needle": "OMP output"
         }
       ]
     },
     {
       "priority": "P0",
       "name": "Dialog cancellation and selection fidelity",
-      "status": "Partial",
-      "note": "cancel does not remove targetId; initialIndex/checkedIndices/checkbox markers/option descriptions are dropped; input secret hints are not propagated.",
+      "status": "Implemented",
+      "note": "Native cancellation/deadlines, focused initial option, option descriptions, checkbox round-trips, structured multi-answer questions and protected inputs are preserved.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "needle": "id: rec.id,"
+          "file": "web/src/components/Dialogs.tsx",
+          "needle": "initialOption"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Extension composer updates",
-      "status": "Missing",
-      "note": "set_editor_text displays a notice but does not put the supplied text into the composer.",
+      "status": "Implemented",
+      "note": "Composer text has an Undo backup; widgets respect above/below placement and replay coalesces their latest values.",
       "evidence": [
         {
-          "file": "web/src/lib/store.ts",
-          "needle": "editor text set by extension"
+          "file": "web/src/components/Composer.tsx",
+          "needle": "extensionBackup"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Lossless large RPC frames",
-      "status": "Missing",
-      "note": "No negotiate_protocol/v2 decoder, and snapshot.ts uses unpaged get_messages. Large history/tool/extension payloads retain protocol-v1 limits.",
+      "status": "Implemented",
+      "note": "Native v2 chunking and 401-message paged history passed in a disposable keyless profile. Invalid frames/pages fail visibly.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "needle": "Split strict JSONL"
+          "file": "server/src/rpc-frames.ts",
+          "needle": "RpcFrameDecoder"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Goal lifecycle and task editing",
-      "status": "Partial",
-      "note": "Display-only task plan is good; start/pause/resume/clear/budget and editable todos still need controls.",
+      "status": "Implemented",
+      "note": "Goal creation, pause/resume/drop and budget; phased task editing plus validated import/export. No live goal/model turn was started for verification.",
       "evidence": [
         {
-          "file": "web/src/components/GoalPlan.tsx",
-          "needle": "disabled label="
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "needle": "Start goal"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Queue management",
-      "status": "Partial",
-      "note": "Steer/follow-up and queued chips exist, but withdraw/promote/edit/restore operations require manual JSON.",
+      "status": "Implemented",
+      "note": "Explicit withdraw/promote/edit, image restoration, abort-and-restore and interrupt/resubmit; native queue snapshots remain authoritative.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "needle": "queued.map"
+          "file": "web/src/components/QueueControls.tsx",
+          "needle": "abort_and_restore_queue"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Subagent conversations and steering",
-      "status": "Partial",
-      "note": "Agent list/cancel exists; child transcripts, steering and lifecycle/progress subscriptions need dedicated integration.",
+      "status": "Implemented",
+      "note": "Native event subscription, lifecycle/progress roster, incremental child transcript, steering and cancellation. No real subagent/model was spawned for verification.",
       "evidence": [
         {
-          "file": "web/src/components/RightRail.tsx",
-          "needle": "Cancel agent"
+          "file": "web/src/components/SubagentControls.tsx",
+          "needle": "get_subagent_messages"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Export/fork/tree completion",
-      "status": "Partial",
-      "note": "Export path and fork result are ignored; tree navigation is limited to checkpoints/reply versions.",
+      "status": "Implemented",
+      "note": "Scoped export download and refreshed native transitions; tree/append-history picker, labels, summaries and abort.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "type: \"export_html\""
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "needle": "Load branch tree"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Provider accounts and MCP authentication",
-      "status": "Partial",
-      "note": "Provider logout/account selection are console-only. MCP config/probe exists, but upstream RPC does not install interactive MCP authentication handling.",
+      "status": "GUI + native handoff",
+      "note": "Account-specific sign-out and persistent login links. Secret/pre-URL OAuth and MCP interactive authentication retain the explicit native OMP terminal workflow. No real account changes were tested.",
       "evidence": [
         {
-          "file": "web/src/components/settings/McpPanel.tsx",
-          "needle": "refreshLive"
+          "file": "web/src/components/settings/ProviderAccounts.tsx",
+          "needle": "get_logout_accounts"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Settings reachability versus effect",
-      "status": "Partial",
-      "note": "615 global fields are listed; 23 enum controls have no choices, 165 fields lack UI metadata, and 167 have no tab category. TUI-only fields and RPC defaults also limit the effect of configuration.",
+      "status": "Implemented",
+      "note": "Every native field remains searchable. All 23 missing enums have version-pinned choices and unknown future enums use native-validated text input. Global-write, terminal preference and 40 RPC-default effects are identified.",
       "evidence": [
         {
-          "file": "web/src/components/settings/ConfigList.tsx",
-          "needle": "settings.filter"
+          "file": "web/src/components/settings/Controls.tsx",
+          "needle": "rpcDefault"
         }
       ]
     },
     {
       "priority": "P1",
       "name": "Launch flags",
-      "status": "Partial",
-      "note": "Launch flags are split on whitespace, so quoted paths/arguments are not preserved. Interactive/print/output-mode flags cannot be counted as working RPC features merely because the text box accepts them.",
+      "status": "Implemented",
+      "note": "Quoted argv round-trips preserve Windows paths. Incompatible transport/interactive modes are rejected in GUI launches and are available through the native interactive launcher. API keys are not saved in launch flags.",
       "evidence": [
         {
-          "file": "web/src/pages/SettingsPage.tsx",
-          "needle": "flagDraft.split"
+          "file": "shared/launch-args.ts",
+          "needle": "validateGuiLaunchArgs"
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Voice and dictation",
-      "status": "Missing",
-      "note": "No microphone/WebRTC/session/capture/mute UI or voice/dictation event consumers. Speech-related settings/model roles do not provide that workflow.",
+      "status": "Implemented; acceptance pending",
+      "note": "UI/events, browser WebRTC/host capture, mute/stop and draft ownership are wired; fixtures cover insertion and cleanup. No microphone, realtime provider, speech engine or paid request was used.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "needle": "only images can be attached"
+          "file": "web/src/components/VoiceControls.tsx",
+          "needle": "startLive"
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Word completion and side questions",
-      "status": "Missing",
-      "note": "No predict_word ghost text/feedback or btw streaming/history view. Project suggestions are a different host feature.",
+      "status": "Implemented; provider acceptance pending",
+      "note": "Native-configured ghost suffix/feedback and separate topic/follow-up stream/history controls are wired. No prediction engine or side-question model was invoked.",
       "evidence": [
         {
-          "file": "web/src/components/Composer.tsx",
-          "needle": "function onKeyDown"
+          "file": "web/src/lib/use-word-completion.ts",
+          "needle": "predict_word"
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Host-owned tools and virtual URIs",
-      "status": "Missing",
-      "note": "No request dispatch, cancellation, update/result or URI read/write responder. Raw JSON registration alone can leave requests unanswered.",
+      "status": "Implemented",
+      "note": "Optional concrete GUI adapters handle request/update/result/cancel and explicit errors. Runtime URI is intentionally read-only. Arbitrary custom adapters are application code, not a JSON registration promise.",
       "evidence": [
         {
-          "file": "server/src/omp.ts",
-          "needle": "this.emit(\"event\", rec)"
+          "file": "server/src/host-adapters.ts",
+          "needle": "host_uri_result"
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Native CLI services and administration",
-      "status": "Missing",
-      "note": "No profile manager, session transfer, skill registry installation/publishing, native updater/dependency installer, provider quota view, auth broker, process console or full Git UI.",
+      "status": "Guided + native handoff",
+      "note": "All 54 installed top-level commands are reachable through installed-help forms and native jobs or terminal handoffs. All 54 help routes and one isolated read-only stats job passed; mutations/services were not exercised.",
       "evidence": [
         {
-          "file": "web/src/components/settings/SettingsNavigation.tsx",
-          "needle": "SETTINGS_GROUPS"
+          "file": "web/src/components/settings/NativeManager.tsx",
+          "needle": "Native operations"
         }
       ]
     },
     {
       "priority": "P2",
       "name": "Extension terminal components",
-      "status": "Upstream boundary",
-      "note": "Native component factories/custom header/footer/editor/raw input/autocomplete/theme APIs are terminal-only. They require an adapter or an explicitly retained terminal workflow.",
+      "status": "Native handoff",
+      "note": "Custom terminal renderers/raw-input APIs run in the explicit native OMP launcher; they are not converted to React widgets. Supported standard extension UI methods have GUI adapters.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "needle": "Terminal-only interactive extension renderers"
+          "file": "server/src/native-operations.ts",
+          "needle": "nativeTerminal"
         }
       ]
     }

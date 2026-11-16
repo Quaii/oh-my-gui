@@ -87,6 +87,7 @@ export type PromptBoxProps = Omit<React.ComponentProps<'div'>, 'onSubmit' | 'chi
     hint?: React.ReactNode
     actions?: React.ReactNode
     trailingActions?: React.ReactNode
+    completion?: string
     hasContent?: boolean
     disabled?: boolean
     inputRef?: React.Ref<HTMLTextAreaElement>
@@ -114,6 +115,7 @@ function PromptBox({
     hasContent = false,
     inputRef,
     inputProps,
+    completion,
     className,
     ...props
 }: PromptBoxProps) {
@@ -130,6 +132,7 @@ function PromptBox({
 
     const fieldRef = useRef<HTMLDivElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const [inputScroll, setInputScroll] = useState(0)
     const ghostRef = useRef<HTMLDivElement>(null)
     const iconRef = useRef<HTMLSpanElement>(null)
     const press = useRef<'key' | 'pointer' | null>(null)
@@ -409,6 +412,7 @@ function PromptBox({
                         value={value}
                         disabled={disabled}
                         onChange={(event) => setValue(event.target.value)}
+                        onScroll={event => { setInputScroll(event.currentTarget.scrollTop); inputProps?.onScroll?.(event) }}
                         onKeyDown={handleKeyDown}
                         onKeyUp={(event) => {
                             inputProps?.onKeyUp?.(event)
@@ -428,6 +432,7 @@ function PromptBox({
                             inputProps?.className,
                         )}
                     />
+                    {completion && <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 whitespace-pre-wrap break-words text-[15px] leading-6 text-muted-foreground" style={{ transform: `translateY(${-inputScroll}px)` }}><span className="invisible">{value}</span>{completion}</div>}
                 </motion.div>
 
                 {ghost && (

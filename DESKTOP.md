@@ -162,3 +162,27 @@ run the web/native checks, build, and run desktop:release-check. Keep build arti
 Windows signing requires the owner's certificate/signing service; automatic updates additionally need
 a protected updater signing key and an approved distribution endpoint. Do not generate placeholder
 credentials or publish an unsigned update feed. Other platforms require their own native verification.
+
+## Native workflow parity
+
+The desktop and browser hosts share the protocol-v2 decoder, startup dialog replay and paged transcript
+loader. The primary GUI bridge uses `rpc-ui`; native OMP disables interactive PTYs in this mode.
+Interactive shells, terminal-only extension renderers and credential-bearing CLI workflows therefore
+retain an explicit native-terminal handoff through Settings → Native operations. The GUI never silently
+starts a native operation when a management page loads.
+
+Native jobs track process exit and cancellation. Their summaries omit log bodies; open job views request
+incremental output, with a bounded retained tail. Native/API endpoints require a matching loopback origin
+in browser mode, in addition to the desktop session cookie where applicable. Secrets are not routed
+through generic credential/token command output.
+
+The [coverage map](CAPABILITIES.md) and [parity ledger](OMP-PARITY-TASKS.md) distinguish source-reachable
+workflows from acceptance. `node scripts/check-rpc-parity.mjs` uses a temporary keyless profile, synthetic
+history and a trusted test extension; `node scripts/check-native-operations.mjs` reads all installed help
+and runs only isolated stats. Neither invokes a model, changes an account, installs a package or starts a
+real service. Provider audio/voice, native-terminal launch and mutating workflows still need acceptance on
+the intended host. Build output or a successful health request is not a native window interaction test.
+
+`node scripts/check-api-origin.mjs` exercises the actual Vite proxy against an inert local API. The
+development proxy preserves the browser Host header for origin validation; production binds only to
+loopback. The fixture verifies accepted same-origin traffic and rejected remote/null origins without OMP.

@@ -27,11 +27,17 @@ import { pluginAction, contextFiles, contextFile, projectActivity } from "./work
 import { createProject } from "./projects.ts";
 import {overviewWork} from "./overview.ts";
 import {workspacePath} from "../../shared/workspace.ts";
+import { UiReplay } from './ui-replay.ts';
+import { validateGuiLaunchArgs } from '../../shared/launch-args.ts';
+import { nativeDescriptor, nativeJobs, nativeJobOutput, runNativeOperation, cancelNativeOperation, nativeTerminal, stopNativeOperations } from './native-operations.ts';
+import { HostRpcAdapter, GUI_HOST_TOOLS, GUI_HOST_SCHEMES } from './host-adapters.ts';
+import { loopbackApiRequest } from './request-origin.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_DIST = path.resolve(__dirname, "../../web/dist");
 const PORT = Number(process.env.PORT || 4317);
 const HOST = process.env.HOST || "127.0.0.1";
+if (!['localhost', '127.0.0.1', '::1'].includes(HOST)) throw Error('OMP API must bind to a loopback address.');
 
 interface Slot {
   bridge: OmpBridge;
@@ -41,6 +47,11 @@ interface Slot {
   startedAt: number;
   routingAbort?: AbortController;
   lastRouting?: any;
+  replay: UiReplay;
+  initializing?: Promise<void>;
+  exports?: Map<string, string>;
+  host?: HostRpcAdapter;
+  hostEnabled?: boolean;
 }
 const slots = new Map<string, Slot>();
 const startingBridges = new Map<string, Promise<Slot>>();
@@ -89,17 +100,33 @@ async function ensureBridge(key: string, cwd: string, sessionPath?: string, args
 async function startBridge(key: string, cwd: string, sessionPath?: string, args?: string[], personaId?: string | null): Promise<Slot> {
   const existing = slots.get(key);
   if (existing && existing.bridge.alive) return existing;
+  if (sessionPath && args?.includes('--no-session')) throw Error('Saved chats require session persistence. Remove --no-session from Launch flags before opening a saved chat.');
 
   const bridge = new OmpBridge(key, cwd);
-  const slot: Slot = { bridge, cwd, subscribers: new Set(), state: null, startedAt: Date.now() };
+  const slot: Slot = { bridge, cwd, subscribers: new Set(), state: null, startedAt: Date.now(), replay: new UiReplay() };
   slots.set(key, slot);
+  slot.host = new HostRpcAdapter(record => bridge.write(record));
+  slot.host.tool('ui_notice', async record => {
+    const text = record.arguments?.message;
+    if (!slot.hostEnabled) throw Error('GUI host integration is disabled');
+    if (typeof text !== 'string' || !text.trim() || text.length > 10000) throw Error('A notice needs 1–10000 characters');
+    broadcast(slot, slot.replay.accept({ type: 'notice', message: text }));
+    return { content: [{ type: 'text', text: `Queued a notice for ${slot.subscribers.size} connected GUI view(s).` }] };
+  });
+  slot.host.uri('omp-ui', async record => {
+    if (!slot.hostEnabled) throw Error('GUI host integration is disabled');
+    if (record.operation !== 'read' || record.url !== 'omp-ui://runtime') throw Error('Only read access to omp-ui://runtime is supported');
+    return { content: JSON.stringify({ state: slot.state, bridgeStartedAt: slot.startedAt }), mimeType: 'application/json' };
+  });
 
   bridge.on("event", (rec: any) => {
+    if (['host_tool_call', 'host_tool_cancel', 'host_uri_request', 'host_uri_cancel'].includes(rec.type)) { void slot.host!.accept(rec); return; }
     if (rec.type === "available_commands_update") slot.state = slot.state;
-    broadcast(slot, rec);
+    broadcast(slot, slot.replay.accept(rec));
   });
-  bridge.on("ui_request", (rec: any) => broadcast(slot, rec));
+  bridge.on("ui_request", (rec: any) => broadcast(slot, slot.replay.accept(rec)));
   bridge.on("exit", (info: any) => {
+    slot.host?.dispose();
     broadcast(slot, { type: "bridge_exit", ...info });
     if (slots.get(key) === slot) slots.delete(key);
     log("bridge exited", key, info);
@@ -110,10 +137,10 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
 
   const control = await readControl();
   const persona = sessionPath ? null : selectedPersona(control, personaId);
-  const flags = [...(args ?? [])];
+  const flags = [...validateGuiLaunchArgs(args ?? [])];
   // The extension also restores a persona snapshot stored in an existing session.
   flags.push("-e", PERSONA_EXTENSION);
-  bridge.start({ cwd, args: flags, env: persona ? { OMP_WEB_PERSONA: JSON.stringify(persona) } : {} });
+  bridge.start({ cwd, mode: 'rpc-ui', args: flags, env: persona ? { OMP_WEB_PERSONA: JSON.stringify(persona) } : {} });
   await new Promise<void>((resolve, reject) => {
     const t = setTimeout(() => reject(new Error("omp did not become ready in 60s")), 60_000);
     bridge.once("ready", () => {
@@ -126,16 +153,16 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
     });
   });
 
-  if (sessionPath) {
-    try {
-      await openSessionFile(bridge, sessionPath);
-    } catch (err: any) {
-      await bridge.stop();
-      slots.delete(key);
-      throw new Error(`Could not open session: ${err?.message ?? err}`);
-    }
-  }
-  slot.state = await bridge.send({ type: "get_state" }, 60_000).catch(() => null);
+  // Return after transport readiness so the client can answer extension startup
+  // questions before commands waiting on session_start can finish.
+  slot.initializing = (async () => {
+    await bridge.send({ type: 'set_ask_dialog', enabled: true });
+    await bridge.send({ type: 'set_event_filter', events: null, messageUpdates: 'full' });
+    await bridge.send({ type: 'set_subagent_subscription', level: 'events' });
+    if (sessionPath) await openSessionFile(bridge, sessionPath);
+    slot.state = await bridge.send({ type: 'get_state' }, 60_000);
+  })();
+  void slot.initializing.catch(error => broadcast(slot, slot.replay.accept({ type: 'bridge_error', message: error.message })));
   return slot;
 }
 
@@ -144,6 +171,40 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
   if (!p.startsWith("/api/")) return false;
 
   try {
+    if (p === '/api/native/catalog' && req.method === 'GET') {
+      const parts = (url.searchParams.get('path') || '').split('/').filter(Boolean);
+      json(res, 200, await nativeDescriptor(parts)); return true;
+    }
+    if (p === '/api/host-adapters') {
+      const body = req.method === 'POST' ? await readBody(req, 1024) : null;
+      const slot = slots.get(String(body?.key || url.searchParams.get('key') || ''));
+      if (!slot) return json(res, 404, { error: 'No such bridge' }), true;
+      if (req.method === 'POST') {
+        if (typeof body.enabled !== 'boolean') throw Error('Choose whether to enable GUI host integration');
+        await slot.initializing;
+        try {
+          await slot.bridge.send({ type: 'set_host_tools', tools: body.enabled ? GUI_HOST_TOOLS : [] });
+          await slot.bridge.send({ type: 'set_host_uri_schemes', schemes: body.enabled ? GUI_HOST_SCHEMES : [] });
+          slot.hostEnabled = body.enabled;
+        } catch (error) {
+          slot.hostEnabled = false;
+          await Promise.allSettled([slot.bridge.send({ type: 'set_host_tools', tools: [] }), slot.bridge.send({ type: 'set_host_uri_schemes', schemes: [] })]);
+          throw error;
+        }
+      }
+      json(res, 200, { enabled: !!slot.hostEnabled, tools: GUI_HOST_TOOLS, schemes: GUI_HOST_SCHEMES }); return true;
+    }
+    if (p === '/api/native/operations') {
+      if (req.method === 'GET') json(res, 200, url.searchParams.has('id') ? nativeJobOutput(url.searchParams.get('id')!, Number(url.searchParams.get('from') || 0)) : { jobs: nativeJobs() });
+      else if (req.method === 'POST') {
+        const body = await readBody(req, 1024 * 1024);
+        if (body.action === 'cancel') json(res, 200, await cancelNativeOperation(String(body.id)));
+        else if (body.action === 'run') json(res, 200, await runNativeOperation(body));
+        else if (body.action === 'terminal-preview' || body.action === 'terminal-launch') json(res, 200, await nativeTerminal(body, body.action === 'terminal-launch'));
+        else json(res, 400, { error: 'Unknown native operation' });
+      } else json(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
     if (p === '/api/desktop/installer') {
       if (!process.env.OMP_DESKTOP_TOKEN || !process.env.OMP_INSTALLER_PAYLOAD) {
         json(res, 404, { error: 'Installer mode is unavailable.' }); return true;
@@ -358,31 +419,42 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       });
       res.write(": connected\n\n");
       slot.subscribers.add(res);
-      // snapshot: state + transcript
-      try {
-        const snapshot = await readChatSnapshot(slot.bridge);
-        slot.state = snapshot.state;
-        res.write(`data: ${JSON.stringify({ type: "snapshot", ...snapshot, ready: slot.bridge.ready })}\n\n`);
-      } catch (err: any) {
-        res.write(`data: ${JSON.stringify({ type: "snapshot_error", message: String(err?.message ?? err) })}\n\n`);
-      }
       const ping = setInterval(() => {
-        try {
-          res.write(": ping\n\n");
-        } catch {}
+        if (!res.destroyed) res.write(": ping\n\n");
       }, 15_000);
       req.on("close", () => {
         clearInterval(ping);
         slot.subscribers.delete(res);
       });
+      for (const record of slot.replay.snapshot()) res.write(`data: ${JSON.stringify(record)}\n\n`);
+      // snapshot: state + transcript
+      try {
+        await slot.initializing;
+        const snapshot = await readChatSnapshot(slot.bridge);
+        slot.state = snapshot.state;
+        if (!res.destroyed) res.write(`data: ${JSON.stringify({ type: "snapshot", ...snapshot, ready: slot.bridge.ready })}\n\n`);
+        const history = await slot.bridge.send({ type: 'get_btw_history' });
+        if (!res.destroyed) res.write(`data: ${JSON.stringify({ type: 'btw_history', records: history.records })}\n\n`);
+      } catch (err: any) {
+        if (!res.destroyed) res.write(`data: ${JSON.stringify({ type: "snapshot_error", message: String(err?.message ?? err) })}\n\n`);
+      }
       return true;
     }
 
+    if (p === '/api/session-export' && req.method === 'GET') {
+      const slot = slots.get(url.searchParams.get('key') || '');
+      const file = slot?.exports?.get(url.searchParams.get('id') || '');
+      if (!file) return json(res, 404, { error: 'No such session export' }), true;
+      const data = await fs.readFile(file);
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-disposition': 'attachment; filename="omp-session.html"', 'content-length': data.length, 'cache-control': 'no-store' });
+      res.end(data); return true;
+    }
     if (p === "/api/cmd" && req.method === "POST") {
       const body = await readBody(req);
       const slot = slots.get(String(body.key));
       if (!slot) return json(res, 404, { error: "no such bridge" }), true;
       try {
+        await slot.initializing;
         if (body.cmd?.type === "abort") slot.routingAbort?.abort();
         if (body.cmd?.type === "prompt" && !String(body.cmd.message || "").startsWith("/")) {
           const config = await readControl();
@@ -406,10 +478,24 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
           }
         }
         const data = await slot.bridge.send(body.cmd, body.timeoutMs ?? 120_000);
+        if (body.cmd?.type === 'export_html' && data.path) {
+          const id = crypto.randomUUID();
+          (slot.exports ??= new Map()).set(id, data.path);
+          data.downloadUrl = `/api/session-export?key=${encodeURIComponent(String(body.key))}&id=${id}`;
+        }
+        if (['new_session', 'open_session', 'switch_session', 'branch', 'fork', 'navigate_tree', 'handoff'].includes(body.cmd?.type) && !data.cancelled && !data.aborted) {
+          const snapshot = await readChatSnapshot(slot.bridge);
+          slot.state = snapshot.state;
+          broadcast(slot, { type: 'snapshot', ...snapshot });
+          if (typeof (data.editorText ?? data.text) === 'string') broadcast(slot, slot.replay.accept({ type: 'extension_ui_request', method: 'set_editor_text', text: data.editorText ?? data.text }));
+          const history = await slot.bridge.send({ type: 'get_btw_history' });
+          broadcast(slot, { type: 'btw_history', records: history.records });
+        }
+        if (body.cmd?.type === 'set_todos') broadcast(slot, { type: 'todo_update', phases: data.todoPhases });
         if (body.cmd?.type === "get_state") slot.state = data;
         json(res, 200, { ok: true, data });
       } catch (err: any) {
-        json(res, 200, { ok: false, error: String(err?.message ?? err) });
+        json(res, 200, { ok: false, error: String(err?.message ?? err), code: err.code });
       }
       return true;
     }
@@ -419,6 +505,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       const slot = slots.get(String(body.key));
       if (!slot) return json(res, 404, { error: "no such bridge" }), true;
       slot.bridge.write({ type: "extension_ui_response", ...body.response });
+      slot.replay.dialogs.delete(String(body.response?.id));
       json(res, 200, { ok: true });
       return true;
     }
@@ -561,7 +648,15 @@ async function serveStatic(res: http.ServerResponse, pathname: string) {
 }
 
 const server = http.createServer((req, res) => {
-  const url = new URL(req.url || "/", process.env.OMP_DESKTOP_TOKEN ? `http://127.0.0.1:${(server.address() as import("node:net").AddressInfo).port}` : `http://${req.headers.host || "localhost"}`);
+  let url: URL;
+  try {
+    url = new URL(req.url || "/", process.env.OMP_DESKTOP_TOKEN ? `http://127.0.0.1:${(server.address() as import("node:net").AddressInfo).port}` : `http://${req.headers.host || "localhost"}`);
+  } catch {
+    json(res, 400, { error: 'Invalid request URL.' }); return;
+  }
+  if (url.pathname.startsWith('/api/') && !loopbackApiRequest(req.headers.host, req.headers.origin)) {
+    json(res, 403, { error: 'A same-origin loopback session is required.' }); return;
+  }
   if(!desktopAccess(req,res,url,process.env.OMP_DESKTOP_TOKEN))return;
   if(process.env.OMP_DESKTOP_TOKEN && url.pathname==="/api/desktop/appearance" && req.method==="POST"){
     void readBody(req,1024).then(body=>{if(!/^#[0-9a-f]{6}$/i.test(body.accent||"")){json(res,400,{error:"Invalid accent"});return;}process.stdout.write("OMP_DESKTOP_APPEARANCE "+JSON.stringify({accent:body.accent})+"\n");res.writeHead(204);res.end();}).catch(()=>json(res,400,{error:"Invalid appearance request"}));return;
@@ -592,6 +687,7 @@ async function shutdown() {
   if(stopping)return;stopping=true;
   log("shutting down");
   await Promise.allSettled([...slots.values()].map((s) => s.bridge.stop(2500)));
+  await stopNativeOperations();
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 4000);
 }

@@ -22,6 +22,14 @@ export interface DialogRequest {
   prefill?: string;
   timeout?: number;
   receivedAt: number;
+  initialIndex?: number;
+  selectionMarker?: 'radio' | 'checkbox';
+  checkedIndices?: number[];
+  markableCount?: number;
+  optionDetails?: { description?: string }[];
+  secret?: boolean;
+  promptStyle?: boolean;
+  questions?: { id: string; question: string; header?: string; multi?: boolean; recommended?: number; options: { label: string; description?: string; preview?: string }[] }[];
 }
 
 export interface Toast {
@@ -38,7 +46,7 @@ export interface ChatState {
   messages: AnyRec[];
   live: AnyRec | null;
   tools: Record<string, ToolRun>;
-  queue: { steering: string[]; followUp: string[] };
+  queue: { steering: string[]; followUp: string[]; liveSteered?: number };
   todos: any[];
   subagents: AnyRec[];
   dialogs: DialogRequest[];
@@ -50,6 +58,12 @@ export interface ChatState {
   running: boolean;
   error: string | null;
   notice: string | null;
+  outputs: { id: string; text: string; kind: string; at: number }[];
+  editorUpdate: { id: string; text: string } | null;
+  authLinks: { id: string; url: string; instructions?: string }[];
+  sideQuestions: AnyRec[];
+  dictation: AnyRec | null;
+  voice: { phase: string; input?: number; output?: number; error?: string; turns: AnyRec[] };
 }
 
 export const initialChat: ChatState = {
@@ -72,6 +86,12 @@ export const initialChat: ChatState = {
   running: false,
   error: null,
   notice: null,
+  outputs: [],
+  editorUpdate: null,
+  authLinks: [],
+  sideQuestions: [],
+  dictation: null,
+  voice: { phase: 'off', turns: [] },
 };
 
 function pushToast(s: ChatState, kind: Toast["kind"], text: string): ChatState {
@@ -140,8 +160,67 @@ function mergeMessages(prev: AnyRec[], incoming: AnyRec[]): AnyRec[] {
 
 export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
   switch (rec.type) {
+    case 'command_output':
+    case 'notice':
+    case 'extension_error':
+    case 'bridge_error': {
+      const text = rec.text ?? rec.message ?? rec.error ?? '';
+      if (!text) return s;
+      const id = String(rec.uiEventId ?? rec.id ?? `${rec.type}-${Date.now()}-${s.outputs.length}`);
+      if (s.outputs.some(output => output.id === id)) return s;
+      const kind = rec.type.endsWith('error') ? 'error' : rec.level ?? rec.severity ?? 'info';
+      return { ...s, outputs: [...s.outputs.slice(-63), { id, text: String(text), kind, at: rec.uiReceivedAt ?? Date.now() }] };
+    }
+    case 'session_info_update':
+      return { ...s, title: rec.title ?? s.title };
+    case 'config_update':
+      return { ...s, state: { ...s.state, ...(rec.model ? { model: rec.model } : {}), ...(rec.thinkingLevel ? { thinkingLevel: rec.thinkingLevel } : {}) } };
+    case 'goal_updated':
+      return { ...s, state: { ...s.state, goal: rec.state ?? (rec.goal ? { goal: rec.goal } : null) } };
+    case 'subagents_snapshot': {
+      const activeIds = new Set((rec.subagents ?? []).map((agent: AnyRec) => agent.id));
+      return { ...s, subagents: [...(rec.subagents ?? []), ...s.subagents.filter(agent => !activeIds.has(agent.id) && ['completed', 'done', 'aborted', 'cancelled', 'failed', 'error'].includes(agent.status))].slice(0, 50) };
+    }
+    case 'subagent_lifecycle': {
+      const payload = rec.payload;
+      if (!payload?.id) return s;
+      const existing = s.subagents.find(agent => agent.id === payload.id);
+      if (existing?.parentToolCallId && payload.parentToolCallId && existing.parentToolCallId !== payload.parentToolCallId && payload.status !== 'started') return s;
+      const agent = { ...existing, ...payload, status: payload.status === 'started' ? 'running' : payload.status, lastUpdate: Date.now() };
+      return { ...s, subagents: [agent, ...s.subagents.filter(current => current.id !== agent.id)].slice(0, 50) };
+    }
+    case 'subagent_progress': {
+      const payload = rec.payload, id = payload?.progress?.id;
+      return { ...s, subagents: s.subagents.map(agent => agent.id === id && (!payload.parentToolCallId || !agent.parentToolCallId || agent.parentToolCallId === payload.parentToolCallId) ? { ...agent, ...payload, ...payload.progress, progress: payload.progress, lastUpdate: Date.now() } : agent) };
+    }
+    case 'subagent_event':
+      return { ...s, subagents: s.subagents.map(agent => agent.id === rec.payload?.id ? { ...agent, lastEvent: rec.payload.event?.type, lastUpdate: Date.now() } : agent) };
+    case 'btw_history':
+      return { ...s, sideQuestions: rec.records ?? [] };
+    case 'dictation_state':
+    case 'dictation_transcript':
+      return { ...s, dictation: { ...(s.dictation?.captureId === rec.captureId ? s.dictation : {}), ...rec } };
+    case 'dictation_end':
+      return { ...s, dictation: { ...rec, state: 'ended' } };
+    case 'live_phase':
+      return { ...s, voice: { ...s.voice, phase: rec.phase } };
+    case 'live_levels':
+      return { ...s, voice: { ...s.voice, input: rec.input, output: rec.output } };
+    case 'live_transcript':
+      return { ...s, voice: { ...s.voice, turns: [...s.voice.turns.filter(turn => turn.role !== rec.role || turn.turn !== rec.turn), rec].slice(-100) } };
+    case 'live_end':
+      return { ...s, voice: { ...s.voice, phase: 'off', error: rec.error, input: 0, output: 0 } };
+    case 'btw_record':
+      return { ...s, sideQuestions: [rec.record, ...s.sideQuestions.filter(record => record.id !== rec.record.id)] };
+    case 'btw_delta':
+      return { ...s, sideQuestions: s.sideQuestions.map(record => {
+        if (record.id !== rec.recordId) return record;
+        if (!record.followUps?.length) return { ...record, answer: (record.answer ?? '') + rec.delta };
+        return { ...record, followUps: record.followUps.map((turn: AnyRec, index: number) => index === record.followUps.length - 1 ? { ...turn, answer: (turn.answer ?? '') + rec.delta } : turn) };
+      }) };
     case "snapshot": {
       const st = rec.state ?? s.state;
+      const changed = s.state?.sessionId && st?.sessionId && s.state.sessionId !== st.sessionId;
       return {
         ...s,
         loaded: true,
@@ -153,9 +232,10 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
         title: st?.sessionName ?? s.title,
         running: !!st?.isStreaming,
         queue: st?.queuedMessages
-          ? { steering: st.queuedMessages.steering ?? [], followUp: st.queuedMessages.followUp ?? [] }
+          ? { steering: st.queuedMessages.steering ?? [], followUp: st.queuedMessages.followUp ?? [], liveSteered: st.queuedMessages.liveSteered ?? 0 }
           : s.queue,
         error: null,
+        ...(changed ? { outputs: [], authLinks: [], sideQuestions: [], statuses: {}, widgets: {}, subagents: [], editorUpdate: null } : {}),
       };
     }
     case "snapshot_error":
@@ -226,6 +306,7 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
         queue: {
           steering: rec.steering ?? s.queue.steering,
           followUp: rec.followUp ?? s.queue.followUp,
+          liveSteered: rec.liveSteered ?? s.queue.liveSteered,
         },
       };
     case "thinking_level_changed":
@@ -233,17 +314,31 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
     case "session_info_changed":
       return { ...s, title: rec.name ?? null };
     case "compaction_start":
+    case 'manual_compaction_start':
+    case 'auto_compaction_start':
       return { ...s, notice: `Compacting (${rec.reason ?? "auto"})…` };
     case "compaction_end":
+    case 'manual_compaction_end':
+    case 'auto_compaction_end':
       return { ...s, notice: rec.aborted ? "Compaction aborted" : rec.errorMessage ? `Compaction failed: ${rec.errorMessage}` : "Compaction complete" };
     case "auto_retry_start":
       return pushToast(s, "warning", `Retrying (${rec.attempt}/${rec.maxAttempts}) — ${rec.errorMessage ?? ""}`);
     case "auto_retry_end":
       return rec.success ? s : pushToast(s, "error", `Retries exhausted: ${rec.finalError ?? ""}`);
+    case 'cache_warming_start':
+      return { ...s, statuses: { ...s.statuses, cache: `Warming ${rec.phase} cache · ${rec.provider}/${rec.model}` } };
+    case 'cache_warming_end':
+      return { ...s, statuses: { ...s.statuses, cache: `Cache ${rec.outcome}${rec.warmingStopReason ? ' · ' + rec.warmingStopReason : ''}` } };
     case "available_commands_update":
       return { ...s, commands: rec.commands ?? [] };
     case "extension_ui_request": {
       const method = rec.method;
+      if (method === 'cancel') return { ...s, dialogs: s.dialogs.filter(dialog => dialog.id !== rec.targetId) };
+      if (method === 'open_url') {
+        const url = rec.launchUrl || rec.url;
+        if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return pushToast(s, 'error', 'OMP returned an unsupported sign-in link.');
+        return { ...s, authLinks: [...s.authLinks.filter(link => link.id !== rec.id), { id: rec.id, url, instructions: rec.instructions }] };
+      }
       if (method === "notify") {
         return pushToast(s, rec.notifyType ?? "info", rec.message ?? "");
       }
@@ -260,7 +355,9 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
         return { ...s, widgets };
       }
       if (method === "setTitle") return { ...s, title: rec.title ?? s.title };
-      if (method === "set_editor_text") return { ...s, notice: "editor text set by extension" };
+      if (method === "set_editor_text") return { ...s, editorUpdate: { id: String(rec.uiEventId ?? rec.id ?? Date.now()), text: String(rec.text ?? '') } };
+      if (!['select', 'confirm', 'input', 'editor', 'ask'].includes(method)) return pushToast(s, 'warning', `Unsupported native dialog: ${method}`);
+      if (s.dialogs.some(dialog => dialog.id === rec.id)) return s;
       return {
         ...s,
         dialogs: [
@@ -274,7 +371,15 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
             placeholder: rec.placeholder,
             prefill: rec.prefill,
             timeout: rec.timeout,
-            receivedAt: Date.now(),
+            receivedAt: rec.uiReceivedAt ?? Date.now(),
+            initialIndex: rec.initialIndex,
+            selectionMarker: rec.selectionMarker,
+            checkedIndices: rec.checkedIndices,
+            markableCount: rec.markableCount,
+            optionDetails: rec.optionDetails,
+            secret: rec.secret,
+            promptStyle: rec.promptStyle,
+            questions: rec.questions,
           },
         ],
       };

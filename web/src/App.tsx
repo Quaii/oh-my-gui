@@ -22,6 +22,7 @@ import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
 import { RightRail } from "./components/RightRail";
 import { Composer } from "./components/Composer";
+import { RuntimeOutput, ExtensionWidgets } from './components/RuntimeOutput';
 import { CommandPalette } from "./components/CommandPalette";
 import { MessageRow, AssistantMessage, buildResultMap } from "./components/Message";
 import { DialogHost, Toasts } from "./components/Dialogs";
@@ -153,12 +154,6 @@ export default function App() {
           key,
           (rec) => {
             if (version !== attachVersion.current) return;
-            if (rec.type === "extension_ui_request" && rec.method === "open_url") {
-              try {
-                window.open(rec.url, "_blank", "noopener");
-              } catch {}
-              return;
-            }
             setChat(rec);
           },
           (s) => version === attachVersion.current && setConnected(s === "open")
@@ -200,8 +195,8 @@ export default function App() {
       post("/api/cmd", { key, cmd: { type: "get_subagents" } }).catch(() => null),
     ]);
     if (key !== keyRef.current) return;
-    if (st?.ok) dispatch((x) => ({ ...x, state: st.data,todos:st.data?.todoPhases??x.todos }));
-    if(agents?.ok)dispatch(x=>({...x,subagents:agents.data?.subagents??(Array.isArray(agents.data)?agents.data:[])}));
+    if (st?.ok) dispatch((x) => ({ ...x, state: st.data,todos:st.data?.todoPhases??x.todos, queue: st.data.queuedMessages ?? x.queue }));
+    if(agents?.ok)dispatch(x=>chatReducer(x,{type:'subagents_snapshot',subagents:agents.data?.subagents??(Array.isArray(agents.data)?agents.data:[])}));
     if (s?.ok) setStats(s.data);
     if (cmds?.ok) dispatch((x) => ({ ...x, commands: cmds.data?.commands ?? [] }));
   }, []);
@@ -212,6 +207,11 @@ export default function App() {
     const b = await get(`/api/bootstrap?cwd=${encodeURIComponent(cwd)}`).catch(() => null);
     if (b) setBoot((prev: any) => ({ ...prev, sessions: b.sessions,allSessions:b.allSessions,control:b.control }));
   }, [cwd]);
+  useEffect(() => {
+    if (!chat.loaded || !chat.state) return;
+    const path = chat.state.sessionFile ?? null;
+    if (path !== activePath) { setActivePath(path); void refreshSessions(); }
+  }, [chat.loaded, chat.state?.sessionFile, activePath, refreshSessions]);
 
   const sendCmd = useCallback(
     async (cmd: any) => {
@@ -264,11 +264,18 @@ export default function App() {
     refreshState();
   }, [refreshState]);
 
-  const onRespond = useCallback((d: any, response: any) => {
+  const onRespond = useCallback(async (d: any, response: any) => {
     const key = keyRef.current;
-    if (!key) return;
-    post("/api/ui", { key, response: { id: d.id, ...response } }).catch(() => {});
-    dispatch((s) => ({ ...s, dialogs: s.dialogs.filter((x) => x.id !== d.id) }));
+    if (!key) return false;
+    try {
+      await post("/api/ui", { key, response: { id: d.id, ...response } });
+      if (key !== keyRef.current) return false;
+      dispatch((s) => ({ ...s, dialogs: s.dialogs.filter((x) => x.id !== d.id) }));
+      return true;
+    } catch (error: any) {
+      setChat({ type: 'extension_ui_request', method: 'notify', notifyType: 'error', message: 'Could not deliver your answer: ' + error.message });
+      return false;
+    }
   }, []);
 
   const copy = useCallback((text: string) => {
@@ -323,7 +330,7 @@ export default function App() {
 
   useEffect(() => {
     if (stickRef.current) scrollToLatest(false);
-  }, [chat.messages, chat.live, chat.tools, scrollToLatest]);
+  }, [chat.messages, chat.live, chat.tools, chat.outputs, scrollToLatest]);
 
   /* ---------- keyboard ---------- */
   useEffect(() => {
@@ -593,6 +600,7 @@ export default function App() {
                   </div>
                 ))}
 
+                <RuntimeOutput outputs={chat.outputs} links={chat.authLinks} />
               </div>
               </SkeletonReveal>
             </div>
@@ -644,20 +652,7 @@ export default function App() {
                 )}
               </div>
             )}
-            {Object.keys(chat.widgets).length > 0 && (
-              <div className="mb-2 space-y-1">
-                {Object.entries(chat.widgets).map(([k, w]) => (
-                  <div
-                    key={k}
-                    className="rounded-md border border-border bg-card px-3 py-2 font-mono text-[11px] leading-relaxed text-muted-foreground"
-                  >
-                    {w.lines.map((l, i) => (
-                      <div key={i}>{l}</div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
+            <ExtensionWidgets widgets={chat.widgets} placement="aboveEditor" />
             {projectForSession({cwd},boot?.control?.projects||[])&&chat.loaded&&<ProjectSuggestions chatKey={chat.key} projectPath={cwd} revision={chat.messages.length} running={running} empty={empty} onSelect={text=>void onSend(text,[])}/>}
             <Composer
               launchFlags={flags}
@@ -677,6 +672,7 @@ export default function App() {
               seed={seed}
               onSeedConsumed={() => setSeed(null)}
             />
+            <ExtensionWidgets widgets={chat.widgets} placement="belowEditor" />
           </div>
         </div>}
       </main>

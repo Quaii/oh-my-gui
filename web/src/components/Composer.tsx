@@ -1,4 +1,8 @@
 import { PermissionControl } from "./PermissionControl";
+import { QueueControls } from './QueueControls';
+import { VoiceControls } from './VoiceControls';
+import { appendDictation } from '../lib/dictation-draft';
+import { useWordCompletion } from '../lib/use-word-completion';
 import {supportsFastMode} from "../lib/model-capabilities";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "@/components/ui/command";
@@ -49,6 +53,8 @@ export function Composer(props: ComposerProps) {
   const [text, setText] = useState("");
   const [images, setImages] = useState<any[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
+  const [extensionBackup, setExtensionBackup] = useState<string | null>(null);
+  const editorEvent = useRef<string | null>(null);
   const [palette, setPalette] = useState<{ open: boolean; index: number }>({ open: false, index: 0 });
   const [modelOpen, setModelOpen] = useState(false);
   const [thinkOpen, setThinkOpen] = useState(false);
@@ -56,11 +62,15 @@ export function Composer(props: ComposerProps) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const saveTimer = useRef<number | null>(null);
+  const latestDraft = useRef(text);
+  latestDraft.current = text;
 
   const st = chat.state;
   const running = !!st?.isStreaming || chat.running;
   const model = st?.model;
   const key = draftKey(chat.key);
+  const [cursor, setCursor] = useState(0), [focused, setFocused] = useState(false), [composing, setComposing] = useState(false);
+  const completion = useWordCompletion(chat.key, text, cursor, focused && !composing && chat.loaded);
 
   /* ---- per-thread draft persistence (spec §2.3 / §6.2) ---- */
   useEffect(() => {
@@ -71,7 +81,15 @@ export function Composer(props: ComposerProps) {
       setText("");
     }
     setImages([]);
+    setExtensionBackup(null);
     setPalette({ open: false, index: 0 });
+    return () => {
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
+      try {
+        if (latestDraft.current) localStorage.setItem(key, latestDraft.current);
+        else localStorage.removeItem(key);
+      } catch {}
+    };
   }, [key]);
 
   useEffect(() => {
@@ -94,6 +112,25 @@ export function Composer(props: ComposerProps) {
     props.onSeedConsumed?.();
     requestAnimationFrame(() => taRef.current?.focus());
   }, [props.seed?.n]);
+
+  useEffect(() => {
+    const update = chat.editorUpdate;
+    if (!update || editorEvent.current === `${chat.key}:${update.id}`) return;
+    editorEvent.current = `${chat.key}:${update.id}`;
+    setExtensionBackup(text);
+    setText(update.text);
+    requestAnimationFrame(() => taRef.current?.focus());
+  }, [chat.editorUpdate, chat.key, text]);
+  useEffect(() => {
+    const receive = (event: Event) => {
+      const result = event as CustomEvent<{ owner: string; text: string }>;
+      if (result.detail.owner !== chat.key) return;
+      event.preventDefault();
+      setText(previous => appendDictation(previous, result.detail.text));
+    };
+    window.addEventListener('omp:dictation-result', receive);
+    return () => window.removeEventListener('omp:dictation-result', receive);
+  }, [chat.key]);
 
   useEffect(() => {
     if (!notice) return;
@@ -131,7 +168,7 @@ export function Composer(props: ComposerProps) {
       if (!prompt && images.length === 0) return;
       if(submitting||permissionsPending)return;
       const sentImages=images;setSubmitting(true);
-      void onSend(prompt, images).then(ok=>{if(!ok){setText(current=>current || prompt);setImages(current=>current.length?current:sentImages);}}).finally(()=>setSubmitting(false));
+      void onSend(prompt, images).then(ok=>{if(!ok){setText(current=>current || prompt);setImages(current=>current.length?current:sentImages);}else setExtensionBackup(null);}).finally(()=>setSubmitting(false));
       setText("");
       setImages([]);
       setPalette({ open: false, index: 0 });
@@ -147,6 +184,13 @@ export function Composer(props: ComposerProps) {
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     // never swallow IME composition keys
     if (e.nativeEvent.isComposing) return;
+    if (e.key === 'Tab' && !palette.open && completion.prediction && completion.prediction.text === text && cursor === text.length) {
+      e.preventDefault();
+      const accepted = completion.dismiss(true);
+      if (accepted) { setText(text + accepted.suffix); setCursor(text.length + accepted.suffix.length); }
+      return;
+    }
+    if (e.key === 'Escape' && completion.prediction) { completion.dismiss(); return; }
     if (!palette.open) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -238,19 +282,9 @@ export function Composer(props: ComposerProps) {
         </div>
       )}
 
-      {queued.length > 0 && (
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {queued.map((q, i) => (
-            <span
-              key={i}
-              className="max-w-[280px] truncate rounded-md border border-border bg-ink-800 px-2 py-1 text-[11.5px] text-fog-300"
-            >
-              {q}
-            </span>
-          ))}
-        </div>
-      )}
+      <QueueControls chat={chat} text={text} images={images} report={setNotice} restore={(restored, attachments) => { setText(previous => previous ? previous + '\n\n' + restored : restored); setImages(previous => [...previous, ...attachments]); }} interrupted={() => { setText(''); setImages([]); setExtensionBackup(null); }} />
 
+      {extensionBackup !== null && <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">OMP updated the draft.<button className="underline" onClick={() => { setText(extensionBackup); setExtensionBackup(null); }}>Undo</button><button className="ml-auto" aria-label="Dismiss draft update" onClick={() => setExtensionBackup(null)}><X className="size-3" /></button></div>}
       {notice && (
         <div className="mb-2 rounded-md border-0 bg-primary/10 px-2.5 py-1 text-[11.5px] text-primary">
           {notice}
@@ -277,7 +311,17 @@ export function Composer(props: ComposerProps) {
         }
         hint={null}
         inputRef={taRef as any}
-        inputProps={{ onKeyDown, "aria-label": "Message OMP" }}
+        completion={completion.prediction?.text === text ? completion.prediction.suffix : undefined}
+        inputProps={{
+          onKeyDown,
+          onInput: e => setCursor(e.currentTarget.selectionStart === e.currentTarget.selectionEnd ? e.currentTarget.selectionStart : -1),
+          onSelect: e => setCursor(e.currentTarget.selectionStart === e.currentTarget.selectionEnd ? e.currentTarget.selectionStart : -1),
+          onFocus: e => { setFocused(true); setCursor(e.currentTarget.selectionStart); },
+          onBlur: () => { setFocused(false); completion.dismiss(); },
+          onCompositionStart: () => setComposing(true),
+          onCompositionEnd: () => setComposing(false),
+          "aria-label": "Message OMP",
+        }}
         actions={
           <>
             <Tooltip>
@@ -316,6 +360,7 @@ export function Composer(props: ComposerProps) {
             )}
 
             <PermissionControl launchFlags={props.launchFlags} onPendingChange={setPermissionsPending}/>
+            <VoiceControls chat={chat} draft={text} insert={spoken => setText(previous => appendDictation(previous, spoken))}/>
             {running && (
               <Tooltip>
                 <TooltipTrigger asChild>

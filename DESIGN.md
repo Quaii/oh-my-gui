@@ -5,7 +5,7 @@ panel, an optional peer editor, and floating controls above a continuous backgro
 spacing and material hierarchy do the work. Preserve this composition when fixing bugs or adding the
 desktop shell. New decoration is not a substitute for consistency.
 
-This guide records the approved web design as implemented before Tauri integration. Values below
+This guide records the approved shared web and desktop design. Values below
 describe default UI scale; user appearance overrides remain supported. Read the final matching rules
 in [index.css](web/src/index.css): the file contains older declarations superseded later in the cascade.
 Do not copy an early rule or a third-party component's stock styling as the product specification.
@@ -34,10 +34,10 @@ of approximating these treatments on each new element.
 ## Color is semantic
 
 [theme.ts](web/src/lib/theme.ts) defines twelve presets: Graphite, Midnight, Forest, Plum, Espresso,
-Carbon, Paper, Linen, Sage, Mist, Rose and Sand. Graphite (`dark`) is the default. The selected theme
+Carbon, Paper, Linen, Sage, Mist, Rose and Sand. Carbon (`carbon`) is the application default. The selected theme
 and validated overrides feed semantic CSS variables through [appearance.ts](web/src/lib/appearance.ts).
 
-| Graphite preset value | Hex | Semantic use |
+| Graphite reference palette | Hex | Semantic use |
 | --- | --- | --- |
 | Panel | `#111112` | Base workspace background |
 | Sidebar | `#1c1c1e` | Navigation and default ordinary-card surfaces |
@@ -268,3 +268,21 @@ Runtime checks, installation errors and retry controls remain visible; no downlo
 Theme previews use a three-column grid inside a bounded scroll area; the page must never grow wider
 than its window. Appearance choices update immediately. Provider connection remains an explicit action
 in the existing Settings screen. Reopening setup hides the workspace without unmounting it.
+
+## Native workflow surfaces
+
+Session goals, editable task phases, branch/label controls, execution settings and side-question topics
+use ordinary settings groups with the same sidebar material and spacing. Native operation forms use
+that material too; command help supplies real argument/action choices rather than a JSON-only workflow.
+Log bodies load when their disclosure opens, append native output deltas and retain a bounded tail.
+Closing a disclosure stops its polling. Process exit is the completion signal.
+
+Native questions remain focused modal dialogs. Preserve the selected initial option, descriptions,
+checkbox round-trips, structured free-text answers, protected inputs and deadlines. Native cancellation
+removes the matching dialog. Composer text supplied by an extension has an Undo backup; widgets retain
+their above/below-editor placement. A native terminal handoff stays visibly distinct from a GUI operation.
+
+Voice is a compact icon control in the existing composer row. Dictation updates only its originating
+draft and never sends a prompt automatically. Native completion appears as a muted suffix, accepted with
+Tab; it does not animate the surrounding input. Queue edits append recovered content without discarding
+an existing draft. Goal/task status and subagent activity always come from native results/events.

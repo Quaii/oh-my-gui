@@ -27,3 +27,28 @@ test("transcript errors are surfaced instead of becoming an empty chat", async (
   } }), /transcript unavailable/);
   await assert.rejects(readChatSnapshot({ send: async () => ({}) }), /invalid transcript/);
 });
+
+test('v2 pages history with a stable cursor and total', async () => {
+  const messages = Array.from({ length: 401 }, (_, i) => ({ role: 'user', content: String(i) }));
+  const snapshot = await readChatSnapshot({ protocolVersion: 2, send: async command => {
+    if (command.type === 'get_state') return { messageCount: 401 };
+    assert.equal(command.type, 'get_messages_page');
+    assert.equal(command.limit, 100);
+    const start = Number(command.cursor || 0), end = Math.min(start + 100, 401);
+    return { messages: messages.slice(start, end), totalMessages: 401, nextCursor: end < 401 ? String(end) : undefined };
+  } });
+  assert.deepEqual(snapshot.messages, messages);
+});
+test('stale pages are discarded before a full snapshot fallback', async () => {
+  let pages = 0;
+  const snapshot = await readChatSnapshot({ protocolVersion: 2, send: async command => {
+    if (command.type === 'get_state') return {};
+    if (command.type === 'get_messages') return { messages: [{ content: 'fresh' }] };
+    if (pages++) throw Object.assign(new Error('stale'), { code: 'stale_cursor' });
+    return { messages: [{ content: 'old' }], totalMessages: 2, nextCursor: 'next' };
+  } });
+  assert.deepEqual(snapshot.messages, [{ content: 'fresh' }]);
+});
+test('invalid pages do not silently produce partial history', async () => {
+  await assert.rejects(readChatSnapshot({ protocolVersion: 2, send: async command => command.type === 'get_state' ? {} : { messages: [], totalMessages: 2 } }), /incomplete/);
+});

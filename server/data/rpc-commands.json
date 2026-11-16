@@ -1,382 +1,372 @@
 [
   {
-    "type": "ready",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "1. Ready frame (`{ type: \"ready\" }`)"
-  },
-  {
-    "type": "response",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "2. `RpcResponse` (`{ type: \"response\", ... }`)"
-  },
-  {
-    "type": "extension_ui_request",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "4. `RpcExtensionUIRequest` (`{ type: \"extension_ui_request\", ... }`)"
-  },
-  {
-    "type": "extension_error",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "7. Extension errors (`{ type: \"extension_error\", extensionPath, event, error }`)"
-  },
-  {
-    "type": "available_commands_update",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "8. Available-commands updates (`{ type: \"available_commands_update\", commands }`), emitted at startup and whenever command metadata changes"
-  },
-  {
-    "type": "prompt_result",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "9. Prompt completion (`{ type: \"prompt_result\", id?, agentInvoked, status, error?, sessionSettled }`), unless the response already completed the prompt locally; see [`prompt` payload](#prompt-payload)"
-  },
-  {
-    "type": "session_settled",
-    "section": "Outbound frame categories (stdout)",
-    "schema": "10.   Session quiescence (`{ type: \"session_settled\" }`); see [Yield vs settled](#yield-vs-settled)"
-  },
-  {
-    "type": "extension_ui_response",
-    "section": "Inbound frame categories (stdin)",
-    "schema": "2. `RpcExtensionUIResponse` (`{ type: \"extension_ui_response\", ... }`)"
+    "type": "negotiate_protocol",
+    "section": "Protocol",
+    "schema": "{ id?: string; type: \"negotiate_protocol\"; protocolVersion: number }"
   },
   {
     "type": "prompt",
     "section": "Prompting",
-    "schema": "{ id?, type: \"prompt\", message: string, images?: ImageContent[], streamingBehavior?: \"steer\" | \"followUp\" }"
+    "schema": "{ id?: string; type: \"prompt\"; message: string; images?: ImageContent[]; streamingBehavior?: \"steer\" | \"followUp\" }"
   },
   {
     "type": "steer",
     "section": "Prompting",
-    "schema": "{ id?, type: \"steer\", message: string, images?: ImageContent[] }"
+    "schema": "{ id?: string; type: \"steer\"; message: string; images?: ImageContent[] }"
   },
   {
     "type": "follow_up",
     "section": "Prompting",
-    "schema": "{ id?, type: \"follow_up\", message: string, images?: ImageContent[] }"
+    "schema": "{ id?: string; type: \"follow_up\"; message: string; images?: ImageContent[] }"
   },
   {
     "type": "remove_queued_message",
     "section": "Prompting",
-    "schema": "{ id?, type: \"remove_queued_message\", message: string, queue: \"steering\" | \"followUp\" }"
+    "schema": "{ id?: string; type: \"remove_queued_message\"; message: string; queue: \"steering\" | \"followUp\" }"
   },
   {
     "type": "promote_queued_message",
     "section": "Prompting",
-    "schema": "{ id?, type: \"promote_queued_message\", message: string }"
+    "schema": "{ id?: string; type: \"promote_queued_message\"; message: string }"
   },
   {
     "type": "abort",
     "section": "Prompting",
-    "schema": "{ id?, type: \"abort\" }"
+    "schema": "{ id?: string; type: \"abort\" }"
   },
   {
     "type": "abort_and_prompt",
     "section": "Prompting",
-    "schema": "{ id?, type: \"abort_and_prompt\", message: string, images?: ImageContent[] }"
+    "schema": "{ id?: string; type: \"abort_and_prompt\"; message: string; images?: ImageContent[] }"
   },
   {
     "type": "abort_and_restore_queue",
     "section": "Prompting",
-    "schema": "{ id?, type: \"abort_and_restore_queue\" }"
+    "schema": "{ id?: string; type: \"abort_and_restore_queue\" }"
   },
   {
     "type": "new_session",
     "section": "Prompting",
-    "schema": "{ id?, type: \"new_session\", parentSession?: string }"
+    "schema": "{ id?: string; type: \"new_session\"; parentSession?: string }"
   },
   {
     "type": "open_session",
     "section": "Prompting",
-    "schema": "{ id?, type: \"open_session\", sessionDir: string, provider?: string, modelId?: string }"
-  },
-  {
-    "type": "negotiate_protocol",
-    "section": "Protocol",
-    "schema": "{ id?, type: \"negotiate_protocol\", protocolVersion: 2 }"
+    "schema": "{ id?: string; type: \"open_session\"; sessionDir: string; provider?: string; modelId?: string }"
   },
   {
     "type": "get_state",
     "section": "State",
-    "schema": "{ id?, type: \"get_state\" }"
+    "schema": "{ id?: string; type: \"get_state\" }"
   },
   {
     "type": "set_fast_mode",
     "section": "State",
-    "schema": "{ id?, type: \"set_fast_mode\", enabled: boolean }"
+    "schema": "{ id?: string; type: \"set_fast_mode\"; enabled: boolean }"
   },
   {
     "type": "set_slow_mode",
     "section": "State",
-    "schema": "{ id?, type: \"set_slow_mode\", enabled: boolean }"
+    "schema": "{ id?: string; type: \"set_slow_mode\"; enabled: boolean }"
   },
   {
     "type": "goal",
     "section": "State",
-    "schema": "{ id?, type: \"goal\", op: \"get\" | \"create\" | \"resume\" | \"pause\" | \"drop\", objective?: string, token_budget?: number }"
+    "schema": "{\n\t\t\tid?: string;\n\t\t\ttype: \"goal\";\n\t\t\top: RpcGoalOp;\n\t\t\tobjective?: string;\n\t\t\ttoken_budget?: number;\n\t  }"
   },
   {
     "type": "set_ask_dialog",
     "section": "State",
-    "schema": "{ id?, type: \"set_ask_dialog\", enabled: boolean }"
+    "schema": "{ id?: string; type: \"set_ask_dialog\"; enabled: boolean }"
   },
   {
     "type": "get_available_commands",
     "section": "State",
-    "schema": "{ id?, type: \"get_available_commands\" }"
+    "schema": "{ id?: string; type: \"get_available_commands\" }"
   },
   {
     "type": "get_entries",
     "section": "State",
-    "schema": "{ id?, type: \"get_entries\", since?: string }"
+    "schema": "{ id?: string; type: \"get_entries\"; since?: string }"
   },
   {
     "type": "get_tree",
     "section": "State",
-    "schema": "{ id?, type: \"get_tree\" }"
+    "schema": "{ id?: string; type: \"get_tree\" }"
   },
   {
     "type": "set_todos",
     "section": "State",
-    "schema": "{ id?, type: \"set_todos\", phases: TodoPhase[] }"
+    "schema": "{ id?: string; type: \"set_todos\"; phases: TodoPhase[] }"
   },
   {
     "type": "set_host_tools",
     "section": "State",
-    "schema": "{ id?, type: \"set_host_tools\", tools: RpcHostToolDefinition[] }"
+    "schema": "{ id?: string; type: \"set_host_tools\"; tools: RpcHostToolDefinition[] }"
   },
   {
     "type": "set_host_uri_schemes",
     "section": "State",
-    "schema": "{ id?, type: \"set_host_uri_schemes\", schemes: RpcHostUriSchemeDefinition[] }"
+    "schema": "{ id?: string; type: \"set_host_uri_schemes\"; schemes: RpcHostUriSchemeDefinition[] }"
   },
   {
     "type": "set_subagent_subscription",
     "section": "State",
-    "schema": "{ id?, type: \"set_subagent_subscription\", level: \"off\" | \"progress\" | \"events\" }"
+    "schema": "{ id?: string; type: \"set_subagent_subscription\"; level: RpcSubagentSubscriptionLevel }"
   },
   {
     "type": "set_event_filter",
     "section": "State",
-    "schema": "{ id?, type: \"set_event_filter\", events: string[] | null, messageUpdates?: \"full\" | \"delta\" }"
+    "schema": "{ id?: string; type: \"set_event_filter\"; events: string[] | null; messageUpdates?: RpcMessageUpdates }"
   },
   {
     "type": "get_subagents",
     "section": "State",
-    "schema": "{ id?, type: \"get_subagents\" }"
+    "schema": "{ id?: string; type: \"get_subagents\" }"
   },
   {
     "type": "get_subagent_messages",
     "section": "State",
-    "schema": "{ id?, type: \"get_subagent_messages\", subagentId?: string, sessionFile?: string, fromByte?: number }"
+    "schema": "{ id?: string; type: \"get_subagent_messages\"; subagentId?: string; sessionFile?: string; fromByte?: number }"
   },
   {
     "type": "cancel_subagent",
     "section": "State",
-    "schema": "{ id?, type: \"cancel_subagent\", subagentId: string }"
+    "schema": "{ id?: string; type: \"cancel_subagent\"; subagentId: string }"
   },
   {
     "type": "steer_subagent",
     "section": "State",
-    "schema": "{ id?, type: \"steer_subagent\", subagentId: string, message: string }"
+    "schema": "{ id?: string; type: \"steer_subagent\"; subagentId: string; message: string }"
+  },
+  {
+    "type": "live_start",
+    "section": "Live voice",
+    "schema": "{ id?: string; type: \"live_start\"; voice?: string; instructions?: string }"
+  },
+  {
+    "type": "live_connect",
+    "section": "Live voice",
+    "schema": "{ id?: string; type: \"live_connect\"; sdpOffer: string; voice?: string; instructions?: string }"
+  },
+  {
+    "type": "live_stop",
+    "section": "Live voice",
+    "schema": "{ id?: string; type: \"live_stop\" }"
+  },
+  {
+    "type": "live_mute",
+    "section": "Live voice",
+    "schema": "{ id?: string; type: \"live_mute\"; muted?: boolean }"
+  },
+  {
+    "type": "dictation_start",
+    "section": "Dictation",
+    "schema": "{ id?: string; type: \"dictation_start\"; captureId: string }"
+  },
+  {
+    "type": "dictation_stop",
+    "section": "Dictation",
+    "schema": "{ id?: string; type: \"dictation_stop\" }"
   },
   {
     "type": "set_model",
     "section": "Model",
-    "schema": "{ id?, type: \"set_model\", provider: string, modelId: string }"
+    "schema": "{ id?: string; type: \"set_model\"; provider: string; modelId: string }"
   },
   {
     "type": "cycle_model",
     "section": "Model",
-    "schema": "{ id?, type: \"cycle_model\" }"
+    "schema": "{ id?: string; type: \"cycle_model\" }"
   },
   {
     "type": "get_available_models",
     "section": "Model",
-    "schema": "{ id?, type: \"get_available_models\" }"
+    "schema": "{ id?: string; type: \"get_available_models\" }"
   },
   {
     "type": "set_thinking_level",
     "section": "Thinking",
-    "schema": "{ id?, type: \"set_thinking_level\", level: ThinkingLevel }"
+    "schema": "{ id?: string; type: \"set_thinking_level\"; level: ThinkingLevel }"
   },
   {
     "type": "cycle_thinking_level",
     "section": "Thinking",
-    "schema": "{ id?, type: \"cycle_thinking_level\" }"
+    "schema": "{ id?: string; type: \"cycle_thinking_level\" }"
   },
   {
     "type": "get_available_thinking_levels",
     "section": "Thinking",
-    "schema": "{ id?, type: \"get_available_thinking_levels\" }"
+    "schema": "{ id?: string; type: \"get_available_thinking_levels\" }"
   },
   {
     "type": "set_steering_mode",
     "section": "Queue modes",
-    "schema": "{ id?, type: \"set_steering_mode\", mode: \"all\" | \"one-at-a-time\" }"
+    "schema": "{ id?: string; type: \"set_steering_mode\"; mode: \"all\" | \"one-at-a-time\" }"
   },
   {
     "type": "set_follow_up_mode",
     "section": "Queue modes",
-    "schema": "{ id?, type: \"set_follow_up_mode\", mode: \"all\" | \"one-at-a-time\" }"
+    "schema": "{ id?: string; type: \"set_follow_up_mode\"; mode: \"all\" | \"one-at-a-time\" }"
   },
   {
     "type": "set_interrupt_mode",
     "section": "Queue modes",
-    "schema": "{ id?, type: \"set_interrupt_mode\", mode: \"immediate\" | \"wait\" }"
+    "schema": "{ id?: string; type: \"set_interrupt_mode\"; mode: \"immediate\" | \"wait\" }"
   },
   {
     "type": "compact",
     "section": "Compaction",
-    "schema": "{ id?, type: \"compact\", customInstructions?: string }"
+    "schema": "{ id?: string; type: \"compact\"; customInstructions?: string }"
   },
   {
     "type": "set_auto_compaction",
     "section": "Compaction",
-    "schema": "{ id?, type: \"set_auto_compaction\", enabled: boolean }"
+    "schema": "{ id?: string; type: \"set_auto_compaction\"; enabled: boolean }"
   },
   {
     "type": "set_cache_warming",
     "section": "Cache warming",
-    "schema": "{ id?, type: \"set_cache_warming\", mode: \"off\" | \"streaming\" | \"idle\" }"
+    "schema": "{ id?: string; type: \"set_cache_warming\"; mode: CacheWarmingMode }"
   },
   {
     "type": "set_auto_retry",
     "section": "Retry",
-    "schema": "{ id?, type: \"set_auto_retry\", enabled: boolean }"
+    "schema": "{ id?: string; type: \"set_auto_retry\"; enabled: boolean }"
   },
   {
     "type": "abort_retry",
     "section": "Retry",
-    "schema": "{ id?, type: \"abort_retry\" }"
+    "schema": "{ id?: string; type: \"abort_retry\" }"
   },
   {
     "type": "bash",
     "section": "Bash",
-    "schema": "{ id?, type: \"bash\", command: string, excludeFromContext?: boolean }"
+    "schema": "{ id?: string; type: \"bash\"; command: string; excludeFromContext?: boolean }"
   },
   {
     "type": "abort_bash",
     "section": "Bash",
-    "schema": "{ id?, type: \"abort_bash\" }"
+    "schema": "{ id?: string; type: \"abort_bash\" }"
   },
   {
     "type": "get_session_stats",
     "section": "Session",
-    "schema": "{ id?, type: \"get_session_stats\" }"
+    "schema": "{ id?: string; type: \"get_session_stats\" }"
   },
   {
     "type": "get_session_lease",
     "section": "Session",
-    "schema": "{ id?, type: \"get_session_lease\", sessionIds: string[] }` → `data: { held: string[], unknown: string[] }`: which sessions a running omp (this process included) owns, probed without taking their ownership leases. Ids in neither list are free; `unknown` ids could not be probed. `omp session lease --json -- <id>...` answers the same without an RPC child (`--` keeps ids starting with `-` from parsing as options)."
+    "schema": "{ id?: string; type: \"get_session_lease\"; sessionIds: string[] }"
   },
   {
     "type": "export_html",
     "section": "Session",
-    "schema": "{ id?, type: \"export_html\", outputPath?: string }"
+    "schema": "{ id?: string; type: \"export_html\"; outputPath?: string }"
   },
   {
     "type": "switch_session",
     "section": "Session",
-    "schema": "{ id?, type: \"switch_session\", sessionPath: string, provider?: string, modelId?: string }"
+    "schema": "{ id?: string; type: \"switch_session\"; sessionPath: string; provider?: string; modelId?: string }"
   },
   {
     "type": "branch",
     "section": "Session",
-    "schema": "{ id?, type: \"branch\", entryId: string }"
+    "schema": "{ id?: string; type: \"branch\"; entryId: string }"
   },
   {
     "type": "fork",
     "section": "Session",
-    "schema": "{ id?, type: \"fork\", entryId?: string }"
+    "schema": "{ id?: string; type: \"fork\"; entryId?: string }"
   },
   {
     "type": "navigate_tree",
     "section": "Session",
-    "schema": "{ id?, type: \"navigate_tree\", entryId: string, summarize?: boolean, customInstructions?: string }` → `data: { cancelled: boolean, aborted?: true, editorText?: string }"
+    "schema": "{ id?: string; type: \"navigate_tree\"; entryId: string; summarize?: boolean; customInstructions?: string }"
   },
   {
     "type": "abort_branch_summary",
     "section": "Session",
-    "schema": "{ id?, type: \"abort_branch_summary\" }"
+    "schema": "{ id?: string; type: \"abort_branch_summary\" }"
   },
   {
     "type": "set_label",
     "section": "Session",
-    "schema": "{ id?, type: \"set_label\", entryId: string, label?: string }"
+    "schema": "{ id?: string; type: \"set_label\"; entryId: string; label?: string }"
   },
   {
     "type": "get_branch_messages",
     "section": "Session",
-    "schema": "{ id?, type: \"get_branch_messages\" }"
+    "schema": "{ id?: string; type: \"get_branch_messages\" }"
   },
   {
     "type": "get_last_assistant_text",
     "section": "Session",
-    "schema": "{ id?, type: \"get_last_assistant_text\" }"
+    "schema": "{ id?: string; type: \"get_last_assistant_text\" }"
   },
   {
     "type": "set_session_name",
     "section": "Session",
-    "schema": "{ id?, type: \"set_session_name\", name: string }"
+    "schema": "{ id?: string; type: \"set_session_name\"; name: string }"
   },
   {
     "type": "handoff",
     "section": "Session",
-    "schema": "{ id?, type: \"handoff\", customInstructions?: string }"
+    "schema": "{ id?: string; type: \"handoff\"; customInstructions?: string }"
   },
   {
     "type": "get_messages",
     "section": "Messages",
-    "schema": "{ id?, type: \"get_messages\" }"
+    "schema": "{ id?: string; type: \"get_messages\" }"
   },
   {
     "type": "get_messages_page",
     "section": "Messages",
-    "schema": "{ id?, type: \"get_messages_page\", cursor?: string, limit?: number }"
+    "schema": "{ id?: string; type: \"get_messages_page\"; cursor?: string; limit?: number }"
   },
   {
     "type": "get_login_providers",
     "section": "Login",
-    "schema": "{ id?, type: \"get_login_providers\" }"
+    "schema": "{ id?: string; type: \"get_login_providers\" }"
   },
   {
     "type": "login",
     "section": "Login",
-    "schema": "{ id?, type: \"login\", providerId: string }"
+    "schema": "{ id?: string; type: \"login\"; providerId: string }"
   },
   {
     "type": "get_logout_accounts",
     "section": "Login",
-    "schema": "{ id?, type: \"get_logout_accounts\", providerId: string }` → `data: { accounts: LogoutAccount[] }"
+    "schema": "{ id?: string; type: \"get_logout_accounts\"; providerId: string }"
   },
   {
     "type": "logout",
     "section": "Login",
-    "schema": "{ id?, type: \"logout\", providerId: string, credentialId: number }` → `data: { remainingSource?: string }"
+    "schema": "{ id?: string; type: \"logout\"; providerId: string; credentialId: number }"
   },
   {
     "type": "predict_word",
     "section": "Word prediction",
-    "schema": "{ id?, type: \"predict_word\", text: string, cursor: number }` → `data: { suffix: string | null }"
+    "schema": "{ id?: string; type: \"predict_word\"; text: string; cursor: number }"
   },
   {
     "type": "predict_word_feedback",
     "section": "Word prediction",
-    "schema": "{ id?, type: \"predict_word_feedback\", text: string, cursor: number, suggestion: string, accepted: boolean }"
+    "schema": "{\n\t\t\tid?: string;\n\t\t\ttype: \"predict_word_feedback\";\n\t\t\ttext: string;\n\t\t\tcursor: number;\n\t\t\tsuggestion: string;\n\t\t\taccepted: boolean;\n\t  }"
   },
   {
     "type": "btw",
     "section": "Side questions",
-    "schema": "{ id?, type: \"btw\", question: string, recordId?: string }` → `data: { record: BtwHistoryRecord }"
+    "schema": "{ id?: string; type: \"btw\"; question: string; recordId?: string }"
   },
   {
     "type": "btw_cancel",
     "section": "Side questions",
-    "schema": "{ id?, type: \"btw_cancel\", recordId?: string }` → `data: { cancelled: boolean }"
+    "schema": "{ id?: string; type: \"btw_cancel\"; recordId?: string }"
   },
   {
     "type": "get_btw_history",
     "section": "Side questions",
-    "schema": "{ id?, type: \"get_btw_history\" }` → `data: { records: BtwHistoryRecord[] }"
+    "schema": "{ id?: string; type: \"get_btw_history\" }"
   }
 ]

@@ -109,7 +109,7 @@ export function ToolsPanel({
         )}
       </Group>
 
-      <Group title="Always available"><div className="grid gap-x-8 py-2 sm:grid-cols-2">{alwaysOn.map(t=><div key={t.name} title={t.description} className="flex items-center gap-3 py-3 text-[13px]"><span className="text-muted-foreground"><ToolIcon name={t.name}/></span><span>{t.name}</span><Check className="ml-auto size-3.5 text-muted-foreground"/></div>)}</div></Group>
+      <Group title="Runtime-managed tools"><p className="py-3 text-xs text-muted-foreground">Availability depends on the active runtime, launch flags and permissions. A check means the current session reports the tool.</p><div className="grid gap-x-8 py-2 sm:grid-cols-2">{alwaysOn.map(t=><div key={t.name} title={t.description} className="flex items-center gap-3 py-3 text-[13px]"><span className="text-muted-foreground"><ToolIcon name={t.name}/></span><span>{t.name}</span>{live?.includes(t.name)&&<Check className="ml-auto size-3.5 text-muted-foreground" aria-label="Reported by this session"/>}</div>)}</div></Group>
 
       </SkeletonReveal>
       <div className="pt-2">

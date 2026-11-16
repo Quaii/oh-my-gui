@@ -1,0 +1,371 @@
+{
+  "version": "18.20.0",
+  "source": "https://github.com/can1357/oh-my-pi/tree/v18.20.0/packages/coding-agent/src",
+  "values": {
+    "advisor.syncBacklog": [
+      "off",
+      "1",
+      "3",
+      "5",
+      "strict"
+    ],
+    "hindsight.recallBudget": [
+      "low",
+      "mid",
+      "high"
+    ],
+    "treeFilterMode": [
+      "default",
+      "no-tools",
+      "user-only",
+      "labeled-only",
+      "all"
+    ],
+    "tier.openai": [
+      "none",
+      "auto",
+      "default",
+      "flex",
+      "scale",
+      "priority",
+      "ultrafast"
+    ],
+    "tier.anthropic": [
+      "none",
+      "priority"
+    ],
+    "tier.google": [
+      "none",
+      "flex",
+      "priority"
+    ],
+    "tier.subagent": [
+      "inherit",
+      "none",
+      "auto",
+      "default",
+      "flex",
+      "scale",
+      "priority",
+      "ultrafast"
+    ],
+    "tier.advisor": [
+      "inherit",
+      "none",
+      "auto",
+      "default",
+      "flex",
+      "scale",
+      "priority",
+      "ultrafast"
+    ],
+    "providers.anthropic.slowMode": [
+      "off",
+      "auto"
+    ],
+    "providers.tinyModelDevice": [
+      "default",
+      "gpu",
+      "cpu",
+      "mlx",
+      "metal",
+      "webgpu",
+      "cuda",
+      "dml",
+      "coreml",
+      "auto",
+      "wasm",
+      "webnn",
+      "webnn-gpu",
+      "webnn-cpu",
+      "webnn-npu"
+    ],
+    "providers.tinyModelDtype": [
+      "default",
+      "q4",
+      "q4f16",
+      "q8",
+      "fp16",
+      "fp32",
+      "int8",
+      "uint8",
+      "bnb4",
+      "q2",
+      "q2f16",
+      "q1",
+      "q1f16",
+      "auto"
+    ],
+    "spotlight.thinking": [
+      "low",
+      "med",
+      "high",
+      "max"
+    ],
+    "stt.submitTrigger": [
+      "never",
+      "release",
+      "release-complete",
+      "say-submit"
+    ],
+    "dev.autoqaConsent": [
+      "unset",
+      "granted",
+      "denied"
+    ],
+    "live.voice": [
+      "arbor",
+      "breeze",
+      "cove",
+      "ember",
+      "juniper",
+      "maple",
+      "sol",
+      "spruce",
+      "vale"
+    ],
+    "tts.localVoice": [
+      "af_heart",
+      "af_bella",
+      "af_nicole",
+      "af_aoede",
+      "af_kore",
+      "af_sarah",
+      "am_michael",
+      "am_fenrir",
+      "am_puck",
+      "bf_emma",
+      "bm_george",
+      "bm_fable"
+    ],
+    "speech.voice": [
+      "af_heart",
+      "af_bella",
+      "af_nicole",
+      "af_aoede",
+      "af_kore",
+      "af_sarah",
+      "am_michael",
+      "am_fenrir",
+      "am_puck",
+      "bf_emma",
+      "bm_george",
+      "bm_fable"
+    ],
+    "task.maxEffort": [
+      "minimal",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "codexResets.autoRedeem5h": [
+      "unset",
+      "yes",
+      "no"
+    ],
+    "codexResets.autoRedeemWeekly": [
+      "unset",
+      "yes",
+      "no"
+    ],
+    "claudeResets.autoRedeem5h": [
+      "unset",
+      "yes",
+      "no"
+    ],
+    "claudeResets.autoRedeemWeekly": [
+      "unset",
+      "yes",
+      "no"
+    ],
+    "claudeResets.autoRedeemFable": [
+      "unset",
+      "yes",
+      "no"
+    ]
+  },
+  "options": {
+    "live.voice": [
+      {
+        "value": "arbor",
+        "label": "Arbor"
+      },
+      {
+        "value": "breeze",
+        "label": "Breeze"
+      },
+      {
+        "value": "cove",
+        "label": "Cove"
+      },
+      {
+        "value": "ember",
+        "label": "Ember"
+      },
+      {
+        "value": "juniper",
+        "label": "Juniper"
+      },
+      {
+        "value": "maple",
+        "label": "Maple"
+      },
+      {
+        "value": "sol",
+        "label": "Sol"
+      },
+      {
+        "value": "spruce",
+        "label": "Spruce"
+      },
+      {
+        "value": "vale",
+        "label": "Vale"
+      }
+    ],
+    "tts.localVoice": [
+      {
+        "value": "af_heart",
+        "label": "Heart (American female)"
+      },
+      {
+        "value": "af_bella",
+        "label": "Bella (American female)"
+      },
+      {
+        "value": "af_nicole",
+        "label": "Nicole (American female)"
+      },
+      {
+        "value": "af_aoede",
+        "label": "Aoede (American female)"
+      },
+      {
+        "value": "af_kore",
+        "label": "Kore (American female)"
+      },
+      {
+        "value": "af_sarah",
+        "label": "Sarah (American female)"
+      },
+      {
+        "value": "am_michael",
+        "label": "Michael (American male)"
+      },
+      {
+        "value": "am_fenrir",
+        "label": "Fenrir (American male)"
+      },
+      {
+        "value": "am_puck",
+        "label": "Puck (American male)"
+      },
+      {
+        "value": "bf_emma",
+        "label": "Emma (British female)"
+      },
+      {
+        "value": "bm_george",
+        "label": "George (British male)"
+      },
+      {
+        "value": "bm_fable",
+        "label": "Fable (British male)"
+      }
+    ],
+    "speech.voice": [
+      {
+        "value": "af_heart",
+        "label": "Heart (American female)"
+      },
+      {
+        "value": "af_bella",
+        "label": "Bella (American female)"
+      },
+      {
+        "value": "af_nicole",
+        "label": "Nicole (American female)"
+      },
+      {
+        "value": "af_aoede",
+        "label": "Aoede (American female)"
+      },
+      {
+        "value": "af_kore",
+        "label": "Kore (American female)"
+      },
+      {
+        "value": "af_sarah",
+        "label": "Sarah (American female)"
+      },
+      {
+        "value": "am_michael",
+        "label": "Michael (American male)"
+      },
+      {
+        "value": "am_fenrir",
+        "label": "Fenrir (American male)"
+      },
+      {
+        "value": "am_puck",
+        "label": "Puck (American male)"
+      },
+      {
+        "value": "bf_emma",
+        "label": "Emma (British female)"
+      },
+      {
+        "value": "bm_george",
+        "label": "George (British male)"
+      },
+      {
+        "value": "bm_fable",
+        "label": "Fable (British male)"
+      }
+    ]
+  },
+  "rpcDefaults": [
+    "advisor.continueSeverity",
+    "advisor.enabled",
+    "advisor.evictStaleResults",
+    "advisor.immuneTurns",
+    "advisor.maxNotesPerUpdate",
+    "advisor.reviewInterval",
+    "advisor.reviewMode",
+    "advisor.syncBacklog",
+    "async.enabled",
+    "async.maxJobs",
+    "bash.autoBackground.enabled",
+    "bash.autoBackground.thresholdMs",
+    "eval.autoBackground.enabled",
+    "eval.autoBackground.thresholdMs",
+    "isolation.backend",
+    "memories.enabled",
+    "memory.backend",
+    "task.agentAccountPools",
+    "task.agentAdvisor",
+    "task.agentCompactionThresholdOverrides",
+    "task.agentModelOverrides",
+    "task.agentPrewalk",
+    "task.agentServiceTierOverrides",
+    "task.autoParallel",
+    "task.batch",
+    "task.disabledAgents",
+    "task.eager",
+    "task.isolation.apply",
+    "task.isolation.commits",
+    "task.isolation.enabled",
+    "task.isolation.merge",
+    "task.maxConcurrency",
+    "task.maxRecursionDepth",
+    "task.steps",
+    "task.workerThreads",
+    "tier.advisor",
+    "worktree.cleanSource",
+    "worktree.clone",
+    "worktree.onExit",
+    "worktree.onStart"
+  ]
+}

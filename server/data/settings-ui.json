@@ -582,7 +582,8 @@
   "label": "Bash Auto-Background",
   "tab": "shell",
   "group": "Bash",
-  "description": "Automatically background long-running bash commands and deliver the result later"
+  "description": "Automatically background long-running bash commands and deliver the result later",
+  "rpcDefault": true
  },
  "bash.gitGuard": {
   "id": "bash.gitGuard",
@@ -773,7 +774,8 @@
   "label": "Eval Auto-Background",
   "tab": "shell",
   "group": "Eval & Runtimes",
-  "description": "Automatically background long-running eval cells and deliver the result later"
+  "description": "Automatically background long-running eval cells and deliver the result later",
+  "rpcDefault": true
  },
  "python.kernelMode": {
   "id": "python.kernelMode",
@@ -905,7 +907,8 @@
   "label": "Allow Isolated Subagents",
   "tab": "tasks",
   "group": "Isolation",
-  "description": "Allow per-task isolation with `isolated: true`; tasks without it run in the shared checkout"
+  "description": "Allow per-task isolation with `isolated: true`; tasks without it run in the shared checkout",
+  "rpcDefault": true
  },
  "isolation.backend": {
   "id": "isolation.backend",
@@ -962,7 +965,8 @@
     "value": "rcopy",
     "label": "Recursive copy"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "worktree.clone": {
   "id": "worktree.clone",
@@ -970,7 +974,8 @@
   "label": "Clone Checkout into Worktrees",
   "tab": "tasks",
   "group": "Isolation",
-  "description": "New worktrees from `github pr_checkout` and `git worktree add` in bash start as a copy-on-write clone of the current checkout so ignored build artifacts (node_modules, target) carry over; falls back to a plain checkout when the filesystem cannot clone"
+  "description": "New worktrees from `github pr_checkout` and `git worktree add` in bash start as a copy-on-write clone of the current checkout so ignored build artifacts (node_modules, target) carry over; falls back to a plain checkout when the filesystem cannot clone",
+  "rpcDefault": true
  },
  "worktree.cleanSource": {
   "id": "worktree.cleanSource",
@@ -978,7 +983,8 @@
   "label": "Clean Source Checkout on /wt",
   "tab": "tasks",
   "group": "Isolation",
-  "description": "When creating a worktree with `/wt`, reset tracked changes and remove untracked files from the original checkout after carrying them over"
+  "description": "When creating a worktree with `/wt`, reset tracked changes and remove untracked files from the original checkout after carrying them over",
+  "rpcDefault": true
  },
  "worktree.onStart": {
   "id": "worktree.onStart",
@@ -1005,7 +1011,8 @@
     "value": "create",
     "label": "Create"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "worktree.onExit": {
   "id": "worktree.onExit",
@@ -1032,7 +1039,8 @@
     "value": "remove",
     "label": "Remove"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "task.isolation.apply": {
   "id": "task.isolation.apply",
@@ -1040,7 +1048,8 @@
   "label": "Apply Isolated Changes",
   "tab": "tasks",
   "group": "Isolation",
-  "description": "Automatically apply successful isolated task changes to the parent checkout; disable to retain patch or branch artifacts"
+  "description": "Automatically apply successful isolated task changes to the parent checkout; disable to retain patch or branch artifacts",
+  "rpcDefault": true
  },
  "ovnfs.path": {
   "id": "ovnfs.path",
@@ -1070,7 +1079,8 @@
     "value": "branch",
     "label": "Branch"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "task.isolation.commits": {
   "id": "task.isolation.commits",
@@ -1092,7 +1102,8 @@
     "value": "ai",
     "label": "AI"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "worktree.base": {
   "id": "worktree.base",
@@ -1127,7 +1138,8 @@
     "value": "always",
     "label": "Always"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "task.autoParallel": {
   "id": "task.autoParallel",
@@ -1154,7 +1166,8 @@
     "value": "on",
     "label": "On"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "task.batch": {
   "id": "task.batch",
@@ -1162,7 +1175,8 @@
   "label": "Batch Task Calls",
   "tab": "tasks",
   "group": "Subagents",
-  "description": "Switch the task tool to its batch shape: one call carries { context, tasks[] } \\u2014 one subagent per item, with an optional per-item agent (defaulting to the session spawn-policy agent), per-item isolation, and a required shared context prepended to every assignment. With async.enabled=true, each spawn runs as an independent background agent with the normal idle/parked lifecycle; otherwise the call blocks for merged results. Disable to restore the flat single-spawn schema."
+  "description": "Switch the task tool to its batch shape: one call carries { context, tasks[] } \\u2014 one subagent per item, with an optional per-item agent (defaulting to the session spawn-policy agent), per-item isolation, and a required shared context prepended to every assignment. With async.enabled=true, each spawn runs as an independent background agent with the normal idle/parked lifecycle; otherwise the call blocks for merged results. Disable to restore the flat single-spawn schema.",
+  "rpcDefault": true
  },
  "task.steps": {
   "id": "task.steps",
@@ -1170,7 +1184,8 @@
   "label": "Sequential Task Steps",
   "tab": "tasks",
   "group": "Subagents",
-  "description": "Spawns take ordered `steps` instead of one `task`: the subagent gets the first step, then each next one once it finishes the previous; past 4 steps, earlier messages carry two or more. The last step's result is the task's result."
+  "description": "Spawns take ordered `steps` instead of one `task`: the subagent gets the first step, then each next one once it finishes the previous; past 4 steps, earlier messages carry two or more. The last step's result is the task's result.",
+  "rpcDefault": true
  },
  "task.structured": {
   "id": "task.structured",
@@ -1237,7 +1252,8 @@
   "label": "Max Concurrent Tasks",
   "tab": "tasks",
   "group": "Subagents",
-  "description": "Maximum number of subagents running concurrently"
+  "description": "Maximum number of subagents running concurrently",
+  "rpcDefault": true
  },
  "task.workerThreads": {
   "id": "task.workerThreads",
@@ -1245,7 +1261,8 @@
   "label": "Subagent Worker Threads",
   "tab": "tasks",
   "group": "Subagents",
-  "description": "Maximum worker threads for subagents. Up to 8 concurrent subagents run on the main thread; at 9 one worker joins, and one more each time the count doubles (18, 36, 72). Workers stop a minute after no subagent is live in them; 0 keeps every subagent on the main thread"
+  "description": "Maximum worker threads for subagents. Up to 8 concurrent subagents run on the main thread; at 9 one worker joins, and one more each time the count doubles (18, 36, 72). Workers stop a minute after no subagent is live in them; 0 keeps every subagent on the main thread",
+  "rpcDefault": true
  },
  "task.enableLsp": {
   "id": "task.enableLsp",
@@ -1261,7 +1278,8 @@
   "label": "Max Task Recursion",
   "tab": "tasks",
   "group": "Subagents",
-  "description": "How many levels deep subagents can spawn their own subagents"
+  "description": "How many levels deep subagents can spawn their own subagents",
+  "rpcDefault": true
  },
  "task.maxRuntimeMs": {
   "id": "task.maxRuntimeMs",
@@ -1309,7 +1327,15 @@
   "label": "Maximum Per-Spawn Effort",
   "tab": "tasks",
   "group": "Subagents",
-  "description": "Maximum reasoning effort allowed for the task tool's per-spawn effort hint or a per-call model. An explicit `:level` is clamped to the highest supported effort at or below this ceiling, and an omitted `:level` inherits the agent's thinking level capped at this value; cold revival re-applies the cap. Unset, `:inherit` and `:off` keep their existing meaning. A per-call model must support an effort at or below this ceiling; the default preserves the model's full range."
+  "description": "Maximum reasoning effort allowed for the task tool's per-spawn effort hint or a per-call model. An explicit `:level` is clamped to the highest supported effort at or below this ceiling, and an omitted `:level` inherits the agent's thinking level capped at this value; cold revival re-applies the cap. Unset, `:inherit` and `:off` keep their existing meaning. A per-call model must support an effort at or below this ceiling; the default preserves the model's full range.",
+  "values": [
+   "minimal",
+   "low",
+   "medium",
+   "high",
+   "xhigh",
+   "max"
+  ]
  },
  "task.prewalk": {
   "id": "task.prewalk",
@@ -1897,7 +1923,8 @@
   "label": "Async Execution",
   "tab": "tools",
   "group": "Execution",
-  "description": "Enable async bash commands and background task execution"
+  "description": "Enable async bash commands and background task execution",
+  "rpcDefault": true
  },
  "async.printWake": {
   "id": "async.printWake",
@@ -2769,7 +2796,14 @@
   "label": "Session Tree Filter",
   "tab": "interaction",
   "group": "Input",
-  "description": "Default filter mode when opening the session tree"
+  "description": "Default filter mode when opening the session tree",
+  "values": [
+   "default",
+   "no-tools",
+   "user-only",
+   "labeled-only",
+   "all"
+  ]
  },
  "autocompleteMaxVisible": {
   "id": "autocompleteMaxVisible",
@@ -3434,14 +3468,27 @@
   "label": "Service Tier \\u2014 OpenAI",
   "tab": "model",
   "group": "Sampling",
-  "description": "Processing tier for OpenAI / OpenAI-Codex requests, and OpenAI-family models routed via OpenRouter (none = omit). Sent as `service_tier`."
+  "description": "Processing tier for OpenAI / OpenAI-Codex requests, and OpenAI-family models routed via OpenRouter (none = omit). Sent as `service_tier`.",
+  "values": [
+   "none",
+   "auto",
+   "default",
+   "flex",
+   "scale",
+   "priority",
+   "ultrafast"
+  ]
  },
  "tier.anthropic": {
   "id": "tier.anthropic",
   "type": "enum",
   "label": "Service Tier \\u2014 Anthropic",
   "tab": "model",
-  "group": "Sampling"
+  "group": "Sampling",
+  "values": [
+   "none",
+   "priority"
+  ]
  },
  "tier.google": {
   "id": "tier.google",
@@ -3449,7 +3496,12 @@
   "label": "Service Tier \\u2014 Google",
   "tab": "model",
   "group": "Sampling",
-  "description": "Processing tier for Gemini (Google AI Studio + Vertex) requests, and Google-family models routed via OpenRouter (none = omit). Sent as the top-level `serviceTier` field."
+  "description": "Processing tier for Gemini (Google AI Studio + Vertex) requests, and Google-family models routed via OpenRouter (none = omit). Sent as the top-level `serviceTier` field.",
+  "values": [
+   "none",
+   "flex",
+   "priority"
+  ]
  },
  "tier.subagent": {
   "id": "tier.subagent",
@@ -3457,7 +3509,17 @@
   "label": "Service Tier \\u2014 Subagent",
   "tab": "model",
   "group": "Sampling",
-  "description": "Service Tier for spawned task/eval subagents. Inherit = match the main agent's live per-family tiers (tracks /fast); pick a value to apply it to whichever family the subagent's model belongs to."
+  "description": "Service Tier for spawned task/eval subagents. Inherit = match the main agent's live per-family tiers (tracks /fast); pick a value to apply it to whichever family the subagent's model belongs to.",
+  "values": [
+   "inherit",
+   "none",
+   "auto",
+   "default",
+   "flex",
+   "scale",
+   "priority",
+   "ultrafast"
+  ]
  },
  "tier.advisor": {
   "id": "tier.advisor",
@@ -3465,7 +3527,18 @@
   "label": "Service Tier \\u2014 Advisor",
   "tab": "model",
   "group": "Sampling",
-  "description": "Service Tier for the advisor model. None = standard processing; Inherit = match the main agent's live per-family tiers; pick a value to apply it to the advisor model's family."
+  "description": "Service Tier for the advisor model. None = standard processing; Inherit = match the main agent's live per-family tiers; pick a value to apply it to the advisor model's family.",
+  "values": [
+   "inherit",
+   "none",
+   "auto",
+   "default",
+   "flex",
+   "scale",
+   "priority",
+   "ultrafast"
+  ],
+  "rpcDefault": true
  },
  "retry.maxRetries": {
   "id": "retry.maxRetries",
@@ -3683,7 +3756,24 @@
   "label": "Tiny Model Device",
   "tab": "providers",
   "group": "Tiny Model",
-  "description": "Inference backend for local tiny models (titles + memory): an ONNX execution provider, or `mlx` to download MLX weights and run them through mlx-lm on Apple silicon. Default uses CPU-only ONNX. The PI_TINY_DEVICE env var overrides this."
+  "description": "Inference backend for local tiny models (titles + memory): an ONNX execution provider, or `mlx` to download MLX weights and run them through mlx-lm on Apple silicon. Default uses CPU-only ONNX. The PI_TINY_DEVICE env var overrides this.",
+  "values": [
+   "default",
+   "gpu",
+   "cpu",
+   "mlx",
+   "metal",
+   "webgpu",
+   "cuda",
+   "dml",
+   "coreml",
+   "auto",
+   "wasm",
+   "webnn",
+   "webnn-gpu",
+   "webnn-cpu",
+   "webnn-npu"
+  ]
  },
  "providers.tinyModelDtype": {
   "id": "providers.tinyModelDtype",
@@ -3691,7 +3781,23 @@
   "label": "Tiny Model Precision",
   "tab": "providers",
   "group": "Tiny Model",
-  "description": "ONNX quantization/precision for local tiny models. Default uses each model's shipped dtype (q4); lower precision is faster, higher is more faithful. Ignored by the MLX backend (its repos are pre-quantized 4-bit). The PI_TINY_DTYPE env var overrides this."
+  "description": "ONNX quantization/precision for local tiny models. Default uses each model's shipped dtype (q4); lower precision is faster, higher is more faithful. Ignored by the MLX backend (its repos are pre-quantized 4-bit). The PI_TINY_DTYPE env var overrides this.",
+  "values": [
+   "default",
+   "q4",
+   "q4f16",
+   "q8",
+   "fp16",
+   "fp32",
+   "int8",
+   "uint8",
+   "bnb4",
+   "q2",
+   "q2f16",
+   "q1",
+   "q1f16",
+   "auto"
+  ]
  },
  "providers.autoThinkingMaxEffort": {
   "id": "providers.autoThinkingMaxEffort",
@@ -4069,7 +4175,8 @@
   "label": "Enable Advisor",
   "tab": "model",
   "group": "Advisor",
-  "description": "Pair a second model (assigned to the 'advisor' role) that passively reviews each turn and injects notes."
+  "description": "Pair a second model (assigned to the 'advisor' role) that passively reviews each turn and injects notes.",
+  "rpcDefault": true
  },
  "advisor.syncBacklog": {
   "id": "advisor.syncBacklog",
@@ -4077,7 +4184,15 @@
   "label": "Advisor Sync Backlog",
   "tab": "model",
   "group": "Advisor",
-  "description": "Pause main agent until advisor backlog falls below threshold. Numeric values cap wait at 30 seconds; strict waits for all scheduled reviews without a wall-clock cap. Off disables catch-up delays. Abort, failure, and disposal release waits."
+  "description": "Pause main agent until advisor backlog falls below threshold. Numeric values cap wait at 30 seconds; strict waits for all scheduled reviews without a wall-clock cap. Off disables catch-up delays. Abort, failure, and disposal release waits.",
+  "values": [
+   "off",
+   "1",
+   "3",
+   "5",
+   "strict"
+  ],
+  "rpcDefault": true
  },
  "advisor.immuneTurns": {
   "id": "advisor.immuneTurns",
@@ -4085,7 +4200,8 @@
   "label": "Advisor Immune Turns",
   "tab": "model",
   "group": "Advisor",
-  "description": "After an advisor concern or blocker interrupts, route further concerns as non-interrupting asides for this many primary turns. Blockers are exempt from the cooldown."
+  "description": "After an advisor concern or blocker interrupts, route further concerns as non-interrupting asides for this many primary turns. Blockers are exempt from the cooldown.",
+  "rpcDefault": true
  },
  "advisor.continueSeverity": {
   "id": "advisor.continueSeverity",
@@ -4107,7 +4223,8 @@
     "value": "blocker",
     "label": "Blocker"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "advisor.reviewMode": {
   "id": "advisor.reviewMode",
@@ -4125,7 +4242,8 @@
     "value": "agent-end",
     "label": "Agent end"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "advisor.reviewInterval": {
   "id": "advisor.reviewInterval",
@@ -4133,7 +4251,8 @@
   "label": "Advisor Review Interval",
   "tab": "model",
   "group": "Advisor",
-  "description": "Default advisor cadence when no WATCHDOG.yml roster is present: review every Nth eligible primary update. 1 = every update. Skipped updates are sent with the next scheduled review."
+  "description": "Default advisor cadence when no WATCHDOG.yml roster is present: review every Nth eligible primary update. 1 = every update. Skipped updates are sent with the next scheduled review.",
+  "rpcDefault": true
  },
  "advisor.maxNotesPerUpdate": {
   "id": "advisor.maxNotesPerUpdate",
@@ -4141,7 +4260,8 @@
   "label": "Advisor Max Notes Per Update",
   "tab": "model",
   "group": "Advisor",
-  "description": "Maximum non-blocker advice notes accepted per advisor prompt update (1\\u201332; UI offers 1\\u20135 quick picks). Blockers are exempt."
+  "description": "Maximum non-blocker advice notes accepted per advisor prompt update (1\\u201332; UI offers 1\\u20135 quick picks). Blockers are exempt.",
+  "rpcDefault": true
  },
  "advisor.evictStaleResults": {
   "id": "advisor.evictStaleResults",
@@ -4149,7 +4269,8 @@
   "label": "Advisor Evict Stale Results",
   "tab": "model",
   "group": "Advisor",
-  "description": "Before each review, replace the advisor's read/grep/glob output from older reviews with a short placeholder. The latest review is kept."
+  "description": "Before each review, replace the advisor's read/grep/glob output from older reviews with a short placeholder. The latest review is kept.",
+  "rpcDefault": true
  },
  "memory.backend": {
   "id": "memory.backend",
@@ -4186,7 +4307,8 @@
     "value": "sharpshooter",
     "label": "Sharpshooter"
    }
-  ]
+  ],
+  "rpcDefault": true
  },
  "sharpshooter.model": {
   "id": "sharpshooter.model",
@@ -4876,7 +4998,71 @@
   "label": "Local TTS Voice",
   "tab": "providers",
   "group": "Services",
-  "description": "Kokoro voice used by the local TTS backend (American/British, female/male)"
+  "description": "Kokoro voice used by the local TTS backend (American/British, female/male)",
+  "values": [
+   "af_heart",
+   "af_bella",
+   "af_nicole",
+   "af_aoede",
+   "af_kore",
+   "af_sarah",
+   "am_michael",
+   "am_fenrir",
+   "am_puck",
+   "bf_emma",
+   "bm_george",
+   "bm_fable"
+  ],
+  "options": [
+   {
+    "value": "af_heart",
+    "label": "Heart (American female)"
+   },
+   {
+    "value": "af_bella",
+    "label": "Bella (American female)"
+   },
+   {
+    "value": "af_nicole",
+    "label": "Nicole (American female)"
+   },
+   {
+    "value": "af_aoede",
+    "label": "Aoede (American female)"
+   },
+   {
+    "value": "af_kore",
+    "label": "Kore (American female)"
+   },
+   {
+    "value": "af_sarah",
+    "label": "Sarah (American female)"
+   },
+   {
+    "value": "am_michael",
+    "label": "Michael (American male)"
+   },
+   {
+    "value": "am_fenrir",
+    "label": "Fenrir (American male)"
+   },
+   {
+    "value": "am_puck",
+    "label": "Puck (American male)"
+   },
+   {
+    "value": "bf_emma",
+    "label": "Emma (British female)"
+   },
+   {
+    "value": "bm_george",
+    "label": "George (British male)"
+   },
+   {
+    "value": "bm_fable",
+    "label": "Fable (British male)"
+   }
+  ]
  },
  "tts.localSpeed": {
   "id": "tts.localSpeed",
@@ -4935,7 +5121,71 @@
   "label": "Speech Vocalization Voice",
   "tab": "providers",
   "group": "Services",
-  "description": "Kokoro voice used when speaking the assistant's output aloud"
+  "description": "Kokoro voice used when speaking the assistant's output aloud",
+  "values": [
+   "af_heart",
+   "af_bella",
+   "af_nicole",
+   "af_aoede",
+   "af_kore",
+   "af_sarah",
+   "am_michael",
+   "am_fenrir",
+   "am_puck",
+   "bf_emma",
+   "bm_george",
+   "bm_fable"
+  ],
+  "options": [
+   {
+    "value": "af_heart",
+    "label": "Heart (American female)"
+   },
+   {
+    "value": "af_bella",
+    "label": "Bella (American female)"
+   },
+   {
+    "value": "af_nicole",
+    "label": "Nicole (American female)"
+   },
+   {
+    "value": "af_aoede",
+    "label": "Aoede (American female)"
+   },
+   {
+    "value": "af_kore",
+    "label": "Kore (American female)"
+   },
+   {
+    "value": "af_sarah",
+    "label": "Sarah (American female)"
+   },
+   {
+    "value": "am_michael",
+    "label": "Michael (American male)"
+   },
+   {
+    "value": "am_fenrir",
+    "label": "Fenrir (American male)"
+   },
+   {
+    "value": "am_puck",
+    "label": "Puck (American male)"
+   },
+   {
+    "value": "bf_emma",
+    "label": "Emma (British female)"
+   },
+   {
+    "value": "bm_george",
+    "label": "George (British male)"
+   },
+   {
+    "value": "bm_fable",
+    "label": "Fable (British male)"
+   }
+  ]
  },
  "speech.speed": {
   "id": "speech.speed",
@@ -4959,7 +5209,13 @@
   "label": "Speech-to-Text Submit Trigger",
   "tab": "interaction",
   "group": "Speech",
-  "description": "Choose when speech dictation automatically submits: Never, Release (2+ words), Release with complete sentence, or When I Say Submit."
+  "description": "Choose when speech dictation automatically submits: Never, Release (2+ words), Release with complete sentence, or When I Say Submit.",
+  "values": [
+   "never",
+   "release",
+   "release-complete",
+   "say-submit"
+  ]
  },
  "live.voice": {
   "id": "live.voice",
@@ -4967,7 +5223,56 @@
   "label": "Live Voice",
   "tab": "providers",
   "group": "Services",
-  "description": "Voice used by Codex-backed realtime voice sessions"
+  "description": "Voice used by Codex-backed realtime voice sessions",
+  "values": [
+   "arbor",
+   "breeze",
+   "cove",
+   "ember",
+   "juniper",
+   "maple",
+   "sol",
+   "spruce",
+   "vale"
+  ],
+  "options": [
+   {
+    "value": "arbor",
+    "label": "Arbor"
+   },
+   {
+    "value": "breeze",
+    "label": "Breeze"
+   },
+   {
+    "value": "cove",
+    "label": "Cove"
+   },
+   {
+    "value": "ember",
+    "label": "Ember"
+   },
+   {
+    "value": "juniper",
+    "label": "Juniper"
+   },
+   {
+    "value": "maple",
+    "label": "Maple"
+   },
+   {
+    "value": "sol",
+    "label": "Sol"
+   },
+   {
+    "value": "spruce",
+    "label": "Spruce"
+   },
+   {
+    "value": "vale",
+    "label": "Vale"
+   }
+  ]
  },
  "collab.relayUrl": {
   "id": "collab.relayUrl",
@@ -5090,5 +5395,101 @@
   "group": "Developer",
   "description": "Shape tool output and rank find results with Stencil Spotlight, and log each shaped result to the session",
   "env": "PI_SPOTLIGHT_EXPERIMENT"
+ },
+ "hindsight.recallBudget": {
+  "values": [
+   "low",
+   "mid",
+   "high"
+  ]
+ },
+ "providers.anthropic.slowMode": {
+  "values": [
+   "off",
+   "auto"
+  ]
+ },
+ "spotlight.thinking": {
+  "values": [
+   "low",
+   "med",
+   "high",
+   "max"
+  ]
+ },
+ "dev.autoqaConsent": {
+  "values": [
+   "unset",
+   "granted",
+   "denied"
+  ]
+ },
+ "codexResets.autoRedeem5h": {
+  "values": [
+   "unset",
+   "yes",
+   "no"
+  ]
+ },
+ "codexResets.autoRedeemWeekly": {
+  "values": [
+   "unset",
+   "yes",
+   "no"
+  ]
+ },
+ "claudeResets.autoRedeem5h": {
+  "values": [
+   "unset",
+   "yes",
+   "no"
+  ]
+ },
+ "claudeResets.autoRedeemWeekly": {
+  "values": [
+   "unset",
+   "yes",
+   "no"
+  ]
+ },
+ "claudeResets.autoRedeemFable": {
+  "values": [
+   "unset",
+   "yes",
+   "no"
+  ]
+ },
+ "eval.autoBackground.thresholdMs": {
+  "rpcDefault": true
+ },
+ "bash.autoBackground.thresholdMs": {
+  "rpcDefault": true
+ },
+ "memories.enabled": {
+  "rpcDefault": true
+ },
+ "task.disabledAgents": {
+  "rpcDefault": true
+ },
+ "task.agentModelOverrides": {
+  "rpcDefault": true
+ },
+ "task.agentServiceTierOverrides": {
+  "rpcDefault": true
+ },
+ "task.agentCompactionThresholdOverrides": {
+  "rpcDefault": true
+ },
+ "task.agentAccountPools": {
+  "rpcDefault": true
+ },
+ "task.agentPrewalk": {
+  "rpcDefault": true
+ },
+ "task.agentAdvisor": {
+  "rpcDefault": true
+ },
+ "async.maxJobs": {
+  "rpcDefault": true
  }
 }

@@ -1,133 +1,353 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChatState, DialogRequest } from "../lib/store";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Check, X,ShieldCheck } from "lucide-react";
-import { Faq } from "@/components/ui/faq";
+import { X } from "lucide-react";
+import {
+  initialAnswers,
+  changeAnswer,
+  dialogDeadline,
+} from "../lib/native-dialog";
 
 export function DialogHost({
   dialogs,
   onRespond,
 }: {
   dialogs: DialogRequest[];
-  onRespond: (d: DialogRequest, response: any) => void;
+  onRespond: (d: DialogRequest, response: any) => unknown;
 }) {
   const d = dialogs[0];
-  const [value, setValue] = useState("");
-  const [selected, setSelected] = useState(0);
-
-  useEffect(() => {
-    setValue(d?.prefill ?? "");
-    setSelected(0);
-  }, [d?.id]);
-
-  if (!d) return null;
-
-  const cancel = () => onRespond(d, { cancelled: true });
-  const submit = () => {
-    if (d.method === "confirm") onRespond(d, { confirmed: true });
-    else if (d.method === "select") onRespond(d, { value: (d.options ?? [])[selected] });
-    else onRespond(d, { value });
+  return d ? (
+    <NativeDialog
+      key={d.id}
+      d={d}
+      count={dialogs.length}
+      onRespond={onRespond}
+    />
+  ) : null;
+}
+function NativeDialog({
+  d,
+  count,
+  onRespond,
+}: {
+  d: DialogRequest;
+  count: number;
+  onRespond: (d: DialogRequest, response: any) => unknown;
+}) {
+  const [value, setValue] = useState(d.prefill ?? "");
+  const [selected, setSelected] = useState(
+    Math.max(0, Math.min(d.initialIndex ?? 0, (d.options?.length ?? 1) - 1)),
+  );
+  const [answers, setAnswers] = useState(() =>
+    initialAnswers(d.questions ?? []),
+  );
+  const [pending, setPending] = useState(false);
+  const initialOption = useRef<HTMLButtonElement>(null);
+  const sent = useRef(false);
+  const responder = useRef(onRespond);
+  responder.current = onRespond;
+  const respond = (response: any) => {
+    if (sent.current) return;
+    sent.current = true;
+    setPending(true);
+    void Promise.resolve(responder.current(d, response))
+      .then((accepted) => {
+        if (accepted === false) {
+          sent.current = false;
+          setPending(false);
+        }
+      })
+      .catch(() => {
+        sent.current = false;
+        setPending(false);
+      });
   };
-
+  useEffect(() => {
+    const deadline = dialogDeadline(d);
+    if (deadline === null) return;
+    const timer = window.setTimeout(
+      () => respond({ cancelled: true, timedOut: true }),
+      Math.max(0, deadline - Date.now()),
+    );
+    return () => window.clearTimeout(timer);
+  }, [d.id]);
+  const cancel = () => respond({ cancelled: true });
+  const checkbox = d.selectionMarker === "checkbox";
+  const submit = () =>
+    respond(
+      d.method === "confirm"
+        ? { confirmed: true }
+        : d.method === "select"
+          ? { value: d.options?.[selected] }
+          : d.method === "ask"
+            ? { answers }
+            : { value },
+    );
+  const answered =
+    d.method !== "ask" ||
+    answers.every(
+      (answer) => answer.selectedOptions.length || answer.customInput?.trim(),
+    );
   return (
     <Dialog open onOpenChange={(open) => !open && cancel()}>
-      <DialogContent className="max-w-lg gap-0 overflow-hidden p-0" showCloseButton={false}>
-        <DialogHeader className="border-b border-border px-5 py-3.5">
-          <DialogTitle className="flex items-center gap-2 text-[13.5px]">
-            {d.method === "confirm"?"Permission requested":d.method === "select" ? "A question from OMP" : d.title ?? d.method}
-            {dialogs.length > 1 && (
-              <Badge variant="secondary" className="h-4 px-1.5 text-[9.5px] font-normal">
-                {dialogs.length} pending
-              </Badge>
+      <DialogContent
+        onOpenAutoFocus={(event) => {
+          if (d.method === "select" && initialOption.current) {
+            event.preventDefault();
+            initialOption.current.focus();
+          }
+        }}
+        className="max-w-lg gap-0 overflow-hidden p-0"
+        showCloseButton={false}
+      >
+        <DialogHeader className="border-b border-border px-5 py-4">
+          <DialogTitle className="whitespace-pre-wrap text-sm">
+            {d.method === "confirm"
+              ? "Permission requested"
+              : d.title || "A question from OMP"}
+            {count > 1 && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                {count} pending
+              </span>
             )}
           </DialogTitle>
-          {d.message && d.method!=="confirm" && (
-            <DialogDescription className="text-[12px] leading-relaxed text-muted-foreground">{d.message}</DialogDescription>
-          )}
+          <DialogDescription className="whitespace-pre-wrap text-xs">
+            {d.message ||
+              (d.method === "ask"
+                ? "Choose an option or write your own answer."
+                : "Your response is sent to the running agent.")}
+          </DialogDescription>
         </DialogHeader>
-
         <div
-          className="max-h-[50vh] overflow-auto p-4"
+          className="max-h-[60vh] space-y-4 overflow-auto p-5"
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && d.method === "input" && (e.target as HTMLElement).tagName === "INPUT" && !(e.nativeEvent.isComposing)) {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              d.method === "input" &&
+              !e.nativeEvent.isComposing
+            ) {
               e.preventDefault();
               submit();
             }
           }}
         >
           {d.method === "select" && (
-            <Faq key={d.id} defaultValue="question" accent="var(--secondary)" avatar={null} className="[&_[data-slot=faq-answer]>div]:max-w-full [&_[data-slot=faq-answer]>div]:text-foreground" items={[{ id: "question", question: d.title ?? "OMP has a question", answer: <div className="space-y-1" role="radiogroup" aria-label={d.title ?? "Choose an answer"}>
-              {(d.options ?? []).map((o, i) => (
-                <button
-                  key={i}
-                  role="radio"
-                  aria-checked={selected === i}
-                  onClick={() => setSelected(i)}
-                  onKeyDown={e => {
-                    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-                    e.preventDefault();
-                    const options = Array.from(e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>("[role=radio]"));
-                    const next = (i + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
-                    setSelected(next); options[next]?.focus();
-                  }}
-                  onDoubleClick={() => onRespond(d, { value: o })}
-                  className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[12.5px] transition-colors ${
-                    selected === i ? "bg-primary/12 text-primary" : "text-fog-200 hover:bg-muted"
-                  }`}
-                >
-                  <span className="font-mono text-[10.5px] text-muted-foreground">{i + 1}</span>
-                  <span className="truncate">{o}</span>
-                  {selected === i && <Check className="ml-auto size-3 text-primary" />}
-                </button>
-              ))}
-            </div> }]} />
+            <div
+              role={checkbox ? "group" : "radiogroup"}
+              aria-label={d.title}
+              className="space-y-1"
+            >
+              {(d.options ?? []).map((option, index) => {
+                const marked = index < (d.markableCount ?? d.options!.length);
+                const checked = checkbox
+                  ? !!d.checkedIndices?.includes(index)
+                  : selected === index;
+                return (
+                  <button
+                    ref={index === selected ? initialOption : undefined}
+                    key={index}
+                    disabled={pending}
+                    role={
+                      marked ? (checkbox ? "checkbox" : "radio") : undefined
+                    }
+                    aria-checked={marked ? checked : undefined}
+                    onClick={() =>
+                      checkbox ? respond({ value: option }) : setSelected(index)
+                    }
+                    onDoubleClick={() =>
+                      !checkbox && respond({ value: option })
+                    }
+                    onKeyDown={(e) => {
+                      if (!["ArrowDown", "ArrowUp"].includes(e.key)) return;
+                      e.preventDefault();
+                      const options = Array.from(
+                        e.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>(
+                          "button",
+                        ),
+                      );
+                      const next =
+                        (index +
+                          (e.key === "ArrowDown" ? 1 : -1) +
+                          options.length) %
+                        options.length;
+                      if (!checkbox) setSelected(next);
+                      options[next]?.focus();
+                    }}
+                    className={`flex w-full items-start gap-3 rounded-md p-3 text-left text-sm hover:bg-muted ${checked ? "bg-primary/10" : ""}`}
+                  >
+                    {marked && (
+                      <span aria-hidden className="w-4 shrink-0 text-primary">
+                        {checked ? "✓" : checkbox ? "□" : "○"}
+                      </span>
+                    )}
+                    <span className="min-w-0 whitespace-pre-wrap">
+                      {option}
+                      {d.optionDetails?.[index]?.description && (
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          {d.optionDetails[index].description}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           )}
-
-          {(d.method === "input" || d.method === "editor") &&
-            (d.method === "editor" ? (
-              <Textarea
-                autoFocus
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                rows={10}
-                className="resize-y font-mono text-[12.5px]"
-              />
-            ) : (
-              <Input autoFocus value={value} placeholder={d.placeholder} onChange={(e) => setValue(e.target.value)} className="text-[13px]" />
+          {d.method === "ask" &&
+            (d.questions ?? []).map((question, index) => (
+              <fieldset key={question.id} className="space-y-2">
+                <legend className="mb-2 text-sm font-medium">
+                  {question.header && (
+                    <span className="mb-1 block text-xs text-muted-foreground">
+                      {question.header}
+                    </span>
+                  )}
+                  {question.question}
+                </legend>
+                {question.options.map((option, optionIndex) => (
+                  <label
+                    key={option.label}
+                    className="flex cursor-pointer items-start gap-3 rounded-md p-2 hover:bg-muted"
+                  >
+                    <input
+                      type={question.multi ? "checkbox" : "radio"}
+                      name={question.id}
+                      className="mt-1 accent-[var(--primary)]"
+                      checked={answers[index].selectedOptions.includes(
+                        option.label,
+                      )}
+                      onChange={() =>
+                        setAnswers((previous) =>
+                          changeAnswer(
+                            previous,
+                            index,
+                            option.label,
+                            !!question.multi,
+                          ),
+                        )
+                      }
+                    />
+                    <span className="min-w-0 text-sm">
+                      {option.label}
+                      {optionIndex === question.recommended && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          Recommended
+                        </span>
+                      )}
+                      {option.description && (
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
+                      )}
+                      {option.preview && (
+                        <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap text-xs">
+                          {option.preview}
+                        </pre>
+                      )}
+                    </span>
+                  </label>
+                ))}
+                <Textarea
+                  aria-label={`Your answer to ${question.header || question.question}`}
+                  rows={2}
+                  placeholder="Your own answer…"
+                  value={answers[index].customInput ?? ""}
+                  onChange={(e) =>
+                    setAnswers((previous) =>
+                      previous.map((answer, i) =>
+                        i === index
+                          ? {
+                              ...answer,
+                              customInput: e.target.value,
+                              selectedOptions:
+                                !question.multi && e.target.value
+                                  ? []
+                                  : answer.selectedOptions,
+                            }
+                          : answer,
+                      ),
+                    )
+                  }
+                />
+              </fieldset>
             ))}
-
-          {d.method === "confirm" && <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card/40 p-4"><ShieldCheck className="size-5 shrink-0 text-muted-foreground"/><div className="min-w-0 flex-1"><p className="text-sm font-medium">{d.title||"Allow this action?"}</p>{d.message&&<p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">{d.message}</p>}</div><div className="flex items-center gap-2"><Button variant="outline" size="sm" onClick={()=>onRespond(d,{confirmed:false})}>Deny</Button><Button size="sm" onClick={submit}>Approve</Button></div></div>}
+          {d.method === "input" && (
+            <Input
+              autoFocus
+              type={d.secret ? "password" : "text"}
+              autoComplete="off"
+              value={value}
+              placeholder={d.placeholder}
+              aria-label={d.title || "Answer"}
+              onChange={(e) => setValue(e.target.value)}
+            />
+          )}
+          {d.method === "editor" && (
+            <Textarea
+              autoFocus
+              rows={10}
+              value={value}
+              aria-label={d.title || "Answer"}
+              onChange={(e) => setValue(e.target.value)}
+              className={d.promptStyle ? "" : "font-mono text-xs"}
+            />
+          )}
+          {d.method === "confirm" && (
+            <p className="whitespace-pre-wrap text-sm">
+              {d.title || "Allow this action?"}
+            </p>
+          )}
         </div>
-
-        {d.method!=="confirm"&&<DialogFooter className="flex-row items-center justify-end gap-2 border-t border-border px-4 py-3">
-          <Button variant="ghost" size="sm" onClick={cancel} className="text-[12px] text-muted-foreground">
-            Cancel
+        <DialogFooter className="flex-row justify-end gap-2 border-t border-border px-5 py-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={pending}
+            onClick={
+              d.method === "confirm"
+                ? () => respond({ confirmed: false })
+                : cancel
+            }
+          >
+            {d.method === "confirm" ? "Deny" : "Cancel"}
           </Button>
-          {d.method === "confirm" ? (
-            <>
-              <Button variant="secondary" size="sm" onClick={() => onRespond(d, { confirmed: false })} className="text-[12px]">
-                Deny
-              </Button>
-              <Button size="sm" onClick={submit} className="text-[12px]">
-                Approve
-              </Button>
-            </>
-          ) : (
-            <Button size="sm" onClick={submit} className="text-[12px]">
-              {d.method === "select" ? "Select" : "Submit"}
+          {!checkbox && (
+            <Button
+              size="sm"
+              disabled={
+                pending ||
+                !answered ||
+                (d.method === "select" && !d.options?.length)
+              }
+              onClick={submit}
+            >
+              {d.method === "confirm" ? "Approve" : "Submit"}
             </Button>
           )}
-        </DialogFooter>}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-export function Toasts({ chat, onDismiss }: { chat: ChatState; onDismiss: (id: string) => void }) {
+export function Toasts({
+  chat,
+  onDismiss,
+}: {
+  chat: ChatState;
+  onDismiss: (id: string) => void;
+}) {
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-40 flex w-80 flex-col gap-2">
       {chat.toasts.map((t) => (

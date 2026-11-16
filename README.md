@@ -52,12 +52,15 @@ Rare UI attribution is available in Settings → About & credits. ObsidianUI and
 - Usage totals from `omp stats --json`, supplemented by read-only queries to the native stats database for per-model hourly trends, peak tokens, active session duration, and timezone-aware streaks. Stacked trends, a model donut, compact cost bars, and API-equivalent cost disclosure.
 - Host classifier routing: editable nodes/connections, model and thinking controls, test classification, saved configuration. Disabled until explicitly enabled.
 - Opt-in persona library: prepend or append instructions, optionally remove the exact OMP identity sentence, retain project rules and tool schemas, persist the chosen persona with the session.
-- Advanced RPC console and an honest runtime capability check. See [CAPABILITIES.md](CAPABILITIES.md) for coverage and limitations.
+- Native goals and editable/importable task plans, queue recovery, branch navigation and labels, scoped HTML exports, subagent conversations and steering, and provider account management.
+- Composer voice/dictation and native word completion; separate side-question topics and history. Hardware/provider acceptance limits are recorded in the audit.
+- Guided native CLI operations with explicit execution, incremental logs, cancellation, profile/folder selection and native terminal handoffs for interactive or credential-bearing flows.
+- Advanced RPC diagnostics and an honest runtime capability check. See [CAPABILITIES.md](CAPABILITIES.md) for coverage and limitations.
 
 The [GUI coverage audit](CAPABILITIES.md) maps the installed OMP version's RPC commands, CLI,
 slash commands, settings, launch flags and built-in tools to actual GUI paths and remaining gaps.
-Its [machine-readable map](docs/omp-gui-coverage.json) separates direct/integrated controls from partial,
-JSON-console-only and missing workflows. Read-probe success is not full feature acceptance. The audit
+Its [machine-readable map](docs/omp-gui-coverage.json) distinguishes direct/integrated controls,
+guided CLI forms and explicit terminal handoffs. Read-probe success is not full feature acceptance. The audit
 includes isolated collection and regeneration commands; it sends no prompts or private project context.
 
 Host configuration is saved as `web-control.json` in the OMP agent directory. Native provider configuration stays in `models.yml`/`models.yaml`. File writes preserve unrelated configuration and make backups. Appearance includes twelve presets, 70 backgrounds plus None, six workspace icon sets and three independent editor icon styles, nine color overrides, contrast, UI/code/heading fonts, chat text size and line height, corner radius, shadows, background fade/blur/tint, independent menu and card glass, and sidebar translucency. Cards default to the solid sidebar color. The compact live color picker supports hex and tint opacity. The favicon follows the current accent. Version 2 theme exports include the selected background and animation preference. The tab is named `omp.`. Older exports gain safe defaults. Preferences and image data stay in browser storage.
@@ -103,4 +106,4 @@ Transition-kit is the shared motion system for workspace/settings routes, settin
 
 The Tauri 2 desktop implementation lives on `tauri`; see [desktop development](DESKTOP.md) and the
 [implementation tasks](TAURI-TASKS.md). `npm run desktop:dev` runs the native debug app;
-`npm run desktop:build` creates the Windows release and installer. OMP remains an installed prerequisite.
+`npm run desktop:build` creates the Windows release and installer. First-launch setup offers OMP installation when the runtime is missing.

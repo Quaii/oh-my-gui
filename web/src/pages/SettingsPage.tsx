@@ -1,5 +1,9 @@
 import {PageTransition} from '../components/transitions/page-transition';
 import {transitionUpdate} from '../lib/motion';
+import { SessionWorkflows } from '../components/settings/SessionWorkflows';
+import { RuntimeOutput } from '../components/RuntimeOutput';
+import { ProviderAccounts } from '../components/settings/ProviderAccounts';
+import { parseLaunchArgs, formatLaunchArgs, validateGuiLaunchArgs } from '../../../shared/launch-args';
 import {supportsFastMode} from "../lib/model-capabilities";
 import { SettingsNavigation, savedSettingsPanel, SettingGlyph, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
 import { ProviderIcon } from "../components/ProviderIcon";
@@ -40,6 +44,7 @@ const PersonaPanel = lazy(() => import("../components/settings/PersonaPanel"));
 const ExtensionsPanel = lazy(() => import("../components/settings/ExtensionsPanel"));
 const ContextFilesPanel = lazy(() => import("../components/settings/ContextFilesPanel"));
 const CapabilitiesPanel = lazy(() => import("../components/settings/CapabilitiesPanel"));
+const NativeManager = lazy(() => import('../components/settings/NativeManager'));
 
 const TAB_PANELS: Partial<Record<PanelId, string>> = {
   models: "model",
@@ -86,11 +91,12 @@ export function SettingsPage(props: SettingsPageProps) {
   const [q, setQ] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [exportUrl, setExportUrl] = useState('');
   const [providersLoading,setProvidersLoading]=useState(true);
   const [providersError,setProvidersError]=useState("");
   const [providers, setProviders] = useState<any[]>([]);
   const [nameDraft, setNameDraft] = useState("");
-  const [flagDraft, setFlagDraft] = useState(flags.join(" "));
+  const [flagDraft, setFlagDraft] = useState(formatLaunchArgs(flags));
   const [cfg, setCfg] = useState<any>(config);
   const [raw, setRaw] = useState<string>(config?.text ?? "");
   const [savingCfg, setSavingCfg] = useState(false);
@@ -122,6 +128,7 @@ export function SettingsPage(props: SettingsPageProps) {
       setErr(null);
       const r = await post("/api/cmd", { key: chat.key, cmd: c }).catch((e) => ({ ok: false, error: String(e) }));
       if (!r.ok) setErr((r as any).error);
+      if (r.ok && r.data?.downloadUrl) setExportUrl(r.data.downloadUrl);
       onRefreshState();
       return r;
     },
@@ -217,6 +224,7 @@ export function SettingsPage(props: SettingsPageProps) {
       {(note || err) && (
         <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-1.5">
           {note && <span className="truncate text-[11.5px] text-ok">{note}</span>}
+          {exportUrl && <a href={exportUrl} className="text-xs underline" download>Download session HTML</a>}
           {err && (
             <span className="truncate text-[11.5px] text-destructive" title={err}>
               {err}
@@ -249,6 +257,7 @@ export function SettingsPage(props: SettingsPageProps) {
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
             ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null} />
+            ) : panel === "native" ? (<NativeManager cwd={info?.cwd || ''}/>
             ) : panel === "usage" ? (<UsagePanel />
             ) : panel === "routing" ? (<RoutingPanel chatKey={chat.loaded ? chat.key : null} />
             ) : panel === "personas" ? (<PersonaPanel />
@@ -257,18 +266,20 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : panel === "capabilities" ? (<CapabilitiesPanel chatKey={chat.loaded ? chat.key : null} />
             ) : panel === "models" ? (<><ModelRolesPanel settingsLoading={loading && !payload} chatKey={chat.loaded ? chat.key : null} settings={settings} onSave={save} /><ConfigList settings={tabSettings.filter(s=>s.key!=="modelRoles")} onSave={save} onReset={reset} /></>
             ) : panel === "session" ? (
-              <SessionPanel st={st} chat={chat} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} />
+              <><SessionPanel st={st} chat={chat} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></>
             ) : panel === "flags" ? (
               <FlagsPanel
                 flagDraft={flagDraft}
                 setFlagDraft={setFlagDraft}
                 onSave={() => {
-                  setFlags(flagDraft.split(/\s+/).filter(Boolean));
-                  onRestart();
+                  try {
+                    setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft)));
+                    onRestart();
+                  } catch (error: any) { setErr(error.message); }
                 }}
               />
             ) : panel === "providers" ? (
-              <><CustomProvidersPanel onRestart={onRestart} /><ProvidersPanel
+              <><RuntimeOutput outputs={[]} links={chat.authLinks} /><CustomProvidersPanel onRestart={onRestart} /><ProvidersPanel
                 providers={providers}
                 loading={providersLoading}
                 error={providersError}
@@ -385,11 +396,11 @@ function SessionPanel({
             {st?.fastModeEnabled ? "on" : "off"}
           </Pill>
         </Field>}
-        <Field label="Slow mode">
+        {st?.slowModeSupported && <Field label={`Slow mode${st?.slowModeScope === 'global' ? ' (global)' : ''}`}>
           <Pill label="Slow mode" on={!!st?.slowModeEnabled} onClick={() => cmd({ type: "set_slow_mode", enabled: !st?.slowModeEnabled })}>
             {st?.slowModeEnabled ? "on" : "off"}
           </Pill>
-        </Field>
+        </Field>}
       </Group>
 
       <Group title="Interaction">
@@ -430,9 +441,7 @@ function SessionPanel({
           </Pill>
         </Field>
         <Field label="Auto retry">
-          <Pill label="Auto retry" on={!!st?.autoRetryEnabled} onClick={() => cmd({ type: "set_auto_retry", enabled: !st?.autoRetryEnabled })}>
-            {st?.autoRetryEnabled ? "on" : "off"}
-          </Pill>
+          <div className="flex gap-2"><Btn onClick={() => cmd({ type: "set_auto_retry", enabled: true })}>Enable</Btn><Btn onClick={() => cmd({ type: "set_auto_retry", enabled: false })}>Disable</Btn></div>
         </Field>
       </Group>
 
@@ -486,7 +495,7 @@ function FlagsPanel({
   return (
     <div className="space-y-4">
       <p className="max-w-[70ch] text-[12.5px] leading-relaxed text-muted-foreground">
-        Extra CLI flags passed to <span className="font-mono text-fog-200">omp --mode rpc</span> when a session starts.
+        Extra CLI flags passed to <span className="font-mono text-fog-200">omp --mode rpc-ui</span> when a session starts. Quote paths or values containing spaces.
         Changing them restarts the current session process (the transcript stays on disk).
       </p>
       <Textarea
@@ -542,7 +551,7 @@ function ProvidersPanel({
     <div className="space-y-4"><div className="flex items-center justify-between gap-4"><h2 className="text-sm font-semibold">Provider accounts</h2><Input value={filter} onChange={e=>setFilter(e.target.value)} aria-label="Filter providers" placeholder="Find a provider…" className="h-9 max-w-64 rounded-xl"/></div>
       <SkeletonReveal loading={loading} skeleton={<ProviderSkeleton/>} label="Loading provider accounts"><div className="space-y-1.5">
         {providers.filter(p=>`${p.name} ${p.id}`.toLowerCase().includes(filter.toLowerCase())).map((p) => (
-          <div key={p.id} className="flex items-center gap-3 rounded-xl bg-card/50 px-4 py-3"><ProviderIcon provider={p.id} className="size-6"/>
+          <div key={p.id} className="rounded-xl bg-card/50 px-4 py-3"><div className="flex items-center gap-3"><ProviderIcon provider={p.id} className="size-6"/>
             <div className="min-w-0 flex-1">
               <div className="truncate text-[12.5px] text-fog-100">{p.name}</div>
               <div className="font-mono text-[11px] text-muted-foreground">{p.id}</div>
@@ -551,6 +560,7 @@ function ProvidersPanel({
               {p.authenticated ? "signed in" : "not signed in"}
             </Badge>
             {p.available && <Btn onClick={() => cmd({ type: "login", providerId: p.id })}>login</Btn>}
+            </div><ProviderAccounts providerId={p.id} cmd={cmd}/>
           </div>
         ))}
         {error&&<p role="alert" className="text-sm text-destructive">{error}</p>}{!loading&&!error&&providers.length===0&&<Empty>No providers available.</Empty>}

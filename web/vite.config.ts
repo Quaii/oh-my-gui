@@ -17,6 +17,7 @@ export default defineConfig({
   server: {
     port: 5317,
     strictPort: true,
-    proxy: { "/api": { target: process.env.OMP_API_TARGET || "http://127.0.0.1:4317", changeOrigin: true } },
+    // Preserve the browser host so the API can validate same-origin requests.
+    proxy: { "/api": { target: process.env.OMP_API_TARGET || "http://127.0.0.1:4317", changeOrigin: false } },
   },
 });

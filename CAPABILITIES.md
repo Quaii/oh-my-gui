@@ -1,148 +1,140 @@
 # OMP GUI coverage audit
 
-Checked 2026-11-16T15:58:37.437Z against **omp/18.20.0**, the installed runtime, with GUI source inspected at 78682bc. **The GUI does not yet expose every OMP feature as a complete workflow.** This is an audit and prioritized implementation map, not a claim that missing features were added.
+Checked 2026-11-16T16:50:01.733Z against **omp/18.20.0**. Native inventory revision: b5fa72d; local evidence below is regenerated from the current working tree. **Every audited canonical RPC has a traced GUI route. Native CLI operations use guided forms or explicit terminal handoffs. This is reachability, not blanket acceptance testing.**
 
 ## Scope and evidence
 
-The inventory contains **74 canonical RPC commands**, **54 top-level CLI commands**, **615 configuration fields**, **49 built-in slash commands (123 advertised subcommands)**, **60 main launch flags**, and **30 help-listed built-in tools**. Counts describe different surfaces and must not be added into a feature-completion percentage.
+The versioned inventory contains **74 canonical RPC commands**, **54 top-level CLI commands**, **615 configuration fields**, **49 built-in slash commands (123 advertised subcommands)**, **60 main launch flags**, and **30 help-listed native tools**. These are overlapping surfaces, not a feature-completion percentage.
 
-Sources: the installed binary's --version/--help/config list and ready/read RPCs; matching [v18.20.0 RpcCommand definitions](https://github.com/can1357/oh-my-pi/blob/v18.20.0/packages/coding-agent/src/modes/rpc/rpc-types.ts), [RPC behavior](https://github.com/can1357/oh-my-pi/blob/v18.20.0/docs/rpc.md), [RPC implementation](https://github.com/can1357/oh-my-pi/blob/v18.20.0/packages/coding-agent/src/modes/rpc/rpc-mode.ts), and [slash dispatch](https://github.com/can1357/oh-my-pi/blob/v18.20.0/packages/coding-agent/src/slash-commands/available-commands.ts). Local code references below are the GUI evidence.
+Primary sources: matching [v18.20.0 RPC types](https://github.com/can1357/oh-my-pi/blob/v18.20.0/packages/coding-agent/src/modes/rpc/rpc-types.ts), [protocol behavior](https://github.com/can1357/oh-my-pi/blob/v18.20.0/docs/rpc.md), [implementation](https://github.com/can1357/oh-my-pi/blob/v18.20.0/packages/coding-agent/src/modes/rpc/rpc-mode.ts), installed --help/config metadata, and the source anchors below. The cached catalog contains 74/74 canonical commands.
 
-The live read probes used an isolated temporary agent directory, an inert keyless model definition, no extensions/skills/tools/LSP/context files, no saved sessions, and a credential-filtered environment. No prompt, provider login/logout, model request, tool execution, real configuration write, package installation, sharing action or user transcript inspection was performed. Temporary fixture files were removed. The default settings schema was inspected; private effective project/global values were not collected.
+**Verification:** 13 native read RPCs passed in a credential-filtered temporary profile. A separate trusted-extension fixture passed startup question delivery, protocol v2 reassembly of a large response and paged loading of 401 synthetic messages. All 54 installed top-level help routes parsed, and one real read-only stats job completed in a disposable profile. Focused tests cover malformed transport, cancellation, replay, task import, quoted argv, native state, host adapters and dictation insertion. Rendered inert browser checks covered native questions/default focus/password inputs, plan edits, branch labels, queue recovery, child transcripts/steering, account listing, dark/light/custom accent and 700px width. These fixtures never sent a model request or changed a real account, setting, package, project file or service.
 
-**Reachability is separate from verification.** Direct/integrated means a source-traced GUI route exists, not that every mutation passed native acceptance. Thirteen read-only RPC probes passed. In-memory reducer fixtures confirmed five client event defects. No browser/native interaction or mutating OMP acceptance was performed for this audit. Arbitrary installed third-party extension behavior and every CLI subcommand/option remain outside exhaustive verification.
+**Acceptance limits:** real microphones/audio playback, realtime/speech/prediction/side-question providers, goal continuation, model-driven summaries, actual subagents, account login/logout, installers/updaters, native service mutations and cross-platform terminal launches were not exercised. No paid request, real installation, publication or user configuration mutation was used as a test. Arbitrary third-party terminal widgets and host adapters are not automatically converted into React.
 
 ## Coverage definitions
 
 | Classification | Meaning |
 | --- | --- |
-| Direct control | A visible purpose-built control routes the action to OMP. |
-| Integrated route | Normal GUI behavior uses the RPC, or an equivalent native route, without asking the user for JSON. |
-| Partial | Some UI exists, but arguments, result consumption, state synchronization or supported variants are incomplete. |
-| JSON console only | An expert can compose native JSON in Runtime capabilities; there is no ordinary feature control. |
-| Missing workflow | No usable feature integration. A raw forwarding endpoint is not sufficient for audio or request/result protocols. |
-| Terminal-specific | A terminal-only view/developer workflow is not automatically a requirement to reproduce in the GUI. |
+| Direct control | A normal GUI control invokes the native operation and consumes its result or events. |
+| Integrated route | Ordinary GUI behavior uses the command or an equivalent native route. |
+| Guided native form | Installed help supplies action choices, argument fields and flags; explicit execution has native output, exit state and cancellation. |
+| Native terminal handoff | The GUI prepares and explicitly launches/copies a native terminal command. The terminal retains interactive/credential-bearing behavior. |
+| Verification | Source reachability and fixtures do not prove live provider, hardware or mutating-operation acceptance. |
 
 ## RPC reachability totals
 
 | Classification | Commands |
 | --- | --- |
-| Direct control | 12 |
-| Integrated route | 11 |
-| Partial | 10 |
-| JSON console only | 31 |
-| Missing workflow | 10 |
+| Direct control | 61 |
+| Integrated route | 13 |
 
-The cached GUI catalog currently lists 68/74 canonical commands. Missing from it: `live_start`, `live_connect`, `live_stop`, `live_mute`, `dictation_start`, `dictation_stop`. The generic API can forward arbitrary JSON, but does not supply the missing audio/UI/event handling.
+## Audited workflows
 
-## Implementation order
-
-P0 restores basic user/runtime communication. P1 finishes existing workflows. P2 covers additional native capabilities or an explicit product decision. These priorities are recommendations from the audit; no implementation work is implied.
-
-| Priority | Feature | Coverage | Finding / next work | Local evidence |
+| Priority | Feature | Route state | Evidence / limits | Local source |
 | --- | --- | --- | --- | --- |
-| P0 | Tool questions | Missing | OmpBridge hardcodes --mode rpc; upstream rpc-ui enables tool UI. A React select dialog alone does not make the native ask tool usable. rpc-ui also disables PTY, so shell behavior needs acceptance when changing modes. | [server/src/omp.ts:71](server/src/omp.ts#L71) |
-| P0 | Slash output and native notices | Missing | command_output and notice frames are discarded by chatReducer. Commands can run with no visible answer or error. | [web/src/lib/store.ts:142](web/src/lib/store.ts#L142) |
-| P0 | Dialog cancellation and selection fidelity | Partial | cancel does not remove targetId; initialIndex/checkedIndices/checkbox markers/option descriptions are dropped; input secret hints are not propagated. | [web/src/lib/store.ts:269](web/src/lib/store.ts#L269) |
-| P1 | Extension composer updates | Missing | set_editor_text displays a notice but does not put the supplied text into the composer. | [web/src/lib/store.ts:263](web/src/lib/store.ts#L263) |
-| P1 | Lossless large RPC frames | Missing | No negotiate_protocol/v2 decoder, and snapshot.ts uses unpaged get_messages. Large history/tool/extension payloads retain protocol-v1 limits. | [server/src/omp.ts:101](server/src/omp.ts#L101) |
-| P1 | Goal lifecycle and task editing | Partial | Display-only task plan is good; start/pause/resume/clear/budget and editable todos still need controls. | [web/src/components/GoalPlan.tsx:7](web/src/components/GoalPlan.tsx#L7) |
-| P1 | Queue management | Partial | Steer/follow-up and queued chips exist, but withdraw/promote/edit/restore operations require manual JSON. | [web/src/components/Composer.tsx:243](web/src/components/Composer.tsx#L243) |
-| P1 | Subagent conversations and steering | Partial | Agent list/cancel exists; child transcripts, steering and lifecycle/progress subscriptions need dedicated integration. | [web/src/components/RightRail.tsx:30](web/src/components/RightRail.tsx#L30) |
-| P1 | Export/fork/tree completion | Partial | Export path and fork result are ignored; tree navigation is limited to checkpoints/reply versions. | [web/src/pages/SettingsPage.tsx:457](web/src/pages/SettingsPage.tsx#L457) |
-| P1 | Provider accounts and MCP authentication | Partial | Provider logout/account selection are console-only. MCP config/probe exists, but upstream RPC does not install interactive MCP authentication handling. | [web/src/components/settings/McpPanel.tsx:54](web/src/components/settings/McpPanel.tsx#L54) |
-| P1 | Settings reachability versus effect | Partial | 615 global fields are listed; 23 enum controls have no choices, 165 fields lack UI metadata, and 167 have no tab category. TUI-only fields and RPC defaults also limit the effect of configuration. | [web/src/components/settings/ConfigList.tsx:28](web/src/components/settings/ConfigList.tsx#L28) |
-| P1 | Launch flags | Partial | Launch flags are split on whitespace, so quoted paths/arguments are not preserved. Interactive/print/output-mode flags cannot be counted as working RPC features merely because the text box accepts them. | [web/src/pages/SettingsPage.tsx:266](web/src/pages/SettingsPage.tsx#L266) |
-| P2 | Voice and dictation | Missing | No microphone/WebRTC/session/capture/mute UI or voice/dictation event consumers. Speech-related settings/model roles do not provide that workflow. | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| P2 | Word completion and side questions | Missing | No predict_word ghost text/feedback or btw streaming/history view. Project suggestions are a different host feature. | [web/src/components/Composer.tsx:147](web/src/components/Composer.tsx#L147) |
-| P2 | Host-owned tools and virtual URIs | Missing | No request dispatch, cancellation, update/result or URI read/write responder. Raw JSON registration alone can leave requests unanswered. | [server/src/omp.ts:143](server/src/omp.ts#L143) |
-| P2 | Native CLI services and administration | Missing | No profile manager, session transfer, skill registry installation/publishing, native updater/dependency installer, provider quota view, auth broker, process console or full Git UI. | [web/src/components/settings/SettingsNavigation.tsx:13](web/src/components/settings/SettingsNavigation.tsx#L13) |
-| P2 | Extension terminal components | Upstream boundary | Native component factories/custom header/footer/editor/raw input/autocomplete/theme APIs are terminal-only. They require an adapter or an explicitly retained terminal workflow. | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
+| P0 | Tool questions | Implemented | rpc-ui, structured ask and startup replay are connected. The trusted native startup-question fixture passed. Interactive PTYs use the native terminal. | [server/src/index.ts:159](server/src/index.ts#L159) |
+| P0 | Slash output and native notices | Implemented | Native output, notices and errors render as bounded transient output; reconnect IDs deduplicate replay. | [web/src/components/RuntimeOutput.tsx:48](web/src/components/RuntimeOutput.tsx#L48) |
+| P0 | Dialog cancellation and selection fidelity | Implemented | Native cancellation/deadlines, focused initial option, option descriptions, checkbox round-trips, structured multi-answer questions and protected inputs are preserved. | [web/src/components/Dialogs.tsx:55](web/src/components/Dialogs.tsx#L55) |
+| P1 | Extension composer updates | Implemented | Composer text has an Undo backup; widgets respect above/below placement and replay coalesces their latest values. | [web/src/components/Composer.tsx:56](web/src/components/Composer.tsx#L56) |
+| P1 | Lossless large RPC frames | Implemented | Native v2 chunking and 401-message paged history passed in a disposable keyless profile. Invalid frames/pages fail visibly. | [server/src/rpc-frames.ts:4](server/src/rpc-frames.ts#L4) |
+| P1 | Goal lifecycle and task editing | Implemented | Goal creation, pause/resume/drop and budget; phased task editing plus validated import/export. No live goal/model turn was started for verification. | [web/src/components/settings/SessionWorkflows.tsx:152](web/src/components/settings/SessionWorkflows.tsx#L152) |
+| P1 | Queue management | Implemented | Explicit withdraw/promote/edit, image restoration, abort-and-restore and interrupt/resubmit; native queue snapshots remain authoritative. | [web/src/components/QueueControls.tsx:141](web/src/components/QueueControls.tsx#L141) |
+| P1 | Subagent conversations and steering | Implemented | Native event subscription, lifecycle/progress roster, incremental child transcript, steering and cancellation. No real subagent/model was spawned for verification. | [web/src/components/SubagentControls.tsx:43](web/src/components/SubagentControls.tsx#L43) |
+| P1 | Export/fork/tree completion | Implemented | Scoped export download and refreshed native transitions; tree/append-history picker, labels, summaries and abort. | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| P1 | Provider accounts and MCP authentication | GUI + native handoff | Account-specific sign-out and persistent login links. Secret/pre-URL OAuth and MCP interactive authentication retain the explicit native OMP terminal workflow. No real account changes were tested. | [web/src/components/settings/ProviderAccounts.tsx:18](web/src/components/settings/ProviderAccounts.tsx#L18) |
+| P1 | Settings reachability versus effect | Implemented | Every native field remains searchable. All 23 missing enums have version-pinned choices and unknown future enums use native-validated text input. Global-write, terminal preference and 40 RPC-default effects are identified. | [web/src/components/settings/Controls.tsx:125](web/src/components/settings/Controls.tsx#L125) |
+| P1 | Launch flags | Implemented | Quoted argv round-trips preserve Windows paths. Incompatible transport/interactive modes are rejected in GUI launches and are available through the native interactive launcher. API keys are not saved in launch flags. | [shared/launch-args.ts:49](shared/launch-args.ts#L49) |
+| P2 | Voice and dictation | Implemented; acceptance pending | UI/events, browser WebRTC/host capture, mute/stop and draft ownership are wired; fixtures cover insertion and cleanup. No microphone, realtime provider, speech engine or paid request was used. | [web/src/components/VoiceControls.tsx:150](web/src/components/VoiceControls.tsx#L150) |
+| P2 | Word completion and side questions | Implemented; provider acceptance pending | Native-configured ghost suffix/feedback and separate topic/follow-up stream/history controls are wired. No prediction engine or side-question model was invoked. | [web/src/lib/use-word-completion.ts:21](web/src/lib/use-word-completion.ts#L21) |
+| P2 | Host-owned tools and virtual URIs | Implemented | Optional concrete GUI adapters handle request/update/result/cancel and explicit errors. Runtime URI is intentionally read-only. Arbitrary custom adapters are application code, not a JSON registration promise. | [server/src/host-adapters.ts:57](server/src/host-adapters.ts#L57) |
+| P2 | Native CLI services and administration | Guided + native handoff | All 54 installed top-level commands are reachable through installed-help forms and native jobs or terminal handoffs. All 54 help routes and one isolated read-only stats job passed; mutations/services were not exercised. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407) |
+| P2 | Extension terminal components | Native handoff | Custom terminal renderers/raw-input APIs run in the explicit native OMP launcher; they are not converted to React widgets. Supported standard extension UI methods have GUI adapters. | [server/src/native-operations.ts:228](server/src/native-operations.ts#L228) |
 
 ## Every canonical RPC command
 
-| RPC | Coverage | GUI route / limitation | Read probe | Local evidence |
+| RPC | Reachability | GUI route / limits | Read probe | Local source |
 | --- | --- | --- | --- | --- |
-| `negotiate_protocol` | Missing workflow | No host protocol negotiation. Bridge stays on v1 and has no rpc_chunk reassembly; large responses/events retain v1 limitations. Do not enable v2 until the decoder exists. | not executed | [server/src/omp.ts:101](server/src/omp.ts#L101) |
-| `prompt` | Direct control | Composer → Send. Text and image prompts; arbitrary document/audio attachments are absent. | not executed | [web/src/App.tsx:241](web/src/App.tsx#L241) |
-| `steer` | Integrated route | Composer → steer / follow-up. Equivalent prompt.streamingBehavior route; queue editing is separate and absent. | not executed | [web/src/App.tsx:243](web/src/App.tsx#L243) |
-| `follow_up` | Integrated route | Composer → steer / follow-up. Equivalent prompt.streamingBehavior route; queue editing is separate and absent. | not executed | [web/src/App.tsx:243](web/src/App.tsx#L243) |
-| `remove_queued_message` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `promote_queued_message` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `abort` | Direct control | Composer → Stop / Escape. Native abort is sent; queue restoration/interrupt-and-resubmit are not exposed. | not executed | [web/src/App.tsx:263](web/src/App.tsx#L263) |
-| `abort_and_prompt` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `abort_and_restore_queue` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `new_session` | Partial | Sidebar New chat; Settings → Session. New chat works through bridge creation. The separate Session action sends new_session without reattaching/reloading the transcript. | not executed | [web/src/pages/SettingsPage.tsx:455](web/src/pages/SettingsPage.tsx#L455) |
-| `open_session` | JSON console only | Settings → Runtime capabilities → JSON console. No dedicated session-directory open control for this RPC; saved file selection uses switch_session instead. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_state` | Integrated route | Chat initialization / refresh / selectors / statistics. Read RPCs are wired into normal GUI state. | passed | [web/src/App.tsx:167](web/src/App.tsx#L167) |
-| `set_fast_mode` | Direct control | Composer model / thinking / supported Fast control. Fast is capability-gated. Model routes remain native. | not executed | [web/src/App.tsx:671](web/src/App.tsx#L671) |
-| `set_slow_mode` | Direct control | Settings → Session. Dedicated per-session controls. | not executed | [web/src/pages/SettingsPage.tsx:389](web/src/pages/SettingsPage.tsx#L389) |
-| `goal` | Partial | Task plan card + JSON console. Plan/goal state is displayed. No direct goal lifecycle/budget control or todo editing/reordering/import/export interface. | not executed | [web/src/components/GoalPlan.tsx:7](web/src/components/GoalPlan.tsx#L7) |
-| `set_ask_dialog` | Missing workflow | No multi-question ask adapter. Tool UI is not enabled by the plain rpc bridge. The optional structured ask dialog is not negotiated or rendered. | not executed | [server/src/omp.ts:71](server/src/omp.ts#L71) |
-| `get_available_commands` | Integrated route | Chat initialization / refresh / selectors / statistics. Read RPCs are wired into normal GUI state. | passed | [web/src/App.tsx:167](web/src/App.tsx#L167) |
-| `get_entries` | Integrated route | Saved chats / transcript / inline edit / reply branches. Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap. | passed | [server/src/snapshot.ts:4](server/src/snapshot.ts#L4), [web/src/App.tsx:397](web/src/App.tsx#L397) |
-| `get_tree` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | passed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `set_todos` | Partial | Task plan card + JSON console. Plan/goal state is displayed. No direct goal lifecycle/budget control or todo editing/reordering/import/export interface. | not executed | [web/src/components/GoalPlan.tsx:7](web/src/components/GoalPlan.tsx#L7) |
-| `set_host_tools` | Missing workflow | No host request/result adapter. Registration alone in JSON is insufficient: host_tool_call/cancel and host_uri_request/cancel are not serviced. | not executed | [server/src/omp.ts:143](server/src/omp.ts#L143) |
-| `set_host_uri_schemes` | Missing workflow | No host request/result adapter. Registration alone in JSON is insufficient: host_tool_call/cancel and host_uri_request/cancel are not serviced. | not executed | [server/src/omp.ts:143](server/src/omp.ts#L143) |
-| `set_subagent_subscription` | Partial | JSON console only; Agents card shows snapshots. Subscription changes can be submitted but subagent_lifecycle/progress/event frames have no matching client presentation. | not executed | [web/src/lib/store.ts:289](web/src/lib/store.ts#L289) |
-| `set_event_filter` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_subagents` | Partial | Workspace cards → Agents. Basic list/cancel is present. Refresh is snapshot-based; structured lifecycle/progress subscriptions are not integrated. | passed | [web/src/App.tsx:200](web/src/App.tsx#L200) |
-| `get_subagent_messages` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `cancel_subagent` | Direct control | Workspace cards → Agents → Cancel agent. Visible for active agents; live child conversation/steering UI is absent. | not executed | [web/src/components/RightRail.tsx:30](web/src/components/RightRail.tsx#L30) |
-| `steer_subagent` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `live_start` | Missing workflow | No voice/dictation controls or events. All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented. | not executed | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| `live_connect` | Missing workflow | No voice/dictation controls or events. All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented. | not executed | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| `live_stop` | Missing workflow | No voice/dictation controls or events. All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented. | not executed | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| `live_mute` | Missing workflow | No voice/dictation controls or events. All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented. | not executed | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| `dictation_start` | Missing workflow | No voice/dictation controls or events. All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented. | not executed | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| `dictation_stop` | Missing workflow | No voice/dictation controls or events. All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented. | not executed | [web/src/components/Composer.tsx:187](web/src/components/Composer.tsx#L187) |
-| `set_model` | Direct control | Composer model / thinking / supported Fast control. Fast is capability-gated. Model routes remain native. | not executed | [web/src/App.tsx:671](web/src/App.tsx#L671) |
-| `cycle_model` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_available_models` | Integrated route | Chat initialization / refresh / selectors / statistics. Read RPCs are wired into normal GUI state. | passed | [web/src/App.tsx:167](web/src/App.tsx#L167) |
-| `set_thinking_level` | Direct control | Composer model / thinking / supported Fast control. Fast is capability-gated. Model routes remain native. | not executed | [web/src/App.tsx:671](web/src/App.tsx#L671) |
-| `cycle_thinking_level` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_available_thinking_levels` | Integrated route | Chat initialization / refresh / selectors / statistics. Read RPCs are wired into normal GUI state. | passed | [web/src/App.tsx:167](web/src/App.tsx#L167) |
-| `set_steering_mode` | Direct control | Settings → Session. Dedicated per-session controls. | not executed | [web/src/pages/SettingsPage.tsx:389](web/src/pages/SettingsPage.tsx#L389) |
-| `set_follow_up_mode` | Direct control | Settings → Session. Dedicated per-session controls. | not executed | [web/src/pages/SettingsPage.tsx:389](web/src/pages/SettingsPage.tsx#L389) |
-| `set_interrupt_mode` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `compact` | Partial | Settings → Session → compact now. Basic compaction is wired; customInstructions requires JSON. No model call was made in this audit. | not executed | [web/src/pages/SettingsPage.tsx:454](web/src/pages/SettingsPage.tsx#L454) |
-| `set_auto_compaction` | Direct control | Settings → Session. Dedicated per-session controls. | not executed | [web/src/pages/SettingsPage.tsx:389](web/src/pages/SettingsPage.tsx#L389) |
-| `set_cache_warming` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `set_auto_retry` | Direct control | Settings → Session. Dedicated per-session controls. | not executed | [web/src/pages/SettingsPage.tsx:389](web/src/pages/SettingsPage.tsx#L389) |
-| `abort_retry` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `bash` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `abort_bash` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_session_stats` | Integrated route | Chat initialization / refresh / selectors / statistics. Read RPCs are wired into normal GUI state. | passed | [web/src/App.tsx:167](web/src/App.tsx#L167) |
-| `get_session_lease` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `export_html` | Partial | Settings → Session. Buttons exist, but the response is not used to open the forked session or expose/download the exported file. | not executed | [web/src/pages/SettingsPage.tsx:457](web/src/pages/SettingsPage.tsx#L457) |
-| `switch_session` | Integrated route | Saved chats / transcript / inline edit / reply branches. Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap. | not executed | [server/src/snapshot.ts:4](server/src/snapshot.ts#L4), [web/src/App.tsx:397](web/src/App.tsx#L397) |
-| `branch` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `fork` | Partial | Settings → Session. Buttons exist, but the response is not used to open the forked session or expose/download the exported file. | not executed | [web/src/pages/SettingsPage.tsx:457](web/src/pages/SettingsPage.tsx#L457) |
-| `navigate_tree` | Partial | Checkpoint restore / inline edit / reply version continuation. No arbitrary tree picker, branch labels, custom summary instruction or summary abort UI. | not executed | [web/src/App.tsx:399](web/src/App.tsx#L399) |
-| `abort_branch_summary` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `set_label` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_branch_messages` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | passed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_last_assistant_text` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | passed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `set_session_name` | Direct control | Chat rename / Settings → Session. Dedicated native rename control. | not executed | [web/src/App.tsx:370](web/src/App.tsx#L370) |
-| `handoff` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_messages` | Integrated route | Saved chats / transcript / inline edit / reply branches. Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap. | passed | [server/src/snapshot.ts:4](server/src/snapshot.ts#L4), [web/src/App.tsx:397](web/src/App.tsx#L397) |
-| `get_messages_page` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | passed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_login_providers` | Integrated route | Settings → Providers / Installation. Provider names and signed-in state are queried; credentials stay on the server. | not executed | [web/src/pages/SettingsPage.tsx:114](web/src/pages/SettingsPage.tsx#L114) |
-| `login` | Partial | Settings → Providers → login. OAuth URL/non-secret prompts are partly supported; native RPC rejects secret/pre-URL prompts. Automatic window.open can be blocked. | not executed | [web/src/pages/SettingsPage.tsx:553](web/src/pages/SettingsPage.tsx#L553) |
-| `get_logout_accounts` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `logout` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `predict_word` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `predict_word_feedback` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `btw` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `btw_cancel` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
-| `get_btw_history` | JSON console only | Settings → Runtime capabilities → JSON console. Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected. | passed | [web/src/components/settings/CapabilitiesPanel.tsx:12](web/src/components/settings/CapabilitiesPanel.tsx#L12) |
+| `negotiate_protocol` | Integrated route | Bridge startup. Negotiates v2, strictly reassembles UTF-8 chunks and surfaces malformed/oversized frames. Native large-frame fixture passed. | not executed | [server/src/omp.ts:157](server/src/omp.ts#L157) |
+| `prompt` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:243](web/src/App.tsx#L243) |
+| `steer` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:243](web/src/App.tsx#L243) |
+| `follow_up` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:243](web/src/App.tsx#L243) |
+| `remove_queued_message` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
+| `promote_queued_message` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
+| `abort` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:243](web/src/App.tsx#L243) |
+| `abort_and_prompt` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
+| `abort_and_restore_queue` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
+| `new_session` | Direct control | Settings → Session. Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript. | not executed | [server/src/index.ts:484](server/src/index.ts#L484) |
+| `open_session` | Direct control | Settings → Session workflows. Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export. | not executed | [web/src/components/settings/SessionWorkflows.tsx:5](web/src/components/settings/SessionWorkflows.tsx#L5) |
+| `get_state` | Integrated route | Chat initialization, selectors and usage. Normal GUI reads; no invented progress or totals. | passed | [web/src/App.tsx:162](web/src/App.tsx#L162) |
+| `set_fast_mode` | Direct control | Composer and Settings → Session. Fast mode requires both native model and provider support. | not executed | [web/src/App.tsx:666](web/src/App.tsx#L666) |
+| `set_slow_mode` | Direct control | Settings → Session. Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting. | not executed | [web/src/pages/SettingsPage.tsx:444](web/src/pages/SettingsPage.tsx#L444) |
+| `goal` | Direct control | Settings → Session workflows. Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export. | not executed | [web/src/components/settings/SessionWorkflows.tsx:5](web/src/components/settings/SessionWorkflows.tsx#L5) |
+| `set_ask_dialog` | Integrated route | Bridge startup and native questions. GUI uses rpc-ui and structured ask opt-in. Startup questions are replayed before initialization completes. Interactive PTYs remain a native-terminal boundary. | not executed | [server/src/index.ts:159](server/src/index.ts#L159) |
+| `get_available_commands` | Integrated route | Chat initialization, selectors and usage. Normal GUI reads; no invented progress or totals. | passed | [web/src/App.tsx:162](web/src/App.tsx#L162) |
+| `get_entries` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | passed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `get_tree` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | passed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `set_todos` | Direct control | Settings → Session workflows. Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export. | not executed | [web/src/components/settings/SessionWorkflows.tsx:5](web/src/components/settings/SessionWorkflows.tsx#L5) |
+| `set_host_tools` | Direct control | Settings → Session → GUI host integration. Opt-in GUI notice tool and read-only runtime URI. Host adapters handle calls, updates/results, URI errors and cancellation; unknown registrations fail explicitly. Arbitrary third-party host behavior still requires an implementation. | not executed | [server/src/host-adapters.ts:8](server/src/host-adapters.ts#L8) |
+| `set_host_uri_schemes` | Direct control | Settings → Session → GUI host integration. Opt-in GUI notice tool and read-only runtime URI. Host adapters handle calls, updates/results, URI errors and cancellation; unknown registrations fail explicitly. Arbitrary third-party host behavior still requires an implementation. | not executed | [server/src/host-adapters.ts:8](server/src/host-adapters.ts#L8) |
+| `set_subagent_subscription` | Direct control | Runtime capabilities → Advanced event transport. Bridge defaults to full native events and subagent events. Explicit controls can choose delta updates, event names and subscription level. | not executed | [web/src/components/settings/TransportControls.tsx:69](web/src/components/settings/TransportControls.tsx#L69) |
+| `set_event_filter` | Direct control | Runtime capabilities → Advanced event transport. Bridge defaults to full native events and subagent events. Explicit controls can choose delta updates, event names and subscription level. | not executed | [web/src/components/settings/TransportControls.tsx:69](web/src/components/settings/TransportControls.tsx#L69) |
+| `get_subagents` | Integrated route | Workspace agent roster. Native snapshots plus lifecycle/progress events; terminal statuses are retained as reported history. | passed | [web/src/App.tsx:199](web/src/App.tsx#L199) |
+| `get_subagent_messages` | Direct control | Workspace cards → Agents. Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes. | not executed | [web/src/components/SubagentControls.tsx:43](web/src/components/SubagentControls.tsx#L43) |
+| `cancel_subagent` | Direct control | Workspace cards → Agents. Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes. | not executed | [web/src/components/SubagentControls.tsx:43](web/src/components/SubagentControls.tsx#L43) |
+| `steer_subagent` | Direct control | Workspace cards → Agents. Incremental registered child transcripts, steering and cancellation. Polls are invalidated on selection/chat changes. | not executed | [web/src/components/SubagentControls.tsx:43](web/src/components/SubagentControls.tsx#L43) |
+| `live_start` | Direct control | Composer → Voice and dictation. Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified. | not executed | [web/src/components/VoiceControls.tsx:199](web/src/components/VoiceControls.tsx#L199) |
+| `live_connect` | Direct control | Composer → Voice and dictation. Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified. | not executed | [web/src/components/VoiceControls.tsx:199](web/src/components/VoiceControls.tsx#L199) |
+| `live_stop` | Direct control | Composer → Voice and dictation. Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified. | not executed | [web/src/components/VoiceControls.tsx:199](web/src/components/VoiceControls.tsx#L199) |
+| `live_mute` | Direct control | Composer → Voice and dictation. Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified. | not executed | [web/src/components/VoiceControls.tsx:199](web/src/components/VoiceControls.tsx#L199) |
+| `dictation_start` | Direct control | Composer → Voice and dictation. Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified. | not executed | [web/src/components/VoiceControls.tsx:199](web/src/components/VoiceControls.tsx#L199) |
+| `dictation_stop` | Direct control | Composer → Voice and dictation. Host microphone or Opus WebRTC live sessions, mute/stop and transcripts; capture-correlated draft-only dictation with insert-once and navigation cleanup. Hardware/provider acceptance remains unverified. | not executed | [web/src/components/VoiceControls.tsx:199](web/src/components/VoiceControls.tsx#L199) |
+| `set_model` | Direct control | Composer and Settings → Session. Fast mode requires both native model and provider support. | not executed | [web/src/App.tsx:666](web/src/App.tsx#L666) |
+| `cycle_model` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `get_available_models` | Integrated route | Chat initialization, selectors and usage. Normal GUI reads; no invented progress or totals. | passed | [web/src/App.tsx:162](web/src/App.tsx#L162) |
+| `set_thinking_level` | Direct control | Composer and Settings → Session. Fast mode requires both native model and provider support. | not executed | [web/src/App.tsx:666](web/src/App.tsx#L666) |
+| `cycle_thinking_level` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `get_available_thinking_levels` | Integrated route | Chat initialization, selectors and usage. Normal GUI reads; no invented progress or totals. | passed | [web/src/App.tsx:162](web/src/App.tsx#L162) |
+| `set_steering_mode` | Direct control | Settings → Session. Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting. | not executed | [web/src/pages/SettingsPage.tsx:444](web/src/pages/SettingsPage.tsx#L444) |
+| `set_follow_up_mode` | Direct control | Settings → Session. Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting. | not executed | [web/src/pages/SettingsPage.tsx:444](web/src/pages/SettingsPage.tsx#L444) |
+| `set_interrupt_mode` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `compact` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | not executed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `set_auto_compaction` | Direct control | Settings → Session. Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting. | not executed | [web/src/pages/SettingsPage.tsx:444](web/src/pages/SettingsPage.tsx#L444) |
+| `set_cache_warming` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `set_auto_retry` | Direct control | Settings → Session. Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting. | not executed | [web/src/pages/SettingsPage.tsx:444](web/src/pages/SettingsPage.tsx#L444) |
+| `abort_retry` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `bash` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `abort_bash` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `get_session_stats` | Integrated route | Chat initialization, selectors and usage. Normal GUI reads; no invented progress or totals. | passed | [web/src/App.tsx:162](web/src/App.tsx#L162) |
+| `get_session_lease` | Direct control | Settings → Session workflows → execution. Native delivery, retry/cache controls, shell execution with context exclusion and cancellation, ownership reads and model/thinking cycling. Shell output is native; interactive PTY use is a terminal handoff. | not executed | [web/src/components/settings/SessionWorkflows.tsx:646](web/src/components/settings/SessionWorkflows.tsx#L646) |
+| `export_html` | Direct control | Settings → Session. Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript. | not executed | [server/src/index.ts:484](server/src/index.ts#L484) |
+| `switch_session` | Integrated route | Saved chats and session transitions. Selected saved files use switch_session. --no-session is rejected for saved-chat loading rather than displaying a false empty transcript. | not executed | [server/src/snapshot.ts:4](server/src/snapshot.ts#L4) |
+| `branch` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | not executed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `fork` | Direct control | Settings → Session. Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript. | not executed | [server/src/index.ts:484](server/src/index.ts#L484) |
+| `navigate_tree` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | not executed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `abort_branch_summary` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | not executed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `set_label` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | not executed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `get_branch_messages` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | passed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `get_last_assistant_text` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | passed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `set_session_name` | Direct control | Settings → Session. Native session controls; slow mode shows its reported scope. Retry uses explicit enable/disable actions because get_state does not report its current setting. | not executed | [web/src/pages/SettingsPage.tsx:444](web/src/pages/SettingsPage.tsx#L444) |
+| `handoff` | Direct control | Settings → Session workflows → branches and checkpoints. Native tree/append-history selection, labels, fork/branch/navigation, optional model summaries with cancellation, compaction instructions and handoff. These actions may modify history or use the session model. | not executed | [web/src/components/settings/SessionWorkflows.tsx:361](web/src/components/settings/SessionWorkflows.tsx#L361) |
+| `get_messages` | Integrated route | Transcript snapshots. Protocol v2 pages stable history; stale/busy cursors discard partial pages and fall back to a full logical frame. A 401-message native fixture passed. | passed | [server/src/snapshot.ts:28](server/src/snapshot.ts#L28) |
+| `get_messages_page` | Integrated route | Transcript snapshots. Protocol v2 pages stable history; stale/busy cursors discard partial pages and fall back to a full logical frame. A 401-message native fixture passed. | passed | [server/src/snapshot.ts:28](server/src/snapshot.ts#L28) |
+| `get_login_providers` | Direct control | Settings → Providers. Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login. | not executed | [web/src/components/settings/ProviderAccounts.tsx:18](web/src/components/settings/ProviderAccounts.tsx#L18) |
+| `login` | Direct control | Settings → Providers. Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login. | not executed | [web/src/components/settings/ProviderAccounts.tsx:18](web/src/components/settings/ProviderAccounts.tsx#L18) |
+| `get_logout_accounts` | Direct control | Settings → Providers. Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login. | not executed | [web/src/components/settings/ProviderAccounts.tsx:18](web/src/components/settings/ProviderAccounts.tsx#L18) |
+| `logout` | Direct control | Settings → Providers. Provider login has a persistent browser link, native question handling and account-specific sign-out confirmation. Secret/pre-URL flows rejected by upstream RPC use Native operations → login. | not executed | [web/src/components/settings/ProviderAccounts.tsx:18](web/src/components/settings/ProviderAccounts.tsx#L18) |
+| `predict_word` | Integrated route | Composer → native ghost text / Tab / Escape. Debounced end-of-draft prediction obeys native spelling configuration, UTF-16 cursor positions, IME/focus and stale-request guards; acceptance/rejection feedback uses the original request. | not executed | [web/src/lib/use-word-completion.ts:21](web/src/lib/use-word-completion.ts#L21) |
+| `predict_word_feedback` | Integrated route | Composer → native ghost text / Tab / Escape. Debounced end-of-draft prediction obeys native spelling configuration, UTF-16 cursor positions, IME/focus and stale-request guards; acceptance/rejection feedback uses the original request. | not executed | [web/src/lib/use-word-completion.ts:21](web/src/lib/use-word-completion.ts#L21) |
+| `btw` | Direct control | Settings → Session workflows → side questions. Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript. | not executed | [web/src/components/settings/SessionWorkflows.tsx:664](web/src/components/settings/SessionWorkflows.tsx#L664) |
+| `btw_cancel` | Direct control | Settings → Session workflows → side questions. Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript. | not executed | [web/src/components/settings/SessionWorkflows.tsx:664](web/src/components/settings/SessionWorkflows.tsx#L664) |
+| `get_btw_history` | Direct control | Settings → Session workflows → side questions. Native topic/follow-up selection, streamed turns, cancellation and restored history. Side answers stay outside the transcript. | passed | [web/src/components/settings/SessionWorkflows.tsx:664](web/src/components/settings/SessionWorkflows.tsx#L664) |
 
 ## Configuration fields
 
-All **615** fields enter Settings → All settings and search, but **23 enum fields have no selectable options** in the current form renderer. 450 have UI metadata, 165 do not, and 167 have no native tab assignment. Those advanced/unassigned fields are still listed. Complex arrays/records/objects use a JSON popover. The raw config.yml editor is an expert fallback, not proof that every form control works. See [web/src/components/settings/Controls.tsx:63](web/src/components/settings/Controls.tsx#L63).
+All **615** native fields remain searchable. **0 enum controls lack choices**; unknown future enums also have a native-validated text fallback. Version-pinned supplemental enums restore imported/factory-defined native choices. Forty source-declared RPC-neutral preferences carry an effect note. Global configuration writes, active-session controls and terminal display preferences are identified separately. The forms do not silently override native RPC defaults. See [web/src/components/settings/Controls.tsx:63](web/src/components/settings/Controls.tsx#L63).
 
-| Settings category | Fields |
+| Category | Fields |
 | --- | --- |
 | Unassigned / advanced | 167 |
 | model | 66 |
@@ -156,256 +148,262 @@ All **615** fields enter Settings → All settings and search, but **23 enum fie
 | shell | 18 |
 | tasks | 46 |
 
-**Enum form gaps:** `treeFilterMode`, `tier.openai`, `tier.anthropic`, `tier.google`, `tier.subagent`, `tier.advisor`, `providers.anthropic.slowMode`, `providers.tinyModelDevice`, `providers.tinyModelDtype`, `live.voice`, `tts.localVoice`, `speech.voice`, `codexResets.autoRedeem5h`, `codexResets.autoRedeemWeekly`, `claudeResets.autoRedeem5h`, `claudeResets.autoRedeemWeekly`, `claudeResets.autoRedeemFable`, `advisor.syncBacklog`, `hindsight.recallBudget`, `dev.autoqaConsent`, `task.maxEffort`, `stt.submitTrigger`, `spotlight.thinking`.
+All enum keys in the audited schema have native choices.
 
-Setting writes use `omp config set/reset` without a project/profile scope selector. Some keys control only OMP's terminal UI; the web appearance system is separate. RPC protocol defaults also differ from interactive defaults unless explicitly configured. A visible setting therefore does not establish that it affects the active RPC session or this GUI. The machine-readable map lists every setting key/type/category without user values.
+The machine-readable report includes all setting keys/types and metadata reachability; private effective values are excluded. Configuration defaults and command arguments still require native validation after an OMP update.
 
 ## Every top-level CLI command
 
-Launch flags are appended to `omp --mode rpc`; they are not a terminal for invoking arbitrary top-level CLI commands. Agent-mediated shell/tool access is also not a substitute for a corresponding user-facing management workflow. Some developer/service commands may intentionally remain CLI-only after a product decision.
-
-| CLI command | Coverage | GUI equivalent / gap | Local evidence |
+| CLI command | Reachability | GUI route / limits | Local source |
 | --- | --- | --- | --- |
-| `omp acp` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp agents` | Partial | Tasks settings / All settings. Task agent overrides can be configured; no dedicated bundled-agent inventory/editor. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp anonymize` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp auth` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp auth-broker` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp auth-gateway` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp bash` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp bench` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp browser-relay` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp cleanse` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp clip` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp collab` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp commit` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp completions` | Terminal-specific | Terminal workflow. Native terminal previews/replay/shell completions are intentionally outside the graphical host. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp compress` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp config` | Partial | All settings / config.yml. All 615 global keys are listed, but 23 enum rows lack choices in normal controls. Raw config.yml is a fallback; project/profile scope has no dedicated manager. | [server/src/settings.ts:124](server/src/settings.ts#L124) |
-| `omp dry-balance` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp find` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp gallery` | Terminal-specific | Terminal workflow. Native terminal previews/replay/shell completions are intentionally outside the graphical host. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp gc` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp git` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp grep` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp grievances` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp if-bench` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp images` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp install` | Partial | Settings → Extensions. Install/remove/enable/disable/upgrade, marketplace and diagnostics subset. Not every native plugin CLI option. | [server/src/workspace-features.ts:14](server/src/workspace-features.ts#L14) |
-| `omp join` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp login` | Partial | Settings → Providers. Only RPC-compatible provider login flows. | [web/src/pages/SettingsPage.tsx:553](web/src/pages/SettingsPage.tsx#L553) |
-| `omp models` | Partial | Composer / Models / Providers. Catalog, roles and custom providers exist; native refresh and account/model diagnostics are not equivalent. | [web/src/components/settings/ModelsPanel.tsx:20](web/src/components/settings/ModelsPanel.tsx#L20) |
-| `omp play` | Terminal-specific | Terminal workflow. Native terminal previews/replay/shell completions are intentionally outside the graphical host. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp plugin` | Partial | Settings → Extensions. Install/remove/enable/disable/upgrade, marketplace and diagnostics subset. Not every native plugin CLI option. | [server/src/workspace-features.ts:14](server/src/workspace-features.ts#L14) |
-| `omp predict` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp ps` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp read` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp render` | Terminal-specific | Terminal workflow. Native terminal previews/replay/shell completions are intentionally outside the graphical host. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp say` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp search` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp session` | Partial | Saved chats / Session settings. Normal chat navigation exists; pack/unpack/moved/lease transfer workflows do not. | [web/src/pages/SettingsPage.tsx:342](web/src/pages/SettingsPage.tsx#L342) |
-| `omp setup` | Partial | Desktop first-launch setup. Installs/connects OMP and opens providers. Does not expose all native optional dependency/onboarding setup actions. | [web/src/components/DesktopSetup.tsx:81](web/src/components/DesktopSetup.tsx#L81) |
-| `omp sh` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp share` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp shell` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp skill` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp ssh` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp stats` | Direct control | Settings → Usage. Native usage statistics plus read-only host supplements. | [web/src/components/settings/UsagePanel.tsx:26](web/src/components/settings/UsagePanel.tsx#L26) |
-| `omp stream` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp tiny-models` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp token` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp toks` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp ttsr` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp update` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp usage` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
-| `omp worktree` | Partial | Related slash commands can be entered. Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled. | [web/src/components/settings/CommandsPanel.tsx:46](web/src/components/settings/CommandsPanel.tsx#L46) |
-| `omp zsh` | Missing workflow | No dedicated native CLI workflow. An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI. | [web/src/pages/SettingsPage.tsx:297](web/src/pages/SettingsPage.tsx#L297) |
+| `omp acp` | Native terminal handoff | Settings → Native operations → acp. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp agents` | Guided native form | Settings → Native operations → agents. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp anonymize` | Guided native form | Settings → Native operations → anonymize. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp auth` | Native terminal handoff | Settings → Native operations → auth. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp auth-broker` | Native terminal handoff | Settings → Native operations → auth-broker. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp auth-gateway` | Native terminal handoff | Settings → Native operations → auth-gateway. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp bash` | Native terminal handoff | Settings → Native operations → bash. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp bench` | Guided native form | Settings → Native operations → bench. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp browser-relay` | Guided native form | Settings → Native operations → browser-relay. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp cleanse` | Guided native form | Settings → Native operations → cleanse. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp clip` | Native terminal handoff | Settings → Native operations → clip. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp collab` | Guided native form | Settings → Native operations → collab. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp commit` | Guided native form | Settings → Native operations → commit. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp completions` | Native terminal handoff | Settings → Native operations → completions. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp compress` | Guided native form | Settings → Native operations → compress. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp config` | Native terminal handoff | Settings → Native operations → config. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp dry-balance` | Guided native form | Settings → Native operations → dry-balance. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp find` | Guided native form | Settings → Native operations → find. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp gallery` | Native terminal handoff | Settings → Native operations → gallery. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp gc` | Guided native form | Settings → Native operations → gc. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp git` | Native terminal handoff | Settings → Native operations → git. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp grep` | Guided native form | Settings → Native operations → grep. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp grievances` | Guided native form | Settings → Native operations → grievances. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp if-bench` | Guided native form | Settings → Native operations → if-bench. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp images` | Guided native form | Settings → Native operations → images. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp install` | Guided native form | Settings → Native operations → install. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp join` | Native terminal handoff | Settings → Native operations → join. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp login` | Native terminal handoff | Settings → Native operations → login. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp models` | Guided native form | Settings → Native operations → models. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp play` | Native terminal handoff | Settings → Native operations → play. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp plugin` | Guided native form | Settings → Native operations → plugin. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp predict` | Native terminal handoff | Settings → Native operations → predict. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp ps` | Guided native form | Settings → Native operations → ps. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp read` | Guided native form | Settings → Native operations → read. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp render` | Native terminal handoff | Settings → Native operations → render. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp say` | Guided native form | Settings → Native operations → say. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp search` | Guided native form | Settings → Native operations → search. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp session` | Guided native form | Settings → Native operations → session. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp setup` | Guided native form | Settings → Native operations → setup. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp sh` | Native terminal handoff | Settings → Native operations → sh. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp share` | Native terminal handoff | Settings → Native operations → share. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp shell` | Native terminal handoff | Settings → Native operations → shell. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp skill` | Guided native form | Settings → Native operations → skill. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp ssh` | Guided native form | Settings → Native operations → ssh. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp stats` | Guided native form | Settings → Native operations → stats. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp stream` | Native terminal handoff | Settings → Native operations → stream. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp tiny-models` | Guided native form | Settings → Native operations → tiny-models. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp token` | Native terminal handoff | Settings → Native operations → token. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp toks` | Guided native form | Settings → Native operations → toks. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp ttsr` | Guided native form | Settings → Native operations → ttsr. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp update` | Guided native form | Settings → Native operations → update. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp usage` | Guided native form | Settings → Native operations → usage. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp worktree` | Guided native form | Settings → Native operations → worktree. Arguments, advertised action choices and flags come from installed help; an explicit Run starts a tracked native job with real output/exit status and cancellation. Terminal launch is also available. Account-token subactions are forced to the terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+| `omp zsh` | Native terminal handoff | Settings → Native operations → zsh. Schema-backed command preparation and explicit native-terminal launch/copy. Credential-bearing and terminal-renderer output stays in that terminal. | [web/src/components/settings/NativeManager.tsx:407](web/src/components/settings/NativeManager.tsx#L407), [server/src/native-operations.ts:56](server/src/native-operations.ts#L56) |
+
+The native manager obtains metadata from the installed executable, builds argv without evaluating shell text, and never runs operations when loading a page. Credential/token flows and terminal renderers retain native-terminal ownership. Native command completion is reported from process exit, not inferred from a button click. The profile and working folder are explicit. Jobs expose their real output and cancellation; service state is read through native status/process operations.
 
 ## Slash commands
 
-The isolated runtime advertises 49 built-ins. The GUI can list them in Settings → Commands, reveal them in the composer/palette and submit them through prompt. Their command_output side channel is not rendered, so **listed/routable does not mean end-to-end usable**. Entry without required arguments often only requests help, whose answer is then invisible. Commands may still mutate state or invoke a model; none was executed here. TUI-only entries with no text-mode handler are not advertised by upstream. Third-party, file, skill and MCP prompt commands are dynamic and were disabled during the isolated inventory.
+Built-in/extension commands are discovered from the active OMP session and sent through normal prompting. command_output, notices, errors and supported questions are rendered. Commands that require native terminal components use the interactive launcher; text routing is not a claim that their terminal widgets were ported.
 
-| Slash command | Advertised subcommands | Entry coverage |
+| Slash command | Advertised subcommands | Entry route |
 | --- | --- | --- |
-| `/security` | `plan`, `scan`, `status`, `cancel`, `scans`, `show`, `import`, `export`, `validate`, `compare`, `disposition` | Text route; output/integration partial |
-| `/model` | — | Text route; output/integration partial |
-| `/switch` | — | Text route; output/integration partial |
-| `/fast` | `on`, `ultra`, `off`, `status` | Text route; output/integration partial |
-| `/slow` | `on`, `off`, `status` | Text route; output/integration partial |
-| `/skillful` | `on`, `off`, `status` | Text route; output/integration partial |
-| `/extended-context` | `on`, `off`, `status` | Text route; output/integration partial |
-| `/computer` | `on`, `off`, `status` | Text route; output/integration partial |
-| `/ratchet` | — | Text route; output/integration partial |
-| `/prewalk` | `restart`, `off` | Text route; output/integration partial |
-| `/modelpreset` | `list`, `save`, `switch`, `delete` | Text route; output/integration partial |
-| `/effort` | `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `auto` | Text route; output/integration partial |
-| `/advisor` | `on`, `off`, `status`, `dump`, `configure` | Text route; output/integration partial |
-| `/export` | — | Text route; output/integration partial |
-| `/trace` | — | Text route; output/integration partial |
-| `/dump` | `all`, `anon` | Text route; output/integration partial |
-| `/share` | — | Text route; output/integration partial |
-| `/browser` | `headless`, `visible` | Text route; output/integration partial |
-| `/todo` | `edit`, `copy`, `expand`, `collapse`, `export`, `import`, `append`, `start`, `done`, `drop`, `rm` | Text route; output/integration partial |
-| `/session` | `info`, `delete`, `pin` | Text route; output/integration partial |
-| `/jobs` | `full`, `kill` | Text route; output/integration partial |
-| `/usage` | `show`, `reset` | Text route; output/integration partial |
-| `/stats` | — | Text route; output/integration partial |
-| `/changelog` | `full`, `last` | Text route; output/integration partial |
-| `/tools` | — | Text route; output/integration partial |
-| `/context` | — | Text route; output/integration partial |
-| `/mcp` | `add`, `list`, `remove`, `test`, `reauth`, `unauth`, `enable`, `disable`, `reconnect`, `reload`, `resources`, `prompts`, `notifications`, `help` | Text route; output/integration partial |
-| `/ssh` | `add`, `list`, `remove`, `help` | Text route; output/integration partial |
-| `/fresh` | — | Text route; output/integration partial |
-| `/compact` | `soft`, `remote`, `snapcompact` | Text route; output/integration partial |
-| `/shake` | `elide`, `images`, `thinking` | Text route; output/integration partial |
-| `/handoff` | — | Text route; output/integration partial |
-| `/pin` | — | Text route; output/integration partial |
-| `/unpin` | — | Text route; output/integration partial |
-| `/retry` | — | Text route; output/integration partial |
-| `/memory` | `view`, `stats`, `diagnose`, `queue`, `sync`, `clear`, `reset`, `enqueue`, `rebuild`, `mm list`, `mm show`, `mm refresh`, `mm history`, `mm seed`, `mm delete`, `mm reload` | Text route; output/integration partial |
-| `/rename` | — | Text route; output/integration partial |
-| `/move` | — | Text route; output/integration partial |
-| `/wt` | — | Text route; output/integration partial |
-| `/add-dir` | — | Text route; output/integration partial |
-| `/remove-dir` | — | Text route; output/integration partial |
-| `/dirs` | — | Text route; output/integration partial |
-| `/marketplace` | `add`, `remove`, `update`, `list`, `discover`, `install`, `uninstall`, `installed`, `upgrade`, `help` | Text route; output/integration partial |
-| `/plugins` | `list`, `enable`, `disable` | Text route; output/integration partial |
-| `/reload-plugins` | — | Text route; output/integration partial |
-| `/force` | — | Text route; output/integration partial |
-| `/forget-approvals` | — | Text route; output/integration partial |
-| `/autoresearch` | — | Text route; output/integration partial |
-| `/init` | — | Text route; output/integration partial |
+| `/security` | `plan`, `scan`, `status`, `cancel`, `scans`, `show`, `import`, `export`, `validate`, `compare`, `disposition` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/model` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/switch` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/fast` | `on`, `ultra`, `off`, `status` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/slow` | `on`, `off`, `status` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/skillful` | `on`, `off`, `status` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/extended-context` | `on`, `off`, `status` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/computer` | `on`, `off`, `status` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/ratchet` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/prewalk` | `restart`, `off` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/modelpreset` | `list`, `save`, `switch`, `delete` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/effort` | `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `auto` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/advisor` | `on`, `off`, `status`, `dump`, `configure` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/export` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/trace` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/dump` | `all`, `anon` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/share` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/browser` | `headless`, `visible` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/todo` | `edit`, `copy`, `expand`, `collapse`, `export`, `import`, `append`, `start`, `done`, `drop`, `rm` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/session` | `info`, `delete`, `pin` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/jobs` | `full`, `kill` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/usage` | `show`, `reset` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/stats` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/changelog` | `full`, `last` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/tools` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/context` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/mcp` | `add`, `list`, `remove`, `test`, `reauth`, `unauth`, `enable`, `disable`, `reconnect`, `reload`, `resources`, `prompts`, `notifications`, `help` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/ssh` | `add`, `list`, `remove`, `help` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/fresh` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/compact` | `soft`, `remote`, `snapcompact` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/shake` | `elide`, `images`, `thinking` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/handoff` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/pin` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/unpin` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/retry` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/memory` | `view`, `stats`, `diagnose`, `queue`, `sync`, `clear`, `reset`, `enqueue`, `rebuild`, `mm list`, `mm show`, `mm refresh`, `mm history`, `mm seed`, `mm delete`, `mm reload` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/rename` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/move` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/wt` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/add-dir` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/remove-dir` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/dirs` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/marketplace` | `add`, `remove`, `update`, `list`, `discover`, `install`, `uninstall`, `installed`, `upgrade`, `help` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/plugins` | `list`, `enable`, `disable` | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/reload-plugins` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/force` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/forget-approvals` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/autoresearch` | — | Composer / command palette; native-terminal fallback for interactive renderers |
+| `/init` | — | Composer / command palette; native-terminal fallback for interactive renderers |
 
 ## Main launch flags
 
-The raw flags editor exists, but [web/src/pages/SettingsPage.tsx:266](web/src/pages/SettingsPage.tsx#L266) splits on whitespace and loses quoted argument boundaries. Paths with spaces and some structured arguments cannot be assumed to work. Mode/print/interactive flags may conflict with the RPC host. This is an inventory of options, not an instruction to pass every flag.
+The shared argv parser preserves quotes, empty arguments and Windows paths ([shared/launch-args.ts:2](shared/launch-args.ts#L2)). GUI launch validation rejects transport replacement, incompatible main modes and browser-stored API keys. The native interactive launcher exposes main CLI arguments/flags through help-driven forms.
 
 | Flag | Reachability |
 | --- | --- |
-| `--model` | GUI equivalent |
-| `--smol` | Partial GUI equivalent + raw flags |
-| `--slow` | Partial GUI equivalent + raw flags |
-| `--plan` | Partial GUI equivalent + raw flags |
-| `--goal` | Mode/terminal-specific; not general RPC launch coverage |
-| `--prewalk` | Raw launch flags only |
-| `--no-prewalk` | Raw launch flags only |
-| `--prewalk-into` | Raw launch flags only |
-| `--plan-yolo` | Raw launch flags only |
-| `--plan-yolo-into` | Raw launch flags only |
-| `--provider` | Partial GUI equivalent + raw flags |
-| `--api-key` | Raw launch flags only |
-| `--system-prompt` | Raw launch flags only |
-| `--system-prompt-template` | Raw launch flags only |
-| `--append-system-prompt` | Raw launch flags only |
-| `--allow-home` | Raw launch flags only |
-| `--profile` | Raw launch flags only |
-| `--alias` | Mode/terminal-specific; not general RPC launch coverage |
-| `--cwd` | GUI equivalent |
-| `--mode` | Mode/terminal-specific; not general RPC launch coverage |
-| `--config` | Raw launch flags only |
-| `--add-dir` | Raw launch flags only |
-| `--print` | Mode/terminal-specific; not general RPC launch coverage |
-| `--continue` | Partial GUI equivalent + raw flags |
-| `--resume` | Partial GUI equivalent + raw flags |
-| `--restore` | Raw launch flags only |
-| `--from-claude` | Raw launch flags only |
-| `--from-codex` | Raw launch flags only |
-| `--session-dir` | Raw launch flags only |
-| `--no-session` | Raw launch flags only |
-| `--models` | Raw launch flags only |
-| `--no-tools` | Raw launch flags only |
-| `--no-lsp` | Raw launch flags only |
-| `--no-pty` | Raw launch flags only |
-| `--tools` | Raw launch flags only |
-| `--thinking` | GUI equivalent |
-| `--service-tier` | Raw launch flags only |
-| `--hide-thinking` | Mode/terminal-specific; not general RPC launch coverage |
-| `--advisor` | Raw launch flags only |
-| `--wait-async` | Mode/terminal-specific; not general RPC launch coverage |
-| `--max-time` | Raw launch flags only |
-| `--external-thinking` | Raw launch flags only |
-| `--hook` | Raw launch flags only |
-| `--extension` | Raw launch flags only |
-| `--no-extensions` | Raw launch flags only |
-| `--no-skills` | Raw launch flags only |
-| `--skills` | Raw launch flags only |
-| `--no-rules` | Raw launch flags only |
-| `--no-context-files` | Raw launch flags only |
-| `--export` | Partial GUI equivalent + raw flags |
-| `--no-title` | Raw launch flags only |
-| `--spinner-interval` | Mode/terminal-specific; not general RPC launch coverage |
-| `--max-fps` | Mode/terminal-specific; not general RPC launch coverage |
-| `--motion` | Mode/terminal-specific; not general RPC launch coverage |
-| `--no-ui` | Raw launch flags only |
-| `--print-thoughts` | Mode/terminal-specific; not general RPC launch coverage |
-| `--warn-cost` | Raw launch flags only |
-| `--max-cost` | Raw launch flags only |
-| `--auto-approve` | Partial GUI equivalent + raw flags |
-| `--approval-mode` | Partial GUI equivalent + raw flags |
+| `--model` | GUI equivalent + native launcher |
+| `--smol` | Quoted GUI argv + native launcher |
+| `--slow` | Quoted GUI argv + native launcher |
+| `--plan` | Quoted GUI argv + native launcher |
+| `--goal` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--prewalk` | Quoted GUI argv + native launcher |
+| `--no-prewalk` | Quoted GUI argv + native launcher |
+| `--prewalk-into` | Quoted GUI argv + native launcher |
+| `--plan-yolo` | Quoted GUI argv + native launcher |
+| `--plan-yolo-into` | Quoted GUI argv + native launcher |
+| `--provider` | Quoted GUI argv + native launcher |
+| `--api-key` | Credential input stays in native terminal/provider configuration |
+| `--system-prompt` | Quoted GUI argv + native launcher |
+| `--system-prompt-template` | Quoted GUI argv + native launcher |
+| `--append-system-prompt` | Quoted GUI argv + native launcher |
+| `--allow-home` | Quoted GUI argv + native launcher |
+| `--profile` | Quoted GUI argv + native launcher |
+| `--alias` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--cwd` | GUI equivalent + native launcher |
+| `--mode` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--config` | Quoted GUI argv + native launcher |
+| `--add-dir` | Quoted GUI argv + native launcher |
+| `--print` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--continue` | Quoted GUI argv + native launcher |
+| `--resume` | Quoted GUI argv + native launcher |
+| `--restore` | Quoted GUI argv + native launcher |
+| `--from-claude` | Quoted GUI argv + native launcher |
+| `--from-codex` | Quoted GUI argv + native launcher |
+| `--session-dir` | Quoted GUI argv + native launcher |
+| `--no-session` | Quoted GUI argv + native launcher |
+| `--models` | Quoted GUI argv + native launcher |
+| `--no-tools` | Quoted GUI argv + native launcher |
+| `--no-lsp` | Quoted GUI argv + native launcher |
+| `--no-pty` | Quoted GUI argv + native launcher |
+| `--tools` | Quoted GUI argv + native launcher |
+| `--thinking` | GUI equivalent + native launcher |
+| `--service-tier` | Quoted GUI argv + native launcher |
+| `--hide-thinking` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--advisor` | Quoted GUI argv + native launcher |
+| `--wait-async` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--max-time` | Quoted GUI argv + native launcher |
+| `--external-thinking` | Quoted GUI argv + native launcher |
+| `--hook` | Quoted GUI argv + native launcher |
+| `--extension` | Quoted GUI argv + native launcher |
+| `--no-extensions` | Quoted GUI argv + native launcher |
+| `--no-skills` | Quoted GUI argv + native launcher |
+| `--skills` | Quoted GUI argv + native launcher |
+| `--no-rules` | Quoted GUI argv + native launcher |
+| `--no-context-files` | Quoted GUI argv + native launcher |
+| `--export` | Quoted GUI argv + native launcher |
+| `--no-title` | Quoted GUI argv + native launcher |
+| `--spinner-interval` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--max-fps` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--motion` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--no-ui` | Quoted GUI argv + native launcher |
+| `--print-thoughts` | Native interactive launcher; incompatible GUI transport overrides are rejected |
+| `--warn-cost` | Quoted GUI argv + native launcher |
+| `--max-cost` | Quoted GUI argv + native launcher |
+| `--auto-approve` | Quoted GUI argv + native launcher |
+| `--approval-mode` | Quoted GUI argv + native launcher |
 
 ## Native agent tools
 
-OMP retains execution of built-in tools. GUI management/configuration and generic tool-call/result rendering cover the agent-mediated path; no tool was executed in this audit. Browser/computer use run inside eval and depend on native setup/policy. Tool-specific interactive requirements (especially ask), specialized previews, external programs and optional dependencies need acceptance individually. ToolsPanel currently labels tools without a matched enable-setting key as Always available; that inference is not authoritative for launch restrictions or installed dependencies.
+OMP owns execution, approval policy and optional dependencies. The GUI renders native tool calls/results and structured tool questions. No model-driven tool execution was used for acceptance. Tools without a known configuration gate are labelled Runtime-managed; a check appears only when the active session reports that tool.
 
-| Tool | Matched GUI enable setting | Coverage |
+| Tool | Matched enable setting | Route |
 | --- | --- | --- |
-| `read` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `edit` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `write` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `bash` | `bash.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `grep` | `grep.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `glob` | `glob.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `find` | `find.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `eval` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `task` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `wait` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `todo` | `todo.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `ask` | `ask.enabled` | Missing native tool UI activation |
-| `web_search` | `web_search.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `lsp` | `lsp.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `ast_edit` | `astEdit.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `debug` | `debug.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `ida` | `ida.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `ast_grep` | `astGrep.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `github` | `github.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `checkpoint` | `checkpoint.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `rewind` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `context_notes` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `new_context` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `retain` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `recall` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `reflect` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `memory_edit` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `learn` | No matched gate; fixed label | Agent-mediated; generic output/configuration, no separate execution UI |
-| `manage_skill` | `skills.enableSkillCommands` | Agent-mediated; generic output/configuration, no separate execution UI |
-| `security_scan` | `security.enabled` | Agent-mediated; generic output/configuration, no separate execution UI |
+| `read` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `edit` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `write` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `bash` | `bash.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `grep` | `grep.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `glob` | `glob.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `find` | `find.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `eval` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `task` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `wait` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `todo` | `todo.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `ask` | `ask.enabled` | Native rpc-ui questions with structured answers and standard extension dialogs |
+| `web_search` | `web_search.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `lsp` | `lsp.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `ast_edit` | `astEdit.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `debug` | `debug.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `ida` | `ida.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `ast_grep` | `astGrep.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `github` | `github.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `checkpoint` | `checkpoint.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `rewind` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `context_notes` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `new_context` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `retain` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `recall` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `reflect` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `memory_edit` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `learn` | Runtime-managed | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `manage_skill` | `skills.enableSkillCommands` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
+| `security_scan` | `security.enabled` | Agent-mediated native execution, tool rendering and configuration; availability follows native policy/dependencies |
 
 ## Reducer fixture observations
 
-| Observed defect | Present in this snapshot |
+| Original defect | Still present |
 | --- | --- |
-| slashOutputIgnored | Yes |
-| nativeNoticeIgnored | Yes |
-| editorTextOnlySetsNotice | Yes |
-| checkboxStateDiscarded | Yes |
-| cancelDoesNotRemoveTarget | Yes |
+| slashOutputIgnored | No |
+| nativeNoticeIgnored | No |
+| editorTextOnlySetsNotice | No |
+| checkboxStateDiscarded | No |
+| cancelDoesNotRemoveTarget | No |
 
-The fixtures feed only synthetic command_output, notice, set_editor_text, select and cancel records to the current reducer. They demonstrate client-state behavior, not a live provider/tool run. Option descriptions, secret input, structured ask, widget placement, voice, host-tool/URI responses and UI timeout behavior were additionally source-reviewed; not all were exercised as fixtures.
+These observations use synthetic records. Native protocol/history checks and rendered inert UI checks are separate evidence; a successful read RPC is not a mutation test.
 
-## Host features versus OMP parity
+## Host features and upstream boundaries
 
-The classifier routing graph, persona library, project navigation, visual editor, desktop installer and appearance controls are host features. They can be useful and polished without covering missing native OMP operations. Permissions are OMP's authoritative global policy with possible launch/project overrides, not an invented per-chat access switch. Checkpoint navigation changes conversation history, not files; native checkpoint/rewind tools are distinct.
+Project navigation, appearance, editor drafts and the desktop shell remain shared web/Tauri host features. They preserve the approved material hierarchy and native OMP permissions. Checkpoint history changes do not roll back files. Custom terminal renderers/raw-input APIs retain a native-terminal handoff, and arbitrary host tools/URI schemes require actual host handlers. The bundled GUI runtime URI is read-only and optional; unknown host requests fail explicitly instead of hanging.
 
-## Reproduce and maintain this map
+## Reproduce and maintain
 
-Run from the repository root with Node 24+ and a working OMP binary (`OMP_BIN` can select it). The collector downloads the public source matching --version and writes only a sanitized inventory under .tmp. It creates and removes its own temporary fixture profile. The report generator rejects unclassified native commands, duplicate mappings and stale local evidence anchors rather than treating new commands as implemented.
+Inspect scripts before execution. The checks below use temporary fixture profiles and do not invoke a model; the inventory collector downloads public sources matching the installed OMP version. Mutating integration scripts elsewhere in the repository are not implied by this list.
 
 ```sh
 node scripts/collect-omp-inventory.mjs
+node scripts/check-rpc-parity.mjs
+node scripts/check-native-operations.mjs
+node scripts/check-api-origin.mjs
 node scripts/inspect-gui-events.mjs
 node scripts/audit-capabilities.mjs
+npm run typecheck
+npm test
+npm run build
 npm run docs:check
 ```
 
-Curate [scripts/omp-gui-map.json](scripts/omp-gui-map.json), then regenerate this document and [docs/omp-gui-coverage.json](docs/omp-gui-coverage.json). The JSON contains every RPC/CLI/flag/tool/setting row and evidence location, suitable for filtering or a later in-app coverage view. Refresh after an OMP update or when closing a gap; do not turn source evidence or read-probe success into a blanket feature-verification claim.
+Curate [scripts/omp-gui-map.json](scripts/omp-gui-map.json), then regenerate this document and [docs/omp-gui-coverage.json](docs/omp-gui-coverage.json). The generator rejects unmapped commands, duplicates and stale evidence. Refresh enum/protocol metadata after an OMP update. Keep live acceptance limits explicit.

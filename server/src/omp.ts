@@ -3,6 +3,7 @@ import { EventEmitter } from "node:events";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { RpcFrameDecoder } from './rpc-frames.ts';
 
 export type RpcRecord = Record<string, any>;
 
@@ -12,6 +13,7 @@ export interface BridgeOptions {
   args?: string[];
   ompBinary?: string;
   env?: Record<string, string>;
+  mode?: 'rpc' | 'rpc-ui';
 }
 
 const localBinary = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "omp", "omp.exe");
@@ -49,6 +51,9 @@ export class OmpBridge extends EventEmitter {
   #pending = new Map<string, Pending>();
   #killed = false;
   #stderr = "";
+  #frames = new RpcFrameDecoder();
+  protocolVersion = 1;
+  protocolReady: Promise<void> = Promise.resolve();
   lastActivity = Date.now();
 
   constructor(key: string, cwd: string) {
@@ -68,7 +73,7 @@ export class OmpBridge extends EventEmitter {
 
   start(opts: BridgeOptions) {
     if (this.proc) throw new Error("already started");
-    const args = ["--mode", "rpc", "--cwd", opts.cwd, ...(opts.args ?? [])];
+    const args = ["--mode", opts.mode ?? "rpc", "--cwd", opts.cwd, ...(opts.args ?? [])];
     const bin = opts.ompBinary ?? OMP_BINARY;
     const proc = spawn(bin, args, {
       cwd: opts.cwd,
@@ -110,13 +115,28 @@ export class OmpBridge extends EventEmitter {
       if (!line.length) continue;
       let rec: RpcRecord;
       try {
-        rec = JSON.parse(line.toString("utf8"));
-      } catch {
+        if (line.length > 64 * 1024 * 1024) throw new Error('OMP exceeded the maximum transport frame size');
+        rec = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(line));
+        const decoded = this.#frames.accept(rec);
+        if (!decoded) continue;
+        rec = decoded;
+      } catch (error: any) {
+        this.#frames.reset();
+        this.emit('event', { type: 'bridge_error', message: 'Invalid OMP frame: ' + error.message });
+        for (const pending of this.#pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
+        this.#pending.clear();
         continue;
       }
       this.#dispatch(rec);
     }
-    if (this.#buf.length > 64 * 1024 * 1024) this.#buf = Buffer.alloc(0);
+    if (this.#buf.length > 64 * 1024 * 1024) {
+      this.#buf = Buffer.alloc(0);
+      this.#frames.reset();
+      const error = new Error('OMP exceeded the maximum transport frame size');
+      this.emit('event', { type: 'bridge_error', message: error.message });
+      for (const pending of this.#pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
+      this.#pending.clear();
+    }
   }
 
   #dispatch(rec: RpcRecord) {
@@ -127,12 +147,18 @@ export class OmpBridge extends EventEmitter {
         this.#pending.delete(String(rec.id));
         clearTimeout(p.timer);
         if (rec.success) p.resolve(rec.data ?? {});
-        else p.reject(new Error(rec.error || `${rec.command} failed`));
+        else p.reject(Object.assign(new Error(rec.error || `${rec.command} failed`), { code: rec.code }));
       }
       return;
     }
     if (rec.type === "ready") {
       this.ready = rec;
+      if (rec.supportedProtocolVersions?.includes(2)) {
+        this.protocolReady = this.send({ type: 'negotiate_protocol', protocolVersion: 2 }).then(result => {
+          if (result.protocolVersion !== 2) throw new Error('OMP did not confirm protocol v2');
+          this.protocolVersion = 2;
+        }).catch(error => { this.emit('event', { type: 'notice', level: 'warning', message: 'Lossless transport unavailable: ' + error.message }); });
+      }
       this.emit("ready", rec);
       return;
     }
