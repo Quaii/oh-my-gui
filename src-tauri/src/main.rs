@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod native_icon;
+mod window_frame;
 
 use std::{
     io::{BufRead, BufReader, Write},
@@ -202,6 +203,8 @@ fn main() {
             let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
                 .title(if installer { "Install omp." } else { "omp." })
                 .decorations(!cfg!(windows))
+                .shadow(true)
+                .visible(false)
                 .inner_size(if installer { 780.0 } else { 1440.0 }, if installer { 540.0 } else { 960.0 })
                 .min_inner_size(if installer { 700.0 } else { 900.0 }, if installer { 500.0 } else { 640.0 })
                 .resizable(!installer)
@@ -230,6 +233,8 @@ fn main() {
                     NewWindowResponse::Deny
                 })
                 .build()?;
+            window_frame::apply(&window);
+            window.show()?;
             let state_window = window.clone();
             window.on_window_event(move |event| {
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {

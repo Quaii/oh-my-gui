@@ -60,6 +60,10 @@ This is a Windows-first, unsigned development build. Signing, automatic updates,
 native close handling for unsaved documents and native macOS/Linux acceptance remain release work.
 Windows uses a 32px custom title bar with a drag region, double-click maximize/restore and
 keyboard-accessible caption buttons. Native window interactions still require interactive verification.
+The app and installer explicitly enable native shadows and request rounded outer corners through
+Windows 11 DWM before showing their windows. This clips the actual WebView surface, including its
+opaque background, rather than rounding only an inner HTML panel. Windows controls corner geometry
+when maximized or snapped. Older Windows versions may ignore the corner/border attributes.
 
 Official references: [Tauri resources](https://v2.tauri.app/develop/resources/),
 [external binaries](https://v2.tauri.app/develop/sidecar/), and

@@ -241,6 +241,11 @@ maximize/restore and close are independently focusable buttons; close uses a red
 Maximize state follows native resize events, including OS-driven changes. The caption reserves its
 own row, so it does not cover the existing floating workspace toolbar. Browser and non-Windows
 window chrome are unchanged. The controls use authenticated, allowlisted local window actions.
+Both Windows windows use the native DWM rounded-corner preference and shadow. The frame is styled
+before the window is shown, so the opaque WebView is clipped by Windows at the real outer corners.
+Windows owns maximized/snapped geometry; CSS rounding is not used to simulate the outer frame.
+The native light border is suppressed to match the dark custom chrome. Older Windows versions can
+ignore these Windows 11 compositor attributes.
 
 ## Desktop installation and setup
 

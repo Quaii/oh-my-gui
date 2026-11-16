@@ -13,4 +13,4 @@ uuid = { version = "1", features = ["v4"] }
 open = "5"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_Graphics_Dwm"] }
