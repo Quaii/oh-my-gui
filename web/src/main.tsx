@@ -12,12 +12,12 @@ const BackgroundPreview=React.lazy(()=>import("./components/backgrounds/Backgrou
 
 if(window.__OMP_DESKTOP__)document.documentElement.dataset.desktop="true";
 if(window.__OMP_CUSTOM_CHROME__)document.documentElement.dataset.desktopChrome="true";
-applyTheme(getTheme());
+applyTheme(window.__OMP_INSTALLER__ ? 'carbon' : getTheme());
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <TooltipProvider delayDuration={300}>
-      {window.__OMP_CUSTOM_CHROME__&&<DesktopTitleBar/>}
+      {window.__OMP_CUSTOM_CHROME__&&!window.__OMP_INSTALLER__&&<DesktopTitleBar/>}
       {location.pathname==="/background-preview"?<React.Suspense fallback={null}><BackgroundPreview/></React.Suspense>:<WorkspaceMotion>{window.__OMP_INSTALLER__ ? <DesktopInstaller /> : window.__OMP_DESKTOP__ ? <DesktopSetup><App /></DesktopSetup> : <App />}</WorkspaceMotion>}
     </TooltipProvider>
   </React.StrictMode>

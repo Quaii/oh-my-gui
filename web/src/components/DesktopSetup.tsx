@@ -2,8 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Check, Download, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { ThemeSelector } from './ui/theme-selector';
-import { Brand } from './Brand';
-import { WorkspaceBackground } from './Appearance';
+import { DesktopSetupFrame } from './DesktopSetupFrame';
 import { APP_THEMES, applyTheme, getTheme } from '../lib/theme';
 import { get, post } from '../lib/api';
 import { navigate } from '../lib/route';
@@ -57,14 +56,13 @@ export function DesktopSetup({ children }: { children: ReactNode }) {
     finally { setBusy(false); }
   }
 
-  return <><div hidden={!ready} className="h-full min-h-0">{activated && children}</div>{!ready && <div className="desktop-setup-shell">
-    <WorkspaceBackground />
-    <main className="desktop-setup workspace-floating-surface" aria-labelledby="setup-title" aria-busy={busy}>
-      <div className="flex items-center gap-3"><Brand /><span className="text-lg font-semibold">omp.</span><span className="ml-auto text-xs text-muted-foreground">{step + 1} of 3</span></div>
-      <div className="desktop-setup-progress" aria-hidden="true">{[0, 1, 2].map(index => <span key={index} data-active={index <= step} />)}</div>
+  return <><div hidden={!ready} className="h-full min-h-0">{activated && children}</div>{!ready && <DesktopSetupFrame steps={['Welcome', 'OMP runtime', 'Appearance']} current={step} busy={busy} onCancel={() => {
+    if (activated) setReady(true);
+    else void post('/api/desktop/window', { action: 'close' }).catch(error => setError(error.message));
+  }}>
       {step === 0 && <section>
-        <h1 id="setup-title">Your workspace, on your desktop.</h1>
-        <p>Connect your agent, choose a look, and make yourself at home.</p>
+        <h1 id="setup-title">Set up omp.</h1>
+        <p>Connect your agent and choose your appearance.</p>
         <div className="desktop-setup-inset"><h2>Bring your work with you</h2><p>Existing OMP chats, providers and settings stay where they are. You can add a project from Home when you’re ready.</p></div>
       </section>}
       {step === 1 && <section>
@@ -88,10 +86,9 @@ export function DesktopSetup({ children }: { children: ReactNode }) {
       </section>}
       {error && <p role="alert" className="mt-5 text-sm text-destructive">{error}</p>}
       {!status && <Button variant="outline" className="mt-5" onClick={() => void refresh()} disabled={busy}>{busy ? 'Checking setup…' : 'Retry connection'}</Button>}
-      <footer className="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <footer className="desktop-setup-navigation">
         <Button variant="ghost" onClick={() => setStep(value => value - 1)} disabled={busy || step === 0}><ArrowLeft className="size-4" />Back</Button>
         {step < 2 ? <Button onClick={() => setStep(value => value + 1)} disabled={busy || !status || (step === 1 && !status.available)}>Continue<ArrowRight className="size-4" /></Button> : <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={busy} onClick={() => void finish(false)}>Open workspace</Button><Button disabled={busy} onClick={() => void finish(true)}>Connect a provider<ArrowRight className="size-4" /></Button></div>}
       </footer>
-    </main>
-  </div>}</>;
+  </DesktopSetupFrame>}</>;
 }

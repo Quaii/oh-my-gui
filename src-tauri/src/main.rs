@@ -202,8 +202,9 @@ fn main() {
             let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
                 .title(if installer { "Install omp." } else { "omp." })
                 .decorations(!cfg!(windows))
-                .inner_size(if installer { 900.0 } else { 1440.0 }, if installer { 720.0 } else { 960.0 })
-                .min_inner_size(if installer { 680.0 } else { 900.0 }, 640.0)
+                .inner_size(if installer { 780.0 } else { 1440.0 }, if installer { 540.0 } else { 960.0 })
+                .min_inner_size(if installer { 700.0 } else { 900.0 }, if installer { 500.0 } else { 640.0 })
+                .resizable(!installer)
                 .center()
                 .disable_drag_drop_handler()
                 .initialization_script(if installer {

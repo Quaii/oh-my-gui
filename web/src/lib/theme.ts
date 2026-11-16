@@ -17,14 +17,14 @@ export const APP_THEMES:WorkspaceTheme[] = [
  theme("rose","Rose","light","#f0e6e8","#fcf7f7","#f5ecee","#e4d3d8","#9d5068","#38282d","#806a72"),
  theme("sand","Sand","light","#eee8d9","#fbf8ee","#f4efdf","#e1d7be","#846626","#373022","#7d725b"),
 ];
-export const DEFAULT_THEME="dark";
+export const DEFAULT_THEME="carbon";
 export function getTheme():string {try{const v=localStorage.getItem(LS_THEME);return APP_THEMES.some(t=>t.value===v)?v!:DEFAULT_THEME;}catch{return DEFAULT_THEME;}}
 export function isLightTheme(value:string) {return APP_THEMES.find(t=>t.value===value)?.mode==="light";}
 let transitionTheme:((value:string)=>void)|undefined;
 export function registerThemeTransition(handler:(value:string)=>void){transitionTheme=handler;return()=>{if(transitionTheme===handler)transitionTheme=undefined;};}
 export function applyTheme(value:string){if(transitionTheme&&value!==getTheme())transitionTheme(value);else applyThemeImmediately(value);}
 export function applyThemeImmediately(value:string) {
- const t=APP_THEMES.find(t=>t.value===value)||APP_THEMES[0], root=document.documentElement,c=t.colors;
+ const t=APP_THEMES.find(t=>t.value===value)||APP_THEMES.find(t=>t.value===DEFAULT_THEME)!, root=document.documentElement,c=t.colors;
  root.dataset.theme=t.value;root.classList.toggle("dark",t.mode==="dark");root.style.colorScheme=t.mode;
  const vars:Record<string,string>={"--theme-background":c.panel,"--theme-foreground":t.foreground,"--theme-sidebar":c.sidebar,"--theme-card":c.tile,"--theme-border":c.border,"--theme-accent":c.strong,"--theme-muted":t.subtle};
  for(const[k,v]of Object.entries(vars))root.style.setProperty(k,v);

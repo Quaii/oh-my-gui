@@ -244,10 +244,15 @@ window chrome are unchanged. The controls use authenticated, allowlisted local w
 
 ## Desktop installation and setup
 
-The custom installer and first-launch setup reuse the workspace brand, semantic colors, floating
-surface, buttons and theme previews. A centered card has equal 32px padding, a 680px maximum width,
-16px corners and a separate caption row. Setup uses three progress segments for actual steps, never
-fabricated download percentages. Runtime checks, installation errors and retry controls remain visible.
+The custom installer and first-launch setup are a compact workspace: a left progress rail and one
+floating content panel, with 12px outer padding and gap. The Windows installer window is 780×540,
+with no separate caption strip or large canvas around a centered card. Its panel has 14px corners
+and 28px horizontal padding; the top-right X cancels before installation begins. Closing is disabled
+while the installation engine is active. The brand/header area provides window dragging.
+The installer always uses Carbon and has no theme selector. Carbon is also the application default
+for new profiles; explicit saved themes are retained. Completed steps use accent checkmarks in the
+left rail, the active step uses the sidebar selection surface, and future steps remain muted.
+Runtime checks, installation errors and retry controls remain visible; no download percentages are fabricated.
 Theme previews use a three-column grid inside a bounded scroll area; the page must never grow wider
 than its window. Appearance choices update immediately. Provider connection remains an explicit action
 in the existing Settings screen. Reopening setup hides the workspace without unmounting it.

@@ -78,6 +78,11 @@ installation engine is active, and refuses to replace a running app. WebView2 is
 the custom UI; clean-device bootstrap and upgrade/uninstall acceptance still need native testing.
 The underlying NSIS artifact remains in `bundle/nsis` for diagnostics and silent enterprise installs.
 
+The installer is a compact, fixed 780×540 Carbon window. Its left rail shows actual setup progress;
+the adjacent floating panel owns the close/cancel control. It has no theme dropdown or separate
+caption strip. First-launch setup uses the same rail/panel composition. Carbon is the application
+default for new profiles; existing chosen themes remain saved.
+
 First launch shows three steps using the shared Brand, Button, ThemeSelector and theme tokens:
 welcome, OMP connection/installation, and appearance with an optional handoff to Providers. The
 workspace does not start a bridge until setup finishes. No provider login, permission change or model
