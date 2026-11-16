@@ -103,6 +103,8 @@ These workflows establish build coverage only after their actual jobs pass, not 
 Packaging changes pushed to `tauri` trigger builds. Manual dispatch is also declared; GitHub exposes
 that control once the workflow exists on the repository's default branch. The preserved baseline is
 not modified just to enable that control.
+The macOS deployment floor is 13.5, matching the bundled Node 24 runtime rather than advertising
+support for older systems on which the backend cannot start.
 
 For the next release, update package.json, src-tauri/tauri.conf.json and src-tauri/Cargo.toml together,
 run the web/native checks, build, and run desktop:release-check. Keep build artifacts out of Git.
