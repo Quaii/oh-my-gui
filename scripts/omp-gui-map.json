@@ -1,0 +1,799 @@
+{
+  "rpc": [
+    {
+      "names": [
+        "prompt"
+      ],
+      "status": "direct",
+      "surface": "Composer → Send",
+      "note": "Text and image prompts; arbitrary document/audio attachments are absent.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type: \"prompt\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "steer",
+        "follow_up"
+      ],
+      "status": "integrated",
+      "surface": "Composer → steer / follow-up",
+      "note": "Equivalent prompt.streamingBehavior route; queue editing is separate and absent.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "cmd.streamingBehavior = behavior"
+        }
+      ]
+    },
+    {
+      "names": [
+        "abort"
+      ],
+      "status": "direct",
+      "surface": "Composer → Stop / Escape",
+      "note": "Native abort is sent; queue restoration/interrupt-and-resubmit are not exposed.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type: \"abort\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "new_session"
+      ],
+      "status": "partial",
+      "surface": "Sidebar New chat; Settings → Session",
+      "note": "New chat works through bridge creation. The separate Session action sends new_session without reattaching/reloading the transcript.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"new_session\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "open_session"
+      ],
+      "status": "console",
+      "surface": "Settings → Runtime capabilities → JSON console",
+      "note": "No dedicated session-directory open control for this RPC; saved file selection uses switch_session instead.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "needle": "Advanced RPC console"
+        }
+      ]
+    },
+    {
+      "names": [
+        "get_state",
+        "get_available_commands",
+        "get_available_models",
+        "get_available_thinking_levels",
+        "get_session_stats"
+      ],
+      "status": "integrated",
+      "surface": "Chat initialization / refresh / selectors / statistics",
+      "note": "Read RPCs are wired into normal GUI state.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type: \"get_available_models\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_fast_mode",
+        "set_model",
+        "set_thinking_level"
+      ],
+      "status": "direct",
+      "surface": "Composer model / thinking / supported Fast control",
+      "note": "Fast is capability-gated. Model routes remain native.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "onModelChange="
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_slow_mode",
+        "set_steering_mode",
+        "set_follow_up_mode",
+        "set_auto_compaction",
+        "set_auto_retry"
+      ],
+      "status": "direct",
+      "surface": "Settings → Session",
+      "note": "Dedicated per-session controls.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"set_slow_mode\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "get_entries",
+        "get_messages",
+        "switch_session"
+      ],
+      "status": "integrated",
+      "surface": "Saved chats / transcript / inline edit / reply branches",
+      "note": "Native entries and saved-file switching are integrated. The current snapshot loader uses get_messages, not paged reads; large transport responses remain a gap.",
+      "evidence": [
+        {
+          "file": "server/src/snapshot.ts",
+          "needle": "switch_session"
+        },
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type:'get_entries'"
+        }
+      ]
+    },
+    {
+      "names": [
+        "cancel_subagent"
+      ],
+      "status": "direct",
+      "surface": "Workspace cards → Agents → Cancel agent",
+      "note": "Visible for active agents; live child conversation/steering UI is absent.",
+      "evidence": [
+        {
+          "file": "web/src/components/RightRail.tsx",
+          "needle": "Cancel agent"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_session_name"
+      ],
+      "status": "direct",
+      "surface": "Chat rename / Settings → Session",
+      "note": "Dedicated native rename control.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type: \"set_session_name\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "navigate_tree"
+      ],
+      "status": "partial",
+      "surface": "Checkpoint restore / inline edit / reply version continuation",
+      "note": "No arbitrary tree picker, branch labels, custom summary instruction or summary abort UI.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type:'navigate_tree'"
+        }
+      ]
+    },
+    {
+      "names": [
+        "fork",
+        "export_html"
+      ],
+      "status": "partial",
+      "surface": "Settings → Session",
+      "note": "Buttons exist, but the response is not used to open the forked session or expose/download the exported file.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"export_html\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "compact"
+      ],
+      "status": "partial",
+      "surface": "Settings → Session → compact now",
+      "note": "Basic compaction is wired; customInstructions requires JSON. No model call was made in this audit.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"compact\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "get_subagents"
+      ],
+      "status": "partial",
+      "surface": "Workspace cards → Agents",
+      "note": "Basic list/cancel is present. Refresh is snapshot-based; structured lifecycle/progress subscriptions are not integrated.",
+      "evidence": [
+        {
+          "file": "web/src/App.tsx",
+          "needle": "type: \"get_subagents\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "goal",
+        "set_todos"
+      ],
+      "status": "partial",
+      "surface": "Task plan card + JSON console",
+      "note": "Plan/goal state is displayed. No direct goal lifecycle/budget control or todo editing/reordering/import/export interface.",
+      "evidence": [
+        {
+          "file": "web/src/components/GoalPlan.tsx",
+          "needle": "disabled label="
+        }
+      ]
+    },
+    {
+      "names": [
+        "login"
+      ],
+      "status": "partial",
+      "surface": "Settings → Providers → login",
+      "note": "OAuth URL/non-secret prompts are partly supported; native RPC rejects secret/pre-URL prompts. Automatic window.open can be blocked.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"login\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "get_login_providers"
+      ],
+      "status": "integrated",
+      "surface": "Settings → Providers / Installation",
+      "note": "Provider names and signed-in state are queried; credentials stay on the server.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"get_login_providers\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_subagent_subscription"
+      ],
+      "status": "partial",
+      "surface": "JSON console only; Agents card shows snapshots",
+      "note": "Subscription changes can be submitted but subagent_lifecycle/progress/event frames have no matching client presentation.",
+      "evidence": [
+        {
+          "file": "web/src/lib/store.ts",
+          "needle": "t.includes(\"subagent\")"
+        }
+      ]
+    },
+    {
+      "names": [
+        "negotiate_protocol"
+      ],
+      "status": "missing",
+      "surface": "No host protocol negotiation",
+      "note": "Bridge stays on v1 and has no rpc_chunk reassembly; large responses/events retain v1 limitations. Do not enable v2 until the decoder exists.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "Split strict JSONL"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_ask_dialog"
+      ],
+      "status": "missing",
+      "surface": "No multi-question ask adapter",
+      "note": "Tool UI is not enabled by the plain rpc bridge. The optional structured ask dialog is not negotiated or rendered.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "const args = [\"--mode\", \"rpc\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_host_tools",
+        "set_host_uri_schemes"
+      ],
+      "status": "missing",
+      "surface": "No host request/result adapter",
+      "note": "Registration alone in JSON is insufficient: host_tool_call/cancel and host_uri_request/cancel are not serviced.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "this.emit(\"event\", rec)"
+        }
+      ]
+    },
+    {
+      "names": [
+        "live_start",
+        "live_connect",
+        "live_stop",
+        "live_mute",
+        "dictation_start",
+        "dictation_stop"
+      ],
+      "status": "missing",
+      "surface": "No voice/dictation controls or events",
+      "note": "All six are absent from the cached catalog. Microphone/WebRTC/capture lifecycle, transcript insertion and mute/playback are not implemented.",
+      "evidence": [
+        {
+          "file": "web/src/components/Composer.tsx",
+          "needle": "only images can be attached"
+        }
+      ]
+    },
+    {
+      "names": [
+        "remove_queued_message",
+        "promote_queued_message",
+        "abort_and_prompt",
+        "abort_and_restore_queue",
+        "set_event_filter",
+        "get_subagent_messages",
+        "steer_subagent",
+        "cycle_model",
+        "cycle_thinking_level",
+        "set_interrupt_mode",
+        "set_cache_warming",
+        "abort_retry",
+        "bash",
+        "abort_bash",
+        "get_session_lease",
+        "branch",
+        "abort_branch_summary",
+        "set_label",
+        "get_branch_messages",
+        "get_last_assistant_text",
+        "handoff",
+        "get_logout_accounts",
+        "logout",
+        "predict_word",
+        "predict_word_feedback",
+        "btw",
+        "btw_cancel",
+        "get_btw_history",
+        "get_tree",
+        "get_messages_page"
+      ],
+      "status": "console",
+      "surface": "Settings → Runtime capabilities → JSON console",
+      "note": "Raw RPC entry only; no dedicated GUI workflow. Event-driven results (notably btw, bash and subagent work) lack a matching live view. JSON query results can be inspected.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "needle": "Advanced RPC console"
+        }
+      ]
+    }
+  ],
+  "cli": [
+    {
+      "names": [
+        "stats"
+      ],
+      "status": "direct",
+      "surface": "Settings → Usage",
+      "note": "Native usage statistics plus read-only host supplements.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/UsagePanel.tsx",
+          "needle": "/api/usage"
+        }
+      ]
+    },
+    {
+      "names": [
+        "config"
+      ],
+      "status": "partial",
+      "surface": "All settings / config.yml",
+      "note": "All 615 global keys are listed, but 23 enum rows lack choices in normal controls. Raw config.yml is a fallback; project/profile scope has no dedicated manager.",
+      "evidence": [
+        {
+          "file": "server/src/settings.ts",
+          "needle": "[\"config\", \"set\", key"
+        }
+      ]
+    },
+    {
+      "names": [
+        "models"
+      ],
+      "status": "partial",
+      "surface": "Composer / Models / Providers",
+      "note": "Catalog, roles and custom providers exist; native refresh and account/model diagnostics are not equivalent.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/ModelsPanel.tsx",
+          "needle": "ModelRolesPanel"
+        }
+      ]
+    },
+    {
+      "names": [
+        "login"
+      ],
+      "status": "partial",
+      "surface": "Settings → Providers",
+      "note": "Only RPC-compatible provider login flows.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"login\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "plugin",
+        "install"
+      ],
+      "status": "partial",
+      "surface": "Settings → Extensions",
+      "note": "Install/remove/enable/disable/upgrade, marketplace and diagnostics subset. Not every native plugin CLI option.",
+      "evidence": [
+        {
+          "file": "server/src/workspace-features.ts",
+          "needle": "const actions ="
+        }
+      ]
+    },
+    {
+      "names": [
+        "setup"
+      ],
+      "status": "partial",
+      "surface": "Desktop first-launch setup",
+      "note": "Installs/connects OMP and opens providers. Does not expose all native optional dependency/onboarding setup actions.",
+      "evidence": [
+        {
+          "file": "web/src/components/DesktopSetup.tsx",
+          "needle": "Install OMP"
+        }
+      ]
+    },
+    {
+      "names": [
+        "agents"
+      ],
+      "status": "partial",
+      "surface": "Tasks settings / All settings",
+      "note": "Task agent overrides can be configured; no dedicated bundled-agent inventory/editor.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "panel === \"all\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "session"
+      ],
+      "status": "partial",
+      "surface": "Saved chats / Session settings",
+      "note": "Normal chat navigation exists; pack/unpack/moved/lease transfer workflows do not.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "function SessionPanel"
+        }
+      ]
+    },
+    {
+      "names": [
+        "share",
+        "ssh",
+        "worktree",
+        "collab",
+        "join",
+        "ps",
+        "browser-relay"
+      ],
+      "status": "partial",
+      "surface": "Related slash commands can be entered",
+      "note": "Not a full CLI management workflow. Slash text output is dropped; CLI-only options/services are not handled.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/CommandsPanel.tsx",
+          "needle": "onRun(c.name)"
+        }
+      ]
+    },
+    {
+      "names": [
+        "gallery",
+        "render",
+        "play",
+        "completions"
+      ],
+      "status": "not-applicable",
+      "surface": "Terminal workflow",
+      "note": "Native terminal previews/replay/shell completions are intentionally outside the graphical host.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "panel === \"all\""
+        }
+      ]
+    },
+    {
+      "names": [
+        "acp",
+        "anonymize",
+        "auth",
+        "auth-broker",
+        "auth-gateway",
+        "bash",
+        "bench",
+        "cleanse",
+        "clip",
+        "commit",
+        "compress",
+        "dry-balance",
+        "find",
+        "gc",
+        "git",
+        "grep",
+        "grievances",
+        "if-bench",
+        "images",
+        "predict",
+        "read",
+        "say",
+        "search",
+        "sh",
+        "shell",
+        "skill",
+        "stream",
+        "tiny-models",
+        "token",
+        "toks",
+        "ttsr",
+        "update",
+        "usage",
+        "zsh"
+      ],
+      "status": "missing",
+      "surface": "No dedicated native CLI workflow",
+      "note": "An agent may use related tools, and some related config keys exist. That is not equivalent to exposing this CLI command in the GUI.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "panel === \"all\""
+        }
+      ]
+    }
+  ],
+  "features": [
+    {
+      "priority": "P0",
+      "name": "Tool questions",
+      "status": "Missing",
+      "note": "OmpBridge hardcodes --mode rpc; upstream rpc-ui enables tool UI. A React select dialog alone does not make the native ask tool usable. rpc-ui also disables PTY, so shell behavior needs acceptance when changing modes.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "const args = [\"--mode\", \"rpc\""
+        }
+      ]
+    },
+    {
+      "priority": "P0",
+      "name": "Slash output and native notices",
+      "status": "Missing",
+      "note": "command_output and notice frames are discarded by chatReducer. Commands can run with no visible answer or error.",
+      "evidence": [
+        {
+          "file": "web/src/lib/store.ts",
+          "needle": "switch (rec.type)"
+        }
+      ]
+    },
+    {
+      "priority": "P0",
+      "name": "Dialog cancellation and selection fidelity",
+      "status": "Partial",
+      "note": "cancel does not remove targetId; initialIndex/checkedIndices/checkbox markers/option descriptions are dropped; input secret hints are not propagated.",
+      "evidence": [
+        {
+          "file": "web/src/lib/store.ts",
+          "needle": "id: rec.id,"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Extension composer updates",
+      "status": "Missing",
+      "note": "set_editor_text displays a notice but does not put the supplied text into the composer.",
+      "evidence": [
+        {
+          "file": "web/src/lib/store.ts",
+          "needle": "editor text set by extension"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Lossless large RPC frames",
+      "status": "Missing",
+      "note": "No negotiate_protocol/v2 decoder, and snapshot.ts uses unpaged get_messages. Large history/tool/extension payloads retain protocol-v1 limits.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "Split strict JSONL"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Goal lifecycle and task editing",
+      "status": "Partial",
+      "note": "Display-only task plan is good; start/pause/resume/clear/budget and editable todos still need controls.",
+      "evidence": [
+        {
+          "file": "web/src/components/GoalPlan.tsx",
+          "needle": "disabled label="
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Queue management",
+      "status": "Partial",
+      "note": "Steer/follow-up and queued chips exist, but withdraw/promote/edit/restore operations require manual JSON.",
+      "evidence": [
+        {
+          "file": "web/src/components/Composer.tsx",
+          "needle": "queued.map"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Subagent conversations and steering",
+      "status": "Partial",
+      "note": "Agent list/cancel exists; child transcripts, steering and lifecycle/progress subscriptions need dedicated integration.",
+      "evidence": [
+        {
+          "file": "web/src/components/RightRail.tsx",
+          "needle": "Cancel agent"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Export/fork/tree completion",
+      "status": "Partial",
+      "note": "Export path and fork result are ignored; tree navigation is limited to checkpoints/reply versions.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "type: \"export_html\""
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Provider accounts and MCP authentication",
+      "status": "Partial",
+      "note": "Provider logout/account selection are console-only. MCP config/probe exists, but upstream RPC does not install interactive MCP authentication handling.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/McpPanel.tsx",
+          "needle": "refreshLive"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Settings reachability versus effect",
+      "status": "Partial",
+      "note": "615 global fields are listed; 23 enum controls have no choices, 165 fields lack UI metadata, and 167 have no tab category. TUI-only fields and RPC defaults also limit the effect of configuration.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/ConfigList.tsx",
+          "needle": "settings.filter"
+        }
+      ]
+    },
+    {
+      "priority": "P1",
+      "name": "Launch flags",
+      "status": "Partial",
+      "note": "Launch flags are split on whitespace, so quoted paths/arguments are not preserved. Interactive/print/output-mode flags cannot be counted as working RPC features merely because the text box accepts them.",
+      "evidence": [
+        {
+          "file": "web/src/pages/SettingsPage.tsx",
+          "needle": "flagDraft.split"
+        }
+      ]
+    },
+    {
+      "priority": "P2",
+      "name": "Voice and dictation",
+      "status": "Missing",
+      "note": "No microphone/WebRTC/session/capture/mute UI or voice/dictation event consumers. Speech-related settings/model roles do not provide that workflow.",
+      "evidence": [
+        {
+          "file": "web/src/components/Composer.tsx",
+          "needle": "only images can be attached"
+        }
+      ]
+    },
+    {
+      "priority": "P2",
+      "name": "Word completion and side questions",
+      "status": "Missing",
+      "note": "No predict_word ghost text/feedback or btw streaming/history view. Project suggestions are a different host feature.",
+      "evidence": [
+        {
+          "file": "web/src/components/Composer.tsx",
+          "needle": "function onKeyDown"
+        }
+      ]
+    },
+    {
+      "priority": "P2",
+      "name": "Host-owned tools and virtual URIs",
+      "status": "Missing",
+      "note": "No request dispatch, cancellation, update/result or URI read/write responder. Raw JSON registration alone can leave requests unanswered.",
+      "evidence": [
+        {
+          "file": "server/src/omp.ts",
+          "needle": "this.emit(\"event\", rec)"
+        }
+      ]
+    },
+    {
+      "priority": "P2",
+      "name": "Native CLI services and administration",
+      "status": "Missing",
+      "note": "No profile manager, session transfer, skill registry installation/publishing, native updater/dependency installer, provider quota view, auth broker, process console or full Git UI.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/SettingsNavigation.tsx",
+          "needle": "SETTINGS_GROUPS"
+        }
+      ]
+    },
+    {
+      "priority": "P2",
+      "name": "Extension terminal components",
+      "status": "Upstream boundary",
+      "note": "Native component factories/custom header/footer/editor/raw input/autocomplete/theme APIs are terminal-only. They require an adapter or an explicitly retained terminal workflow.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "needle": "Terminal-only interactive extension renderers"
+        }
+      ]
+    }
+  ]
+}

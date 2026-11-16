@@ -54,6 +54,12 @@ Rare UI attribution is available in Settings → About & credits. ObsidianUI and
 - Opt-in persona library: prepend or append instructions, optionally remove the exact OMP identity sentence, retain project rules and tool schemas, persist the chosen persona with the session.
 - Advanced RPC console and an honest runtime capability check. See [CAPABILITIES.md](CAPABILITIES.md) for coverage and limitations.
 
+The [GUI coverage audit](CAPABILITIES.md) maps the installed OMP version's RPC commands, CLI,
+slash commands, settings, launch flags and built-in tools to actual GUI paths and remaining gaps.
+Its [machine-readable map](docs/omp-gui-coverage.json) separates direct/integrated controls from partial,
+JSON-console-only and missing workflows. Read-probe success is not full feature acceptance. The audit
+includes isolated collection and regeneration commands; it sends no prompts or private project context.
+
 Host configuration is saved as `web-control.json` in the OMP agent directory. Native provider configuration stays in `models.yml`/`models.yaml`. File writes preserve unrelated configuration and make backups. Appearance includes twelve presets, 70 backgrounds plus None, six workspace icon sets and three independent editor icon styles, nine color overrides, contrast, UI/code/heading fonts, chat text size and line height, corner radius, shadows, background fade/blur/tint, independent menu and card glass, and sidebar translucency. Cards default to the solid sidebar color. The compact live color picker supports hex and tint opacity. The favicon follows the current accent. Version 2 theme exports include the selected background and animation preference. The tab is named `omp.`. Older exports gain safe defaults. Preferences and image data stay in browser storage.
 
 ## Validation

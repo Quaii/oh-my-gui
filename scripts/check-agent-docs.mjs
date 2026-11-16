@@ -5,7 +5,7 @@ import {parse} from 'yaml';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];
-const files=['AGENTS.md','CLAUDE.md','DESIGN.md','README.md','.agents/skills/README.md'];
+const files=['AGENTS.md','CLAUDE.md','DESIGN.md','README.md','CAPABILITIES.md','.agents/skills/README.md'];
 const skills=await fs.readdir(path.join(root,'.agents/skills'),{withFileTypes:true});
 const adapters=await fs.readdir(path.join(root,'.claude/skills'),{withFileTypes:true});
 for(const entry of adapters.filter(entry=>entry.isDirectory())){
