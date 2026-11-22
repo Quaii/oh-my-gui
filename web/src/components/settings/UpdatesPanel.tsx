@@ -34,7 +34,7 @@ export default function UpdatesPanel() {
     );
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border bg-sidebar p-5">
+      <section className="workspace-floating-surface rounded-xl border p-5">
         <AppVersion />
         {window.__OMP_DESKTOP__ ? (
           <>
@@ -97,7 +97,7 @@ export default function UpdatesPanel() {
           {data?.releases?.map((release: any) => (
             <article
               key={release.version}
-              className="rounded-xl border bg-sidebar p-5"
+              className="workspace-floating-surface rounded-xl border p-5"
             >
               <h3 className="font-medium">
                 {release.version} · {release.title}

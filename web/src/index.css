@@ -339,7 +339,6 @@
   .glass {
     background: color-mix(in oklab, var(--card) 82%, transparent);
     backdrop-filter: blur(16px) saturate(1.3);
-    -webkit-backdrop-filter: blur(16px) saturate(1.3);
   }
   .grid-veil {
     background-image:
@@ -661,7 +660,7 @@
 [data-glass=true] [data-slot=popover-content],
 [data-glass=true] [data-slot=dropdown-menu-content],
 [data-glass=true] [data-slot=select-content],
-[data-glass=true] [data-slot=dialog-content] { background:color-mix(in srgb,var(--popover) 78%,transparent);backdrop-filter:blur(24px) saturate(1.25);-webkit-backdrop-filter:blur(24px) saturate(1.25);border-color:color-mix(in srgb,var(--foreground) 12%,transparent);box-shadow:0 16px 60px #0003,inset 0 1px 0 #ffffff06; }
+[data-glass=true] [data-slot=dialog-content] { background:color-mix(in srgb,var(--popover) 78%,transparent);backdrop-filter:blur(24px) saturate(1.25);border-color:color-mix(in srgb,var(--foreground) 12%,transparent);box-shadow:0 16px 60px #0003,inset 0 1px 0 #ffffff06; }
 [data-glass=true] [data-slot=popover-content]>aside>section { background:color-mix(in srgb,var(--popover) 78%,transparent);backdrop-filter:blur(24px) saturate(1.2); }
 [data-glass=true] .composer-menus { background:color-mix(in srgb,var(--popover) 80%,transparent);backdrop-filter:blur(24px); }
 [data-slot=dialog-overlay] { backdrop-filter:blur(6px); }
@@ -690,7 +689,7 @@
 .settings-toolbar [data-slot=input],.settings-toolbar [data-slot=select-trigger],.settings-toolbar>button { height:40px;border-radius:10px;border:0;box-shadow:none;background:color-mix(in srgb,var(--secondary) 72%,transparent); }
 .settings-toolbar [data-slot=input]:focus-visible,.settings-toolbar [data-slot=select-trigger]:focus-visible { outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--foreground) 18%,transparent); }
 .settings-toolbar [data-slot=input] { min-width:0; }
-[data-glass=true] [data-slot=popover-content], [data-glass=true] [data-slot=dropdown-menu-content], [data-glass=true] [data-slot=select-content], [data-glass=true] [data-slot=dialog-content], [data-glass=true] .composer-menus { background:color-mix(in srgb,var(--background) 86%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1);border:1px solid color-mix(in srgb,var(--foreground) 8%,transparent);box-shadow:0 12px 36px #0004; }
+[data-glass=true] [data-slot=popover-content], [data-glass=true] [data-slot=dropdown-menu-content], [data-glass=true] [data-slot=select-content], [data-glass=true] [data-slot=dialog-content], [data-glass=true] .composer-menus { background:color-mix(in srgb,var(--background) 86%,transparent);backdrop-filter:blur(28px) saturate(1.1);border:1px solid color-mix(in srgb,var(--foreground) 8%,transparent);box-shadow:0 12px 36px #0004; }
 [data-glass=true] [data-slot=popover-content]>aside>section { background:color-mix(in srgb,var(--background) 86%,transparent);backdrop-filter:blur(28px) saturate(1.1); }
 [data-glass=true] [data-slot=popover-content] [data-slot=command] { background:transparent; }
 .project-dialog [data-slot=tabs-trigger][data-state=active] { background:color-mix(in srgb,var(--foreground) 9%,var(--background));color:var(--foreground);border:0;box-shadow:0 1px 3px #0002; }
@@ -729,7 +728,7 @@ code,pre,.font-mono {font-family:var(--workspace-code-font,var(--font-mono));}
 .assistant-message pre,.assistant-message [data-slot=code-block],.assistant-message .terminal-command {background:var(--custom-codeBlocks,var(--sidebar));}
 .assistant-message .chat-text>div:has(>pre),.assistant-message [data-slot=code-block-header] {background:var(--custom-codeBlocks,var(--sidebar));}
 [data-glass=true] :is([data-slot=popover-content],[data-slot=dropdown-menu-content],[data-slot=select-content],[data-slot=dialog-content],.composer-menus) {
- background:color-mix(in srgb,var(--background) 64%,transparent);backdrop-filter:blur(24px) saturate(1.25);-webkit-backdrop-filter:blur(24px) saturate(1.25);isolation:isolate;
+ background:color-mix(in srgb,var(--background) 64%,transparent);backdrop-filter:blur(24px) saturate(1.25);isolation:isolate;
 }
 [data-glass=true] [data-slot=dialog-content] [data-slot=command],
 [data-glass=true] [data-slot=popover-content]>aside>section {background:transparent;backdrop-filter:none;}
@@ -894,7 +893,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .workspace-main:not(.is-home):not(.is-empty) .transcript-region>div {scroll-padding-bottom:calc(var(--composer-height,190px) + 20px);}
 .transcript-region button[aria-label='Jump to latest'] {bottom:calc(var(--composer-height,190px) + 12px);}
 /* Dialogs use menu glass; cards keep their independent, solid default. */
-[data-glass=true] [data-slot=dialog-content].project-dialog {background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1);}
+[data-glass=true] [data-slot=dialog-content].project-dialog {background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);}
 .settings-floating-toolbar .restart-session-button {width:36px;gap:0;padding:0 11px;justify-content:flex-start;overflow:hidden;transition:width 220ms cubic-bezier(.22,1,.36,1);}
 .restart-session-button>span {max-width:0;opacity:0;white-space:nowrap;transition:opacity 150ms,max-width 220ms,margin 220ms;}
 .settings-floating-toolbar .restart-session-button:hover,.settings-floating-toolbar .restart-session-button:focus-visible {width:146px;}
@@ -911,7 +910,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .appearance-controls [data-slot=theme-selector-item]>span {border-radius:10px;}
 .appearance-controls [data-slot=theme-selector-item] {border-radius:10px;}
 .session-scroll [data-slot=scroll-area-viewport] {mask-image:none;}
-.workspace-floating-surface,.workspace-header>.workspace-breadcrumb,.message-actions,.welcome .sliding-tabs {background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1);border-color:color-mix(in srgb,var(--foreground) 10%,transparent);border-radius:12px;}
+.workspace-floating-surface,.workspace-header>.workspace-breadcrumb,.message-actions,.welcome .sliding-tabs {background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);border-color:color-mix(in srgb,var(--foreground) 10%,transparent);border-radius:12px;}
 .workspace-header>.workspace-context-cards {height:auto;padding:0;border:0;background:none;backdrop-filter:none;box-shadow:none;pointer-events:none;}
 .context-card-stack {background:none;pointer-events:none;}
 .context-card {pointer-events:auto;}
@@ -954,7 +953,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .file-editor-content{min-height:0;flex:1;overflow:hidden}.file-editor-content>.cm-editor{height:100%}
 .file-editor-footer{display:flex;align-items:center;gap:10px;min-width:0;flex-shrink:0;padding:8px 12px;border-top:1px solid color-mix(in srgb,var(--foreground) 7%,transparent);font-size:10px;color:var(--muted-foreground)}
 .file-editor-notice{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px 14px;background:var(--sidebar-accent)}.file-editor-notice>p{margin-right:auto}
-.files-changed-card.workspace-floating-surface{background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1)}
+.files-changed-card.workspace-floating-surface{background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);}
 
 @media(max-width:480px){.file-browser{flex-basis:112px}.file-workspace-header{padding:10px}.file-editor-footer{padding:8px}}
 .message-actions{width:max-content;max-width:100%;padding:4px;border-radius:8px;gap:4px;align-items:center}.message-actions>button{width:28px;height:28px;flex-shrink:0;border-radius:6px}.message-actions>button:hover{border-radius:6px;background:var(--sidebar-accent)}
@@ -993,7 +992,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 
 /* Floating controls own their glass; ordinary scroll lists keep clear edges. */
 .composer-frame>*:not(.composer-blur-gradient){position:relative;z-index:1}
-.floating-toolbar-button,.floating-action-button{border:0;border-radius:10px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1);box-shadow:0 3px 12px #0001}
+.floating-toolbar-button,.floating-action-button{border:0;border-radius:10px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);box-shadow:0 3px 12px #0001}
 .floating-toolbar-button:hover,.floating-action-button:hover{background:color-mix(in srgb,var(--sidebar-accent) 74%,transparent)}
 .workspace-header>.workspace-header-actions{border-radius:0}
 .appearance-menu-viewport{overscroll-behavior:contain}.background-gallery-scroll{border-radius:8px}.background-gallery{padding:4px 8px 8px 4px;scrollbar-width:none}
@@ -1037,8 +1036,8 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 /* The explorer sits on the canvas; the editing surface owns the glass. */
 .file-browser{position:relative;background:transparent;border-right:0}
 .file-browser::after{content:'';position:absolute;right:0;top:12px;bottom:12px;width:1px;border-radius:1px;background:color-mix(in srgb,var(--foreground) 10%,transparent);pointer-events:none}
-.file-root-picker,.file-browser input{background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1);border:0;border-radius:10px}
-.file-editor{margin:8px 12px 12px}.file-editor-tabs{padding:0 0 8px;min-height:40px}.file-editor-card.workspace-floating-surface{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--foreground) 10%,transparent);border-radius:14px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1)}
+.file-root-picker,.file-browser input{background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);border:0;border-radius:10px}
+.file-editor{margin:8px 12px 12px}.file-editor-tabs{padding:0 0 8px;min-height:40px}.file-editor-card.workspace-floating-surface{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--foreground) 10%,transparent);border-radius:14px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);}
 .file-editor-card.workspace-floating-surface .file-editor-content,.file-editor-card.workspace-floating-surface .file-editor-footer{background:transparent;backdrop-filter:none}
 @container file-pane (max-width:480px){.file-editor{margin:8px}}
 
@@ -1047,7 +1046,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 /* File names and document mode share the row above the editing surface. */
 .file-editor-topline{display:flex;align-items:flex-start;gap:12px;flex-shrink:0;min-width:0;padding-bottom:8px}
 .file-editor-topline .file-editor-tabs{flex:1;min-width:0;padding:0;min-height:32px}
-.file-editor-tab{background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);-webkit-backdrop-filter:blur(28px) saturate(1.1)}
+.file-editor-tab{background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);}
 .file-editor-tab.is-active{background:color-mix(in srgb,var(--background) 74%,transparent)}
 .file-editor-mode-slot{margin-left:auto;flex-shrink:0}.file-editor-mode-slot:empty{display:none}
 .file-editor-mode-slot .markdown-mode-switch{padding:0;align-items:flex-end;gap:4px}.file-editor-mode-slot [data-slot=tabs-list]{height:32px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px)}
@@ -1131,13 +1130,13 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 .desktop-setup-themes{max-height:240px;overflow:auto;margin-top:24px}
 @media(max-width:600px){.desktop-setup-layout{gap:8px;padding:8px}.desktop-setup-sidebar{width:130px;padding:8px 0}.desktop-setup{padding:20px}.desktop-setup h1{font-size:22px}}
 
-[data-slot=dialog-content].provider-config-dialog,[data-glass=true] [data-slot=dialog-content].provider-config-dialog{background:var(--sidebar);backdrop-filter:none;-webkit-backdrop-filter:none;min-width:0}
+.provider-config-dialog{min-width:0}
 .provider-config-dialog>*{min-width:0}.provider-config-dialog [data-slot=select-trigger]{max-width:100%;min-width:0}
 
 .desktop-installer-progress{margin-top:16px;padding:14px}.desktop-installer-progress p{margin-top:8px}
-.desktop-update-notice{position:fixed;z-index:60;right:24px;bottom:24px;max-width:calc(100vw - 48px);border:1px solid var(--border);border-radius:12px;padding:20px}.desktop-update-dialog{background:var(--sidebar)!important;backdrop-filter:none!important}
-/* Project setup is an opaque form; floating workspace surfaces retain real backdrop blur. */
-[data-slot=dialog-content].project-dialog,[data-glass=true] [data-slot=dialog-content].project-dialog{background:var(--sidebar);backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid var(--border);border-radius:12px}
+.desktop-update-notice{position:fixed;z-index:60;right:24px;bottom:24px;max-width:calc(100vw - 48px);border:1px solid var(--border);border-radius:12px;padding:20px}
+/* The CSS build adds browser prefixes; keep the standard backdrop-filter declaration. */
+.project-dialog{border:1px solid var(--border);border-radius:12px}
 html[data-tray=true]{zoom:1!important;background:var(--sidebar)}
 html[data-tray=true] body,html[data-tray=true] #root{height:100%;background:var(--sidebar);overflow:hidden}
 .desktop-tray{height:100%;display:flex;flex-direction:column;background:var(--sidebar);color:var(--foreground);font-family:var(--workspace-ui-font);font-size:13px;border:1px solid var(--border);border-radius:12px;overflow:hidden}

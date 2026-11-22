@@ -271,10 +271,14 @@ in the existing Settings screen. Reopening setup hides the workspace without unm
 
 ## Native workflow surfaces
 
-Project creation/opening uses an opaque sidebar-colored form, with a Browse action beside its path.
+Project creation/opening uses frosted menu glass, with a Browse action beside its path.
 Desktop Browse opens a parented native folder chooser; the web host provides explicit directory
 navigation and Select this folder. Cancellation preserves the path and never creates a project.
-This form-specific solid surface does not replace backdrop blur on floating workspace controls.
+Project, provider and update dialogs share the established blurred material. Do not replace it with
+opaque fills or translucent black as a workaround for a rendering defect. Keep standard
+`backdrop-filter` in source and let the CSS build add vendor prefixes: explicit WebKit declarations
+after the standard declaration cause the current optimizer to drop the standard property. Verify
+production CSS and rendered text behind the surface, not just the source declaration.
 
 On Windows and macOS the tray opens a compact, themed React panel anchored near its icon. The panel
 uses the current appearance, Open workspace, Settings, running sessions, five recent chats and Quit.
@@ -285,7 +289,7 @@ menu because its tray protocol does not deliver the click events needed for a cu
 Settings → Updates & changelog shows the application version separately from the OMP runtime,
 with bundled release notes and explicit loading/error states. About also shows the app version.
 Available signed releases use a small floating notice with View update and Remind me tomorrow;
-postponement lasts 24 hours for that version and survives restart. Update details use a solid dialog,
+postponement lasts 24 hours for that version and survives restart. Update details use a frosted dialog,
 readable release notes, actual download progress and a separate Install and restart action after
 signature verification. Unsaved/saving editor documents and active work block installation. An
 unconfigured release channel is visibly unavailable, never presented as “up to date.”
@@ -310,8 +314,8 @@ Installation owns launch configuration; provider authentication belongs only to 
 Session settings describe the current conversation. Expert diagnostics and runtime maintenance are
 secondary Advanced surfaces. Task completion is agent-owned; settings do not offer manual phase
 removal or completion toggles. Models show the default first, with workload overrides in a closed
-Advanced disclosure. Custom-provider configuration uses a solid sidebar-colored dialog over the
-blurred workspace, with no horizontal overflow.
+Advanced disclosure. Custom-provider configuration uses the same frosted menu glass as Appearance,
+with no horizontal overflow.
 
 Advanced session goals, branch/label controls, execution settings and side-question topics
 use ordinary settings groups with the same sidebar material and spacing. Native operation forms use

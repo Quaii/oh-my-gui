@@ -43,7 +43,7 @@ export function FolderBrowser({
   return (
     <section
       aria-label="Choose project folder"
-      className="rounded-lg border bg-sidebar p-3"
+      className="rounded-lg border bg-background/30 p-3"
     >
       <div className="mb-3 flex items-center gap-2">
         <Button
