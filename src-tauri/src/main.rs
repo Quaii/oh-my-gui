@@ -3,6 +3,7 @@
 mod backend_path;
 mod native_icon;
 mod tray;
+mod updates;
 mod window_frame;
 
 use std::{
@@ -79,6 +80,15 @@ fn start_backend(
         .env("HOST", "127.0.0.1")
         .env("PORT", port.to_string())
         .env("OMP_DESKTOP_TOKEN", &token)
+        .env("OMP_APP_VERSION", env!("CARGO_PKG_VERSION"))
+        .env(
+            "OMP_UPDATES_CONFIGURED",
+            if updates::configured() && !installer {
+                "true"
+            } else {
+                "false"
+            },
+        )
         .env(
             "OMP_DESKTOP_DATA",
             backend_path::for_child(&app.path().app_data_dir()?),
@@ -181,6 +191,10 @@ fn start_backend(
                         }
                     }
                 }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_UPDATE ") {
+                if !installer && ["check", "download", "install"].contains(&data) {
+                    updates::dispatch(native_app.clone(), data);
+                }
             } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_TRAY ") {
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
                     let handle = native_app.clone();
@@ -275,6 +289,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     app.manage(InstallerBusy(AtomicBool::new(false)));
     app.manage(InstallerCloseAllowed(AtomicBool::new(false)));
     app.manage(WindowMode(Mutex::new(None)));
+    app.manage(updates::Updates::default());
     let (backend, url) = start_backend(app.handle(), installer)?;
     app.manage(backend);
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
@@ -360,6 +375,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
 fn main() {
     let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
     let result = tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             // Setup runs during the event loop, after Builder::build. Handle failures
             // here so the GUI-subsystem installer does not disappear in a Tauri panic.

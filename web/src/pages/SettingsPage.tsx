@@ -16,6 +16,7 @@ import { AppearanceEditor } from "../components/settings/AppearanceEditor";
 import { WorkspaceBackground } from "../components/Appearance";
 import {ToolbarBlur} from "../components/ToolbarBlur";
 import { RuntimePanel } from "../components/settings/RuntimePanel";
+import { AppVersion } from '../components/settings/UpdatesPanel';
 import { CustomProvidersPanel, ModelRolesPanel } from "../components/settings/ModelsPanel";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
@@ -40,6 +41,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, RotateCcw, Search } from "lucide-react";
 
 const RoutingPanel = lazy(() => import("../components/settings/RoutingPanel"));
+const UpdatesPanel = lazy(() => import('../components/settings/UpdatesPanel'));
 const UsagePanel = lazy(() => import("../components/settings/UsagePanel"));
 const PersonaPanel = lazy(() => import("../components/settings/PersonaPanel"));
 const ExtensionsPanel = lazy(() => import("../components/settings/ExtensionsPanel"));
@@ -258,6 +260,7 @@ export function SettingsPage(props: SettingsPageProps) {
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
             ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null}><details className="mb-5"><summary className="cursor-pointer py-3 text-sm">Launch configuration</summary><FlagsPanel flagDraft={flagDraft} setFlagDraft={setFlagDraft} onSave={() => { try { setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft))); onRestart(); } catch (error:any) { setErr(error.message); } }} /></details></RuntimePanel>
+            ) : panel === "updates" ? (<UpdatesPanel/>
             ) : panel === "native" ? (<NativeManager cwd={info?.cwd || ''}/>
             ) : panel === "usage" ? (<UsagePanel />
             ) : panel === "routing" ? (<RoutingPanel chatKey={chat.loaded ? chat.key : null} />
@@ -664,6 +667,7 @@ function RawConfigPanel({
 function AboutPanel({ info, chat }: { info: any; chat: any }) {
   return (
     <div className="space-y-2 font-mono text-[12px] text-fog-300">
+      <AppVersion/>
       <section className="mb-8 font-sans"><h2 className="mb-2 text-base font-semibold text-foreground">Credits</h2><p className="mb-4 text-sm text-muted-foreground">The libraries and creators behind this workspace.</p><div className="divide-y divide-border rounded-xl border bg-card/40 px-4">{[["shadcn/ui","Accessible interface primitives","https://ui.shadcn.com/"],["Rare UI","Chat, themes, tasks, code, and project components","https://www.rareui.com/"],["23rd","Interactive shader backgrounds","https://www.23rd.dev/"],["React Bits · David Haz","63 ambient background renderers · locally captured previews","https://reactbits.dev/"],["Transitions.dev","Loading and reveal motion","https://transitions.dev/library.html"],["Lucide","Workspace icon set","https://lucide.dev/"],["Phosphor","Workspace icon set","https://phosphoricons.com/"],["Tabler","Workspace icon set · MIT","https://tabler.io/icons"],["Heroicons","Workspace icon set · MIT","https://heroicons.com/"],["Remix Icon","Workspace icon set · Apache 2.0","https://remixicon.com/"],["Bootstrap Icons","Workspace icon set · MIT","https://icons.getbootstrap.com/"],["Lobe Icons","AI provider marks","https://github.com/lobehub/lobe-icons"],["Material Icon Theme","File type icons","https://github.com/material-extensions/vscode-material-icon-theme"],["Unslop · Damir Sokolovsky","Interface review workflow · CC BY 4.0","https://github.com/heydamir/unslop"]].map(([name,description,url])=><a key={name} href={url} target="_blank" rel="noreferrer" className="flex flex-wrap items-center justify-between gap-2 py-4 text-[13px] hover:text-foreground"><span className="font-medium text-foreground">{name}</span><span className="text-xs text-muted-foreground">{description}</span></a>)}</div></section><h2 className="mb-4 font-sans text-base font-semibold text-foreground">Installation details</h2><div>omp binary: {info?.omp}</div>
       <div>agent dir: {info?.agentDir}</div>
       <div>session dir: {info?.sessionsDir}</div>

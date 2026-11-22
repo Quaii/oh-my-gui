@@ -29,6 +29,13 @@ try{
   const headers={Cookie:boot.headers.get('set-cookie').split(';')[0]};
   assert.equal((await fetch(base+'/api/health',{headers})).status,200);
   assert.equal((await fetch(base+'/api/desktop/tray')).status,403);
+  assert.equal((await fetch(base+'/api/desktop/updates')).status,403);
+  const release=await (await fetch(base+'/api/app-release',{headers})).json();
+  assert.match(release.version,/^\d+\.\d+\.\d+/);
+  assert.ok(release.releases.length>0);
+  const updates=await (await fetch(base+'/api/desktop/updates',{headers})).json();
+  assert.equal(updates.configured,false);
+  assert.equal(updates.phase,'disabled');
   const tray=await (await fetch(base+'/api/desktop/tray',{headers})).json();
   assert.ok(Array.isArray(tray.recent)&&tray.recent.length<=5);
   assert.ok(Array.isArray(tray.running));

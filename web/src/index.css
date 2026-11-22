@@ -1135,3 +1135,4 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 .provider-config-dialog>*{min-width:0}.provider-config-dialog [data-slot=select-trigger]{max-width:100%;min-width:0}
 
 .desktop-installer-progress{margin-top:16px;padding:14px}.desktop-installer-progress p{margin-top:8px}
+.desktop-update-notice{position:fixed;z-index:60;right:24px;bottom:24px;max-width:calc(100vw - 48px);border:1px solid var(--border);border-radius:12px;padding:20px}.desktop-update-dialog{background:var(--sidebar)!important;backdrop-filter:none!important}

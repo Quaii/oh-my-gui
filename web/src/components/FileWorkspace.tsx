@@ -22,6 +22,7 @@ type FileResponse={path:string;content:string;version:string;roots:string[]};
 type Pending={kind:'tab'|'reload';path:string}|{kind:'panel'};
 export default function FileWorkspace({chatKey,cwd,request,onClose,onOpenPalette,focused=false,onToggleFocus,hidden=false}:{chatKey:string;cwd:string;request:{path?:string;n:number};onClose:()=>void;onOpenPalette:()=>void;focused?:boolean;onToggleFocus:()=>void;hidden?:boolean}){
  const [session,dispatch]=useReducer(editorReducer,{documents:[],active:null} satisfies EditorSession),current=useRef(session);current.current=session;
+ useEffect(()=>{const guard=(event:Event)=>{if(current.current.documents.some(doc=>isDirty(doc)||doc.status==='saving'))event.preventDefault();};window.addEventListener('omp:before-update',guard);return()=>window.removeEventListener('omp:before-update',guard);},[]);
  const [roots,setRoots]=useState([cwd]),[root,setRoot]=useState(cwd),[treeRevision,setTreeRevision]=useState(0),[loads,setLoads]=useState(0),[error,setError]=useState(''),[pending,setPending]=useState<Pending|null>(null),[cursor,setCursor]=useState({line:1,column:1}),[panelWidth,setPanelWidth]=useState(()=>Math.min(850,window.innerWidth*.42)),[treeWidth,setTreeWidth]=useState(190),[layout,setLayout]=useState(()=>editorPanelBounds(window.innerWidth,264)),minimumChat=useRef(760);
  const [modeHost,setModeHost]=useState<HTMLDivElement|null>(null);
  const pane=useRef<HTMLElement>(null),loadSequence=useRef(0),inflight=useRef(new Set<string>()),saving=useRef(new Set<string>()),loadedRoots=useRef(false);

@@ -1,0 +1,14 @@
+{
+  "releases": [
+    {
+      "version": "0.1.0",
+      "title": "Desktop preview",
+      "changes": [
+        "Shared web and desktop workspace with the floating file editor and Markdown source/visual modes.",
+        "Custom Windows installer, first-launch setup, tray navigation and quit confirmation.",
+        "Installer stages, package integrity checks and installed-runtime verification.",
+        "Version information, release notes and signed-update controls. Live delivery requires a configured release channel."
+      ]
+    }
+  ]
+}

@@ -271,6 +271,14 @@ in the existing Settings screen. Reopening setup hides the workspace without unm
 
 ## Native workflow surfaces
 
+Settings → Updates & changelog shows the application version separately from the OMP runtime,
+with bundled release notes and explicit loading/error states. About also shows the app version.
+Available signed releases use a small floating notice with View update and Remind me tomorrow;
+postponement lasts 24 hours for that version and survives restart. Update details use a solid dialog,
+readable release notes, actual download progress and a separate Install and restart action after
+signature verification. Unsaved/saving editor documents and active work block installation. An
+unconfigured release channel is visibly unavailable, never presented as “up to date.”
+
 The custom Windows installer shows System checks, Verify package, Windows dependencies, App and
 runtime, Verify installation, and Open setup in its sidebar. Its overall bar counts completed stages;
 package-check progress uses bytes actually read. Native dependency and copy operations remain active

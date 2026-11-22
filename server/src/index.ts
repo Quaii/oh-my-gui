@@ -1,4 +1,6 @@
 import {desktopTrayData} from "./desktop-tray.ts";
+import { createInterface } from 'node:readline';
+import { appRelease, desktopUpdates } from './desktop-updates.ts';
 import {desktopAccess} from "./desktop.ts";
 import { desktopSetupStatus, completeDesktopSetup, installDesktopOmp } from './desktop-setup.ts';
 import { desktopInstallerStatus, installDesktopApplication, launchInstalledDesktop } from './desktop-installer.ts';
@@ -660,6 +662,7 @@ async function serveStatic(res: http.ServerResponse, pathname: string) {
   res.end(data);
 }
 
+let activeMutations = 0;
 const server = http.createServer((req, res) => {
   let url: URL;
   try {
@@ -671,6 +674,22 @@ const server = http.createServer((req, res) => {
     json(res, 403, { error: 'A same-origin loopback session is required.' }); return;
   }
   if(!desktopAccess(req,res,url,process.env.OMP_DESKTOP_TOKEN))return;
+  if (url.pathname === '/api/app-release' && req.method === 'GET') { json(res,200,appRelease()); return; }
+  if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/updates') {
+    void (async () => {
+      if (req.method === 'GET') return json(res,200,await desktopUpdates.status());
+      if (req.method !== 'POST') return json(res,405,{error:'Method not allowed.'});
+      const body = await readBody(req,1024);
+      const running = () => activeMutations > 0 || startingBridges.size > 0 ||
+        [...slots.values()].some(slot => slot.initializing || slot.routingAbort || slot.state?.isStreaming || slot.state?.isCompacting || slot.state?.queuedMessageCount > 0) ||
+        nativeJobs().some(job => job.status === 'running');
+      json(res,200,await desktopUpdates.action(String(body.action),running,body.automatic === true));
+    })().catch(error => json(res,409,{error:error.message}));
+    return;
+  }
+  if (desktopUpdates.installing && req.method !== 'GET') { json(res,409,{error:'The app is restarting to install an update.'}); return; }
+  const mutation = req.method !== 'GET' && url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/desktop/');
+  if (mutation) activeMutations++;
   if(process.env.OMP_DESKTOP_TOKEN && url.pathname==='/api/desktop/tray' && req.method==='GET') {
     if(!trayTimer){trayTimer=setInterval(()=>{void refreshNativeTray().catch(()=>{});},5000);trayTimer.unref();}
     void refreshNativeTray().then(data=>json(res,200,data)).catch(()=>json(res,500,{error:'Could not refresh tray sessions'}));return;
@@ -689,7 +708,7 @@ const server = http.createServer((req, res) => {
   }
   handleApi(req, res, url).then((handled) => {
     if (!handled) serveStatic(res, url.pathname);
-  }).catch((err) => json(res, 500, { error: String(err) }));
+  }).catch((err) => json(res, 500, { error: String(err) })).finally(() => { if (mutation) activeMutations--; });
 });
 
 server.listen(PORT, HOST, () => {
@@ -712,4 +731,13 @@ async function shutdown() {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-if(process.env.OMP_DESKTOP_TOKEN){process.stdin.resume();process.stdin.on("data",chunk=>{if(String(chunk).includes("shutdown"))void shutdown();});process.stdin.on("end",()=>void shutdown());}
+if(process.env.OMP_DESKTOP_TOKEN){
+  const input = createInterface({ input: process.stdin });
+  input.on('line', line => {
+    if(line === 'shutdown') void shutdown();
+    else if(line.startsWith('update ')) {
+      try { void desktopUpdates.receive(JSON.parse(line.slice(7))).catch(error=>log(error.message)); } catch {}
+    }
+  });
+  input.on('close',()=>void shutdown());
+}

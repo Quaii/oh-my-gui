@@ -65,8 +65,8 @@ See [TAURI-TASKS.md](TAURI-TASKS.md) for verified milestones. A successful build
 not establish native rendering, live chat streaming or editor behavior. Those need interactive checks
 in the WebView. Do not call the installer publicly release-ready until those checks are recorded.
 
-This is a Windows-first, unsigned development build. Signing, automatic updates, crash/restart UX,
-native close handling for unsaved documents and native macOS/Linux acceptance remain release work.
+This is a Windows-first, unsigned development build. Live signed release delivery, OS code signing,
+upgrade/rollback acceptance and native macOS/Linux acceptance remain release work.
 Windows uses a 32px custom title bar with a drag region, double-click maximize/restore and
 keyboard-accessible caption buttons. Native window interactions still require interactive verification.
 The app and installer explicitly enable native shadows and request rounded outer corners through
@@ -164,6 +164,55 @@ a protected updater signing key and an approved distribution endpoint. Do not ge
 credentials or publish an unsigned update feed. Other platforms require their own native verification.
 
 ## Native workflow parity
+
+### Application updates
+
+Settings → Updates & changelog and About report the app version independently of the OMP version.
+Bundled release notes live in `shared/app-release.json`; update this alongside all three package,
+Cargo and Tauri version fields for each release. The GUI uses the authenticated local API for update
+status and commands. The native host alone uses Tauri's official updater; no updater IPC permissions
+or arbitrary download URLs are exposed to the webview.
+
+Update-enabled builds embed `OMP_UPDATE_PUBLIC_KEY` and `OMP_UPDATE_ENDPOINT` at compile time. The
+endpoint and download must use HTTPS without embedded credentials. Missing configuration disables
+checks visibly. The default development build makes no release requests. Configured builds check
+at most daily automatically, with manual checks available. “Remind me tomorrow” persists a version-
+specific 24-hour deadline in app data (`updates.json`). GitHub errors remain errors, not “up to date.”
+
+The official updater downloads and verifies the signature before the ready state. The user then
+confirms Install and restart. Unsaved/saving editor documents, pending API mutations, starting bridges,
+running agents and native operations block installation. New mutation requests are blocked during the
+handoff. On Windows, the owned backend is stopped before the signed NSIS upgrade replaces files;
+the installer relaunches the app. The quiet updater handoff uses the installation engine, not the
+custom first-install extraction wrapper. User chats, appearance, providers and setup data remain in
+their existing directories outside the replaced application files. macOS/AppImage use the plugin's
+platform updater; deb installations should be upgraded through the package manager.
+
+The updater is not a claim of transactional rollback across power loss. Fresh install, N→N+1 upgrade,
+failed download/signature, locked-file, interrupted-upgrade, uninstall and data-retention checks on real
+target machines remain release acceptance. No real upgrade is run merely to inspect the interface.
+
+### Preparing a signed GitHub release
+
+1. The owner generates and backs up an updater signing key using the [Tauri signing guide](https://v2.tauri.app/plugin/updater/).
+   Store its private value in GitHub secret `TAURI_SIGNING_PRIVATE_KEY`, its password in
+   `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, and its public value in repository variable `OMP_UPDATE_PUBLIC_KEY`.
+   Never commit the private key or bundle a GitHub account token. Updater signing is separate from OS signing.
+2. Update version fields and bundled changelog, commit, and create the matching `vX.Y.Z` tag.
+3. Run **Prepare signed desktop release** manually with that existing tag. The workflow builds and
+   signs updater packages for Windows x64, macOS arm64/x64 and Linux x64, includes the separate
+   branded first-install packages and checksums, generates a combined
+   `latest.json`, and creates a **draft** GitHub release for owner review. It does not publish or change
+   repository visibility. `OMP_SIGNED_RELEASE=true` enables updater artifact generation in local builds
+   only when both signing configuration and an HTTPS feed are present.
+4. Verify an actual upgrade in a disposable profile/machine before publishing the draft. Feed/package
+   downloads must be accessible to clients: this private repository's release endpoint cannot serve
+   unauthenticated public installs. Before a public release, use a public release repository or a
+   dedicated HTTPS feed and compile its endpoint into the initial distributed build.
+
+`scripts/desktop-update-manifest.mjs` names signed assets by platform/architecture, rejects mixed
+versions and duplicate targets, and refuses incomplete platform sets when combining a release.
+CI execution and a live signed N→N+1 upgrade are not established by local unit/build checks.
 
 The custom Windows installer reports explicit progress through preflight, package checksum, native
 dependency checks, app/runtime copy, installed-file verification and setup handoff. The NSIS pre/post

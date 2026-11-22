@@ -26,3 +26,5 @@
 - Global transition-kit adoption uses the official page-transition core, page fade CSS, tabs and UI transition helpers. Disclosure/layout/list adapters retain the existing Radix APIs; the theme adapter supports the workspace's twelve themes. Official reference: https://transition-kit.space/llms.txt . CSS and source headers retain attribution.
 
 - Bootstrap Icons (MIT), included through React Icons: https://github.com/twbs/icons . Material and monochrome editor icon modes share the locally bundled Material Icon Theme assets; Minimal uses Lucide file-category outlines.
+
+- Tauri updater plugin (Apache-2.0 OR MIT): https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/updater . Used by the native host for signed update verification and platform upgrade handoff; no plugin webview permissions are granted.

@@ -1,0 +1,88 @@
+name: Prepare signed desktop release
+
+# Explicit dispatch creates a DRAFT only. Publishing remains an owner decision.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag matching package.json (for example v0.2.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-latest, macos-15, macos-15-intel, ubuntu-22.04]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      OMP_SIGNED_RELEASE: "true"
+      OMP_UPDATE_PUBLIC_KEY: ${{ vars.OMP_UPDATE_PUBLIC_KEY }}
+      OMP_UPDATE_ENDPOINT: https://github.com/Quaii/omp-frontend/releases/latest/download/latest.json
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.18.1
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Require signing configuration
+        shell: bash
+        run: test -n "$OMP_UPDATE_PUBLIC_KEY" && test -n "$TAURI_SIGNING_PRIVATE_KEY"
+      - name: Linux prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run docs:check
+      - run: npm run desktop:build
+      - run: npm run desktop:check
+      - run: npm run desktop:release-check
+      - run: node scripts/desktop-update-manifest.mjs --fragment .tmp/update-release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-updates-${{ matrix.runner }}
+          path: .tmp/update-release/*
+          if-no-files-found: error
+  draft:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.18.1
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: signed-updates-*
+          path: .tmp/update-release
+          merge-multiple: true
+      - run: node scripts/desktop-update-manifest.mjs --merge .tmp/update-release
+      - name: Create private draft for owner review
+        shell: bash
+        run: |
+          gh release create "$RELEASE_TAG" --verify-tag --draft --title "omp. $RELEASE_TAG" --notes-file .tmp/update-release/release-notes.md
+          find .tmp/update-release -maxdepth 1 -type f \( -name 'omp_*' -o -name 'latest.json' -o -name 'SHA256SUMS' \) -print0 | xargs -0 gh release upload "$RELEASE_TAG"

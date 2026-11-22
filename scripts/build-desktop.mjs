@@ -5,7 +5,12 @@ import { isDmgMountFailure, createDevelopmentDmg } from './desktop-dmg.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let diagnostics = '';
-const child = spawn(process.execPath, [path.join(root, 'node_modules/@tauri-apps/cli/tauri.js'), 'build'], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+const args = [path.join(root, 'node_modules/@tauri-apps/cli/tauri.js'), 'build'];
+if (process.env.OMP_SIGNED_RELEASE === 'true') {
+  if (!process.env.OMP_UPDATE_PUBLIC_KEY?.trim() || !process.env.TAURI_SIGNING_PRIVATE_KEY || !process.env.OMP_UPDATE_ENDPOINT?.startsWith('https://')) throw Error('Signed releases require a public key, signing key and HTTPS update endpoint.');
+  args.push('--config', JSON.stringify({ bundle: { createUpdaterArtifacts: true } }));
+}
+const child = spawn(process.execPath, args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
 const forward = (stream, output) => stream.on('data', chunk => {
   output.write(chunk);
   diagnostics = (diagnostics + chunk.toString()).slice(-128 * 1024);
