@@ -94,6 +94,8 @@ export default function App() {
   const stickRef = useRef(true);
 
   const cwd = boot?.cwd ?? localStorage.getItem(LS_CWD) ?? "";
+  const changedFilesCwd = (boot?.allSessions ?? boot?.sessions ?? []).find((session:any) => session.path === activePath)?.cwd || cwd;
+  const changedFilesRoot = projectForSession({cwd:changedFilesCwd},boot?.control?.projects || [])?.path || changedFilesCwd;
   const fileRequest=chat.key?fileWorkspaces[chat.key]?.request:null;
 
   const openFiles=useCallback((path?:string)=>{const key=keyRef.current;if(!key)return;transitionUpdate(()=>{setHome(false);setFileWorkspaces(previous=>({...previous,[key]:{cwd,request:{path,n:Date.now()}}}));});},[cwd]);
@@ -568,7 +570,7 @@ export default function App() {
                 {renderedMessages.map(({message:m,index:i,firstIndex,streaming,continuation}) => (
                   <div key={`msg-${firstIndex}`} id={`msg-${i}`} className={`transcript-message scroll-mt-24 ${continuation?"is-continuation":""} ${["developer","custom","hookMessage"].includes(m.role)?"is-note":""}`}>
                     {m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1?(<MessageVersions
-                      versions={replyVersions(entries,m.timestamp)} currentTimestamp={m.timestamp} files={changes.get(i)}
+                      versions={replyVersions(entries,m.timestamp)} currentTimestamp={m.timestamp} files={changes.get(i)} cwd={changedFilesCwd} projectRoot={changedFilesRoot}
                       onContinue={async id=>{const r=await sendCmd({type:"navigate_tree",entryId:id,summarize:false});if(r?.ok&&!r.data?.cancelled)await attach(keyRef.current!,activePath||undefined);}}
                       streaming={streaming}
                       tools={chat.tools}
@@ -595,7 +597,7 @@ export default function App() {
                             : undefined,
                       }}
                     />)}
-                    {changes.has(i) && !(m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1) && <FilesChanged files={changes.get(i)!} />}
+                    {changes.has(i) && !(m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1) && <FilesChanged files={changes.get(i)!} cwd={changedFilesCwd} projectRoot={changedFilesRoot} />}
                     {checkpoints.has(i) && !(m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1) && <Checkpoint label={`Turn ${visibleMessages.slice(0,i+1).filter(m=>m.role==="user").length}`} disabled={running} onRestore={async()=>{const r=await sendCmd({type:"navigate_tree",entryId:checkpoints.get(i),summarize:false});if(r?.ok&&!r.data?.cancelled)await attach(keyRef.current!,activePath || undefined);}}/>}
                   </div>
                 ))}
