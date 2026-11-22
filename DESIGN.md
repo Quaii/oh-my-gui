@@ -271,6 +271,12 @@ in the existing Settings screen. Reopening setup hides the workspace without unm
 
 ## Native workflow surfaces
 
+The custom Windows installer shows System checks, Verify package, Windows dependencies, App and
+runtime, Verify installation, and Open setup in its sidebar. Its overall bar counts completed stages;
+package-check progress uses bytes actually read. Native dependency and copy operations remain active
+without fabricated byte percentages. Keep the stage detail and bar visible in the compact window.
+Successful installation requires installed-file, Node runtime and uninstall-registration checks.
+
 Native desktop close requests, including taskbar close actions, open a quit confirmation. Show the
 reported running-session count and warn about unsaved editor changes. Cancel preserves the window;
 Keep in tray hides it without stopping runtimes. The tray offers Open, Settings, up to five recent

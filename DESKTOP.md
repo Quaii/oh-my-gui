@@ -165,6 +165,18 @@ credentials or publish an unsigned update feed. Other platforms require their ow
 
 ## Native workflow parity
 
+The custom Windows installer reports explicit progress through preflight, package checksum, native
+dependency checks, app/runtime copy, installed-file verification and setup handoff. The NSIS pre/post
+install hooks append boundaries to a temporary stage log supplied only to the owned installation
+process. The GUI polls its local status; no clock-driven percentage is used. The overall bar measures
+completed stages and the checksum percentage measures actual read bytes. Copy/dependency stages
+remain active until reported by the native engine. Verification checks the app, bundled Node, server,
+UI, uninstaller and per-user Windows uninstall registration before enabling Open setup.
+
+`node scripts/check-installer-progress.mjs` compiles and runs the actual hooks in an inert NSIS executable
+that writes temporary stage markers only. It installs no app, shortcuts, runtime or registry entries.
+Checksum regressions and inert compact UI fixtures are separate from fresh-install/upgrade acceptance.
+
 The main application owns an accent-synchronized system tray menu: Open, Settings, five recent chats,
 running sessions and Quit. Recent chat metadata refreshes with a short cache; unchanged menu state is
 not rebuilt. Live chat navigation retains its bridge key. All native CloseRequested events go through

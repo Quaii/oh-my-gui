@@ -1133,3 +1133,5 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 
 [data-slot=dialog-content].provider-config-dialog,[data-glass=true] [data-slot=dialog-content].provider-config-dialog{background:var(--sidebar);backdrop-filter:none;-webkit-backdrop-filter:none;min-width:0}
 .provider-config-dialog>*{min-width:0}.provider-config-dialog [data-slot=select-trigger]{max-width:100%;min-width:0}
+
+.desktop-installer-progress{margin-top:16px;padding:14px}.desktop-installer-progress p{margin-top:8px}
