@@ -165,6 +165,19 @@ credentials or publish an unsigned update feed. Other platforms require their ow
 
 ## Native workflow parity
 
+Project folder selection uses `tauri-plugin-dialog` through the authenticated backend/native pipe.
+The chooser is parented to the main window, returns cancellation as a null selection and does not
+register/create anything until the project form is submitted. Browser hosts have a server-owned,
+read-only directory navigator; React never accesses the filesystem directly.
+
+Windows/macOS tray clicks open a separate, undecorated React webview using the same authenticated
+loopback backend and appearance storage. No workspace, setup flow or model bridge mounts there.
+The popup is positioned in physical coordinates inside the clicked monitor's work area, resized for
+small screens, hidden on focus loss/Escape, and excluded from the taskbar. Chat actions are resolved
+against authoritative recent/running rows before native forwarding. Closing the main window after
+confirmation exits the app even while the hidden tray webview exists. Linux retains the native menu
+because Tauri's Linux indicator backend does not deliver tray click events.
+
 ### Application updates
 
 Settings → Updates & changelog and About report the app version independently of the OMP version.

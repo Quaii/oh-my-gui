@@ -1,6 +1,7 @@
 import {desktopTrayData} from "./desktop-tray.ts";
 import { createInterface } from 'node:readline';
 import { appRelease, desktopUpdates } from './desktop-updates.ts';
+import { projectFolders, pickDesktopFolder, receiveDesktopFolder, folderChooserOpen } from './folder-picker.ts';
 import {desktopAccess} from "./desktop.ts";
 import { desktopSetupStatus, completeDesktopSetup, installDesktopOmp } from './desktop-setup.ts';
 import { desktopInstallerStatus, installDesktopApplication, launchInstalledDesktop } from './desktop-installer.ts';
@@ -674,20 +675,39 @@ const server = http.createServer((req, res) => {
     json(res, 403, { error: 'A same-origin loopback session is required.' }); return;
   }
   if(!desktopAccess(req,res,url,process.env.OMP_DESKTOP_TOKEN))return;
+  if (desktopUpdates.installing && req.method !== 'GET') { json(res,409,{error:'The app is restarting to install an update.'}); return; }
   if (url.pathname === '/api/app-release' && req.method === 'GET') { json(res,200,appRelease()); return; }
+  if (url.pathname === '/api/project-folders' && req.method === 'GET') {
+    void projectFolders(url.searchParams.get('path') || undefined).then(data=>json(res,200,data)).catch(error=>json(res,400,{error:error.message}));return;
+  }
+  if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/folder' && req.method === 'POST') {
+    void readBody(req,8192).then(body=>pickDesktopFolder(typeof body.directory === 'string' ? body.directory : undefined)).then(data=>json(res,200,data)).catch(error=>json(res,400,{error:error.message}));return;
+  }
+  if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/tray-action' && req.method === 'POST') {
+    void (async()=>{
+      const body = await readBody(req,8192);
+      if (!['show','settings','quit','dismiss','ready','chat'].includes(body.action)) throw Error('Invalid tray action.');
+      let session;
+      if(body.action === 'chat') {
+        const data = await refreshNativeTray();
+        session = [...data.running,...data.recent].find(row=>body.key ? row.key===body.key : body.path && row.path===body.path);
+        if(!session) throw Error('This chat is no longer available. Refresh the tray.');
+      }
+      process.stdout.write('OMP_DESKTOP_TRAY_ACTION '+JSON.stringify({action:body.action,session})+'\n');json(res,200,{ok:true});
+    })().catch(error=>json(res,400,{error:error.message}));return;
+  }
   if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/updates') {
     void (async () => {
       if (req.method === 'GET') return json(res,200,await desktopUpdates.status());
       if (req.method !== 'POST') return json(res,405,{error:'Method not allowed.'});
       const body = await readBody(req,1024);
-      const running = () => activeMutations > 0 || startingBridges.size > 0 ||
+      const running = () => folderChooserOpen() || activeMutations > 0 || startingBridges.size > 0 ||
         [...slots.values()].some(slot => slot.initializing || slot.routingAbort || slot.state?.isStreaming || slot.state?.isCompacting || slot.state?.queuedMessageCount > 0) ||
         nativeJobs().some(job => job.status === 'running');
       json(res,200,await desktopUpdates.action(String(body.action),running,body.automatic === true));
     })().catch(error => json(res,409,{error:error.message}));
     return;
   }
-  if (desktopUpdates.installing && req.method !== 'GET') { json(res,409,{error:'The app is restarting to install an update.'}); return; }
   const mutation = req.method !== 'GET' && url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/desktop/');
   if (mutation) activeMutations++;
   if(process.env.OMP_DESKTOP_TOKEN && url.pathname==='/api/desktop/tray' && req.method==='GET') {
@@ -738,6 +758,7 @@ if(process.env.OMP_DESKTOP_TOKEN){
     else if(line.startsWith('update ')) {
       try { void desktopUpdates.receive(JSON.parse(line.slice(7))).catch(error=>log(error.message)); } catch {}
     }
+    else if(line.startsWith('folder ')) { try { receiveDesktopFolder(JSON.parse(line.slice(7))); } catch {} }
   });
   input.on('close',()=>void shutdown());
 }

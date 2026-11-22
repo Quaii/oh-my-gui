@@ -30,6 +30,9 @@ try{
   assert.equal((await fetch(base+'/api/health',{headers})).status,200);
   assert.equal((await fetch(base+'/api/desktop/tray')).status,403);
   assert.equal((await fetch(base+'/api/desktop/updates')).status,403);
+  assert.equal((await fetch(base+'/api/desktop/folder',{method:'POST'})).status,403);
+  assert.equal((await fetch(base+'/api/desktop/tray-action',{method:'POST'})).status,403);
+  assert.equal((await fetch(base+'/api/desktop/tray-action',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'chat',path:'not-a-real-chat'})})).status,400);
   const release=await (await fetch(base+'/api/app-release',{headers})).json();
   assert.match(release.version,/^\d+\.\d+\.\d+/);
   assert.ok(release.releases.length>0);

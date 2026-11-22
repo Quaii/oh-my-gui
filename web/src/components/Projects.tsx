@@ -16,15 +16,199 @@ import { Button } from "@/components/ui/button";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
 import { useRemote, Notice } from "./settings/ManagementShared";
 import { post } from "@/lib/api";
+import {FolderBrowser} from './FolderBrowser';
 
-export function ProjectDialog({open,onOpenChange,cwd,onCreated}:{open:boolean;onOpenChange:(v:boolean)=>void;cwd:string;onCreated:(path:string)=>void}) {
- const [mode,setMode]=useState("new");const [name,setName]=useState("");const [location,setLocation]=useState(cwd);const [error,setError]=useState("");const [busy,setBusy]=useState(false);
- useEffect(()=>{if(open){setLocation(cwd);setName("");setError("");}},[open,cwd]);
- async function submit(e:React.FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError("");try{const result=await post("/api/projects",{mode,...(mode==="new"?{name,parent:location}:{path:location})});onCreated(result.project.path);onOpenChange(false);}catch(e:any){setError(e.message);}finally{setBusy(false);}}
- return <Dialog open={open} onOpenChange={v=>!busy&&onOpenChange(v)}><DialogContent className="project-dialog gap-6 rounded-[20px] border-0 p-6 sm:max-w-[480px]"><DialogHeader><DialogTitle className="text-xl font-medium">{mode==="new"?"Create a project":"Open a project"}</DialogTitle><DialogDescription>{mode==="new"?"Start with a new folder for your work":"Use a folder that is already on this computer"}</DialogDescription></DialogHeader>
-  <Tabs value={mode} onValueChange={v=>{setMode(v);setError("");}}><TabsList className="grid h-12 w-full grid-cols-2 rounded-xl bg-secondary/65 p-1"><TabsTrigger value="new" className="h-10 gap-2 rounded-lg text-[13px]"><FolderPlus className="size-4"/>Create folder</TabsTrigger><TabsTrigger value="existing" className="h-10 gap-2 rounded-lg text-[13px]"><FolderOpen className="size-4"/>Open existing</TabsTrigger></TabsList></Tabs>
-  <Notice error={error}/><form className="space-y-5" onSubmit={submit}>{mode==="new"&&<label className="flex flex-col gap-2.5 text-[13px] font-medium">Project name<Input required autoFocus value={name} onChange={e=>setName(e.target.value)} placeholder="My project" className="h-11 rounded-[10px]"/></label>}<label className="flex flex-col gap-2.5 text-[13px] font-medium">{mode==="new"?"Parent folder":"Folder path"}<Input required autoFocus={mode==="existing"} value={location} onChange={e=>setLocation(e.target.value)} placeholder="C:\Users\Me\Projects" className="h-11 rounded-[10px]"/></label><p className="text-xs leading-relaxed text-muted-foreground">{mode==="new"?`Creates “${name.trim() || "My project"}” inside the selected folder`:"The project uses the folder name. Existing files stay where they are."}</p><Button type="submit" disabled={busy||!location.trim()||(mode==="new"&&!name.trim())} className="h-11 w-full rounded-[10px] bg-foreground text-background hover:bg-foreground/90">{busy&&<LoaderCircle className="size-4 animate-spin"/>}{busy?"Opening…":mode==="new"?"Create project":"Open project"}</Button></form>
- </DialogContent></Dialog>;
+export function ProjectDialog({
+  open,
+  onOpenChange,
+  cwd,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  cwd: string;
+  onCreated: (path: string) => void;
+}) {
+  const [mode, setMode] = useState("new");
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState(cwd);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false),
+    [picking, setPicking] = useState(false),
+    [browsing, setBrowsing] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setLocation(cwd);
+      setName("");
+      setError("");
+      setBrowsing(false);
+    }
+  }, [open, cwd]);
+  async function browse() {
+    setError("");
+    if (!window.__OMP_DESKTOP__) {
+      setBrowsing(true);
+      return;
+    }
+    setPicking(true);
+    try {
+      const selected = await post<{ path: string | null }>(
+        "/api/desktop/folder",
+        { directory: location },
+      );
+      if (selected.path) setLocation(selected.path);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setPicking(false);
+    }
+  }
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy || picking || browsing) return;
+    setBusy(true);
+    setError("");
+    try {
+      const result = await post("/api/projects", {
+        mode,
+        ...(mode === "new" ? { name, parent: location } : { path: location }),
+      });
+      onCreated(result.project.path);
+      onOpenChange(false);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(v) => !busy && !picking && onOpenChange(v)}
+    >
+      <DialogContent className="project-dialog max-h-[calc(100dvh-40px)] gap-6 overflow-y-auto rounded-xl p-6 sm:max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-medium">
+            {mode === "new" ? "Create a project" : "Open a project"}
+          </DialogTitle>
+          <DialogDescription>
+            {mode === "new"
+              ? "Start with a new folder for your work"
+              : "Use a folder that is already on this computer"}
+          </DialogDescription>
+        </DialogHeader>
+        <Tabs
+          value={mode}
+          onValueChange={(v) => {
+            if (busy || picking) return;
+            setMode(v);
+            setError("");
+            setBrowsing(false);
+          }}
+        >
+          <TabsList className="grid h-12 w-full grid-cols-2 rounded-xl bg-secondary/65 p-1">
+            <TabsTrigger
+              disabled={busy || picking}
+              value="new"
+              className="h-10 gap-2 rounded-lg text-[13px]"
+            >
+              <FolderPlus className="size-4" />
+              Create folder
+            </TabsTrigger>
+            <TabsTrigger
+              disabled={busy || picking}
+              value="existing"
+              className="h-10 gap-2 rounded-lg text-[13px]"
+            >
+              <FolderOpen className="size-4" />
+              Open existing
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Notice error={error} />
+        <form className="space-y-5" onSubmit={submit}>
+          {mode === "new" && (
+            <label className="flex flex-col gap-2.5 text-[13px] font-medium">
+              Project name
+              <Input
+                required
+                disabled={busy || picking}
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="My project"
+                className="h-11 rounded-[10px]"
+              />
+            </label>
+          )}
+          <div className="space-y-2.5">
+            <label htmlFor="project-folder" className="text-[13px] font-medium">
+              {mode === "new" ? "Parent folder" : "Folder path"}
+            </label>
+            <div className="flex gap-2">
+              <Input
+                id="project-folder"
+                required
+                disabled={busy || picking}
+                autoFocus={mode === "existing"}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Choose a folder"
+                className="h-11 min-w-0 flex-1 rounded-[10px]"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy || picking}
+                className="h-11 shrink-0"
+                onClick={() => void browse()}
+              >
+                {picking ? (
+                  <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" />
+                ) : (
+                  <FolderOpen className="size-4" />
+                )}
+                {picking ? "Choosing…" : "Browse…"}
+              </Button>
+            </div>
+          </div>
+          {browsing && (
+            <FolderBrowser
+              initial={location}
+              onChoose={(path) => {
+                setLocation(path);
+                setBrowsing(false);
+              }}
+              onCancel={() => setBrowsing(false)}
+            />
+          )}
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {mode === "new"
+              ? `Creates “${name.trim() || "My project"}” inside the selected folder`
+              : "The project uses the folder name. Existing files stay where they are."}
+          </p>
+          <Button
+            type="submit"
+            disabled={
+              busy ||
+              picking ||
+              browsing ||
+              !location.trim() ||
+              (mode === "new" && !name.trim())
+            }
+            className="h-11 w-full rounded-[10px] bg-foreground text-background hover:bg-foreground/90"
+          >
+            {busy && <LoaderCircle className="size-4 animate-spin" />}
+            {busy
+              ? "Opening…"
+              : mode === "new"
+                ? "Create project"
+                : "Open project"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function ProjectActivity({cwd,activityData}:{cwd:string;activityData?:any}) {

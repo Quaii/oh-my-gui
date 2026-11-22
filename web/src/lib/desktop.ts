@@ -1,4 +1,4 @@
-declare global { interface Window { __OMP_DESKTOP__?:boolean; __OMP_CUSTOM_CHROME__?:boolean; __OMP_INSTALLER__?:boolean } }
+declare global { interface Window { __OMP_DESKTOP__?:boolean; __OMP_CUSTOM_CHROME__?:boolean; __OMP_INSTALLER__?:boolean; __OMP_TRAY__?:boolean } }
 export function isDesktopHost(){return typeof window!=='undefined'&&window.__OMP_DESKTOP__===true;}
 
 /** Reveal native chrome only after the selected setup/workspace view has committed. */

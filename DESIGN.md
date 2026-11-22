@@ -271,6 +271,17 @@ in the existing Settings screen. Reopening setup hides the workspace without unm
 
 ## Native workflow surfaces
 
+Project creation/opening uses an opaque sidebar-colored form, with a Browse action beside its path.
+Desktop Browse opens a parented native folder chooser; the web host provides explicit directory
+navigation and Select this folder. Cancellation preserves the path and never creates a project.
+This form-specific solid surface does not replace backdrop blur on floating workspace controls.
+
+On Windows and macOS the tray opens a compact, themed React panel anchored near its icon. The panel
+uses the current appearance, Open workspace, Settings, running sessions, five recent chats and Quit.
+It dismisses on Escape or focus loss. Quit opens the existing main-window confirmation. It has no
+title bar and never mounts a second workspace or agent bridge. Linux retains its native indicator
+menu because its tray protocol does not deliver the click events needed for a custom popup.
+
 Settings → Updates & changelog shows the application version separately from the OMP runtime,
 with bundled release notes and explicit loading/error states. About also shows the app version.
 Available signed releases use a small floating notice with View update and Remind me tomorrow;

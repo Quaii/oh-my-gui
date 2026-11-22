@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod backend_path;
+mod folder_picker;
 mod native_icon;
 mod tray;
 mod updates;
@@ -191,6 +192,18 @@ fn start_backend(
                         }
                     }
                 }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_FOLDER ") {
+                if !installer {
+                    if let Ok(value) = serde_json::from_str(data) {
+                        folder_picker::open(&native_app, value);
+                    }
+                }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_TRAY_ACTION ") {
+                if !installer {
+                    if let Ok(value) = serde_json::from_str(data) {
+                        tray::action(&native_app, value);
+                    }
+                }
             } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_UPDATE ") {
                 if !installer && ["check", "download", "install"].contains(&data) {
                     updates::dispatch(native_app.clone(), data);
@@ -327,10 +340,14 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
         .build()?;
     window_frame::apply(&window);
     if !installer {
+        tray::prepare(app.handle(), &url)?;
         tray::update(app.handle(), &serde_json::json!({"recent":[],"running":[]}))?;
     }
     let state_window = window.clone();
     window.on_window_event(move |event| {
+        if matches!(event, tauri::WindowEvent::Destroyed) {
+            state_window.app_handle().exit(0);
+        }
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
             if !state_window
                 .app_handle()
@@ -375,6 +392,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
 fn main() {
     let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
     let result = tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             // Setup runs during the event loop, after Builder::build. Handle failures

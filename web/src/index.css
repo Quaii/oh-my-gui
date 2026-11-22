@@ -1136,3 +1136,19 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 
 .desktop-installer-progress{margin-top:16px;padding:14px}.desktop-installer-progress p{margin-top:8px}
 .desktop-update-notice{position:fixed;z-index:60;right:24px;bottom:24px;max-width:calc(100vw - 48px);border:1px solid var(--border);border-radius:12px;padding:20px}.desktop-update-dialog{background:var(--sidebar)!important;backdrop-filter:none!important}
+/* Project setup is an opaque form; floating workspace surfaces retain real backdrop blur. */
+[data-slot=dialog-content].project-dialog,[data-glass=true] [data-slot=dialog-content].project-dialog{background:var(--sidebar);backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid var(--border);border-radius:12px}
+html[data-tray=true]{zoom:1!important;background:var(--sidebar)}
+html[data-tray=true] body,html[data-tray=true] #root{height:100%;background:var(--sidebar);overflow:hidden}
+.desktop-tray{height:100%;display:flex;flex-direction:column;background:var(--sidebar);color:var(--foreground);font-family:var(--workspace-ui-font);font-size:13px;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.desktop-tray>header{display:flex;align-items:center;gap:10px;padding:14px 16px 8px}
+.desktop-tray-shortcuts{display:flex;gap:6px;padding:8px 12px 14px;border-bottom:1px solid var(--border)}
+.desktop-tray-lists{flex:1;min-height:0;overflow-y:auto;padding:8px}
+.desktop-tray-lists section+section{margin-top:12px;padding-top:8px;border-top:1px solid var(--border)}
+.desktop-tray h2{display:flex;align-items:center;gap:8px;padding:8px;font-size:11px;font-weight:500;color:var(--muted-foreground)}
+.desktop-tray section>p{padding:8px;font-size:12px;color:var(--muted-foreground)}
+.desktop-tray section>button{display:flex;align-items:center;gap:10px;width:100%;padding:8px;text-align:left;border-radius:7px}
+.desktop-tray section>button:hover,.desktop-tray section>button:focus-visible{background:var(--sidebar-accent);outline:2px solid transparent}
+.tray-running-dot,.tray-chat-dot{width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--muted-foreground)}
+.tray-running-dot{background:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
+.desktop-tray>footer{padding:8px 12px;border-top:1px solid var(--border)}
