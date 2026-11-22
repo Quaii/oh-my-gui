@@ -1,5 +1,6 @@
 import {PageTransition} from '../components/transitions/page-transition';
 import {transitionUpdate} from '../lib/motion';
+import {ErrorBoundary} from "../components/ErrorBoundary";
 import { SessionWorkflows } from '../components/settings/SessionWorkflows';
 import { RuntimeOutput } from '../components/RuntimeOutput';
 import { ProviderAccounts } from '../components/settings/ProviderAccounts';
@@ -253,7 +254,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
             <SkeletonReveal loading={loading && !payload && (searching || ["all", "interaction", "tasks", "memory", "files", "shell", "context"].includes(panel))} skeleton={<PanelSkeleton panel={searching?"all":panel}/>} label="Loading settings">
             <PageTransition id={searching?"search":panel} transition="fade" duration={160}>
-            <Suspense fallback={<PanelSkeleton panel={panel}/>}>
+            <ErrorBoundary key={panel}><Suspense fallback={<PanelSkeleton panel={panel}/>}>
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
             ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null}><details className="mb-5"><summary className="cursor-pointer py-3 text-sm">Launch configuration</summary><FlagsPanel flagDraft={flagDraft} setFlagDraft={setFlagDraft} onSave={() => { try { setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft))); onRestart(); } catch (error:any) { setErr(error.message); } }} /></details></RuntimePanel>
@@ -328,7 +329,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : (
               <Empty>Nothing here.</Empty>
             )}
-            </Suspense></PageTransition>
+            </Suspense></ErrorBoundary></PageTransition>
             </SkeletonReveal>
           </div>
         </ScrollArea>

@@ -165,6 +165,16 @@ credentials or publish an unsigned update feed. Other platforms require their ow
 
 ## Native workflow parity
 
+The main application owns an accent-synchronized system tray menu: Open, Settings, five recent chats,
+running sessions and Quit. Recent chat metadata refreshes with a short cache; unchanged menu state is
+not rebuilt. Live chat navigation retains its bridge key. All native CloseRequested events go through
+the shared quit dialog; Keep in tray hides the window, while confirmed quit stops the owned backend.
+Installers retain their existing installation-aware close confirmation and do not create tray icons.
+The tray-data regressions and browser dialog fixtures are separate from native OS interaction tests.
+Skills loading/failure/recovery and the running-session quit dialog passed inert browser checks;
+tray data and live-bridge identity have regression coverage. Native tray-menu clicks and taskbar-close
+interaction still require interactive acceptance on the intended OS.
+
 The desktop and browser hosts share the protocol-v2 decoder, startup dialog replay and paged transcript
 loader. The primary GUI bridge uses `rpc-ui`; native OMP disables interactive PTYs in this mode.
 Interactive shells, terminal-only extension renderers and credential-bearing CLI workflows therefore

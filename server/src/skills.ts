@@ -1,3 +1,4 @@
+import {normalizeSkills} from "../../shared/skills.ts";
 import { execFile } from "node:child_process";
 
 import { OMP_BINARY as OMP_BIN } from "./omp.ts";
@@ -19,14 +20,15 @@ export function invalidateSkills(): void {
 
 export async function listSkills(force = false): Promise<SkillInfo[]> {
   if (!force && cache && Date.now() - cache.at < 15000) return cache.skills;
-  const skills = await new Promise<SkillInfo[]>((resolve) => {
+  const skills = await new Promise<SkillInfo[]>((resolve,reject) => {
     execFile(OMP_BIN, ["skill", "list", "--json"], { timeout: 40000, maxBuffer: 16 * 1024 * 1024, windowsHide: true }, (err, stdout) => {
-      if (!stdout) return resolve([]);
+      if (err) return reject(Error("Skill discovery failed: " + err.message));
+      if (!stdout) return reject(Error("Skill discovery returned no data"));
       try {
         const parsed = JSON.parse(String(stdout));
-        resolve(Array.isArray(parsed) ? parsed : (parsed.skills ?? []));
+        resolve(normalizeSkills(parsed));
       } catch {
-        resolve([]);
+        reject(Error("OMP returned invalid skill metadata"));
       }
     });
   });

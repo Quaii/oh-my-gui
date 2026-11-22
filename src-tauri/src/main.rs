@@ -2,6 +2,7 @@
 
 mod backend_path;
 mod native_icon;
+mod tray;
 mod window_frame;
 
 use std::{
@@ -143,6 +144,9 @@ fn start_backend(
                                     }
                                 });
                             }
+                            Some("hide") => {
+                                let _ = window.hide();
+                            }
                             Some("drag") => {
                                 let _ = window.start_dragging();
                             }
@@ -161,11 +165,10 @@ fn start_backend(
                                 let _ = window.close();
                             }
                             Some("close-confirmed")
-                                if installer
-                                    && !native_app
-                                        .state::<InstallerBusy>()
-                                        .0
-                                        .load(Ordering::SeqCst) =>
+                                if !native_app
+                                    .state::<InstallerBusy>()
+                                    .0
+                                    .load(Ordering::SeqCst) =>
                             {
                                 native_app
                                     .state::<InstallerCloseAllowed>()
@@ -178,11 +181,26 @@ fn start_backend(
                         }
                     }
                 }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_TRAY ") {
+                if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
+                    let handle = native_app.clone();
+                    let _ = native_app.run_on_main_thread(move || {
+                        let _ = tray::update(&handle, &value);
+                    });
+                }
             } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_APPEARANCE ") {
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
                     if let Some(bytes) = value["accent"].as_str().and_then(native_icon::pixels) {
                         if let Some(window) = native_app.get_webview_window("main") {
-                            let _ = window.set_icon(tauri::image::Image::new_owned(bytes, 64, 64));
+                            let _ = window.set_icon(tauri::image::Image::new_owned(
+                                bytes.clone(),
+                                64,
+                                64,
+                            ));
+                            if let Some(tray) = native_app.tray_by_id("omp") {
+                                let _ = tray
+                                    .set_icon(Some(tauri::image::Image::new_owned(bytes, 64, 64)));
+                            }
                         }
                     }
                 }
@@ -293,20 +311,22 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
         })
         .build()?;
     window_frame::apply(&window);
+    if !installer {
+        tray::update(app.handle(), &serde_json::json!({"recent":[],"running":[]}))?;
+    }
     let state_window = window.clone();
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            if installer
-                && (!state_window
+            if !state_window
+                .app_handle()
+                .state::<InstallerCloseAllowed>()
+                .0
+                .swap(false, Ordering::SeqCst)
+                || state_window
                     .app_handle()
-                    .state::<InstallerCloseAllowed>()
+                    .state::<InstallerBusy>()
                     .0
-                    .swap(false, Ordering::SeqCst)
-                    || state_window
-                        .app_handle()
-                        .state::<InstallerBusy>()
-                        .0
-                        .load(Ordering::SeqCst))
+                    .load(Ordering::SeqCst)
             {
                 api.prevent_close();
                 let _ =

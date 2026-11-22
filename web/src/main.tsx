@@ -1,3 +1,5 @@
+import {ErrorBoundary} from "./components/ErrorBoundary";
+import {DesktopLifecycle} from "./components/DesktopLifecycle";
 import React from "react";
 import {DesktopTitleBar} from "./components/DesktopTitleBar";
 import {DesktopSetup} from './components/DesktopSetup';
@@ -18,8 +20,9 @@ applyTheme(window.__OMP_INSTALLER__ ? 'carbon' : getTheme());
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <TooltipProvider delayDuration={300}>
+      {window.__OMP_DESKTOP__&&!window.__OMP_INSTALLER__&&<DesktopLifecycle/>}
       {window.__OMP_CUSTOM_CHROME__&&!window.__OMP_INSTALLER__&&<DesktopTitleBar/>}
-      {location.pathname==="/background-preview"?<React.Suspense fallback={null}><BackgroundPreview/></React.Suspense>:<WorkspaceMotion>{window.__OMP_INSTALLER__ ? <DesktopInstaller /> : window.__OMP_DESKTOP__ ? <DesktopSetup><App /></DesktopSetup> : <App />}</WorkspaceMotion>}
-    </TooltipProvider>
+      <ErrorBoundary>{location.pathname==="/background-preview"?<React.Suspense fallback={null}><BackgroundPreview/></React.Suspense>:<WorkspaceMotion>{window.__OMP_INSTALLER__ ? <DesktopInstaller /> : window.__OMP_DESKTOP__ ? <DesktopSetup><App /></DesktopSetup> : <App />}</WorkspaceMotion>}
+    </ErrorBoundary></TooltipProvider>
   </React.StrictMode>
 );

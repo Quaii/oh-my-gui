@@ -1,8 +1,9 @@
+import {normalizeSkills} from "../../../../shared/skills";
 import { PanelSkeleton } from "@/components/ui/loading-shapes";
 import { NativeSettingsSkeleton } from "@/components/ui/native-settings-skeleton";
 import { Select,SelectContent,SelectItem,SelectTrigger,SelectValue } from "@/components/ui/select";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { get } from "../../lib/api";
+import { api } from "../../lib/api";
 import { Btn, Empty, Group } from "./Controls";
 import { ConfigList } from "./ConfigList";
 import type { Setting } from "../../lib/settings";
@@ -43,9 +44,9 @@ export function SkillsPanel({
   const load = useCallback(async (refresh = false) => {
     setBusy(true);
     try {
-      const r = await get<{ skills: SkillInfo[]; ignored: string[] }>(`/api/skills${refresh ? "?refresh=1" : ""}`);
-      setSkills(r.skills ?? []);
-      setIgnored(r.ignored ?? []);
+      const r = await api<{ skills: SkillInfo[]; ignored: string[] }>(`/api/skills${refresh ? "?refresh=1" : ""}`, {signal:AbortSignal.timeout(45_000)});
+      setSkills(normalizeSkills(r));
+      setIgnored(Array.isArray(r.ignored) ? r.ignored.filter(v=>typeof v === "string") : []);
       setErr(null);
     } catch (e: any) {
       setErr(String(e?.message ?? e));

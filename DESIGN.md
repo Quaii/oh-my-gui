@@ -271,6 +271,16 @@ in the existing Settings screen. Reopening setup hides the workspace without unm
 
 ## Native workflow surfaces
 
+Native desktop close requests, including taskbar close actions, open a quit confirmation. Show the
+reported running-session count and warn about unsaved editor changes. Cancel preserves the window;
+Keep in tray hides it without stopping runtimes. The tray offers Open, Settings, up to five recent
+chats, running sessions and Quit. Selecting a live chat reuses its runtime identity. The tray mark
+follows the accent. Installers keep their separate abort-installation confirmation and have no tray.
+
+Settings pages have independent error recovery so a failed panel does not remove navigation. The
+app-level fallback offers Retry and Reload. Skill discovery has a bounded wait and visible errors;
+loading skeletons derive IDs from metadata keys and tolerate supplemental entries.
+
 Installation owns launch configuration; provider authentication belongs only to Providers. Routine
 Session settings describe the current conversation. Expert diagnostics and runtime maintenance are
 secondary Advanced surfaces. Task completion is agent-owned; settings do not offer manual phase

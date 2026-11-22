@@ -28,6 +28,10 @@ try{
   assert.equal(boot.status,303);
   const headers={Cookie:boot.headers.get('set-cookie').split(';')[0]};
   assert.equal((await fetch(base+'/api/health',{headers})).status,200);
+  assert.equal((await fetch(base+'/api/desktop/tray')).status,403);
+  const tray=await (await fetch(base+'/api/desktop/tray',{headers})).json();
+  assert.ok(Array.isArray(tray.recent)&&tray.recent.length<=5);
+  assert.ok(Array.isArray(tray.running));
   const html=await (await fetch(base+'/',{headers})).text();
   assert.match(html,/<title>omp\.<\/title>/);
   const asset=html.match(/src="(\/assets\/[^\"]+\.js)"/);

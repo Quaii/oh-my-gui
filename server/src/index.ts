@@ -1,3 +1,4 @@
+import {desktopTrayData} from "./desktop-tray.ts";
 import {desktopAccess} from "./desktop.ts";
 import { desktopSetupStatus, completeDesktopSetup, installDesktopOmp } from './desktop-setup.ts';
 import { desktopInstallerStatus, installDesktopApplication, launchInstalledDesktop } from './desktop-installer.ts';
@@ -54,6 +55,16 @@ interface Slot {
   hostEnabled?: boolean;
 }
 const slots = new Map<string, Slot>();
+let trayRecent: ReturnType<typeof listSessions> | undefined;
+let trayRecentAt=0, lastTrayState="";
+let trayTimer: ReturnType<typeof setInterval> | undefined;
+async function refreshNativeTray(){
+  if(!trayRecent || Date.now()-trayRecentAt>15000){trayRecent=listSessions();trayRecentAt=Date.now();}
+  const data=desktopTrayData(await trayRecent,slots);
+  const serialized=JSON.stringify(data);
+  if(serialized!==lastTrayState){lastTrayState=serialized;process.stdout.write('OMP_DESKTOP_TRAY '+serialized+'\n');}
+  return data;
+}
 const startingBridges = new Map<string, Promise<Slot>>();
 
 function log(...args: any[]) {
@@ -122,6 +133,8 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
   bridge.on("event", (rec: any) => {
     if (['host_tool_call', 'host_tool_cancel', 'host_uri_request', 'host_uri_cancel'].includes(rec.type)) { void slot.host!.accept(rec); return; }
     if (rec.type === "available_commands_update") slot.state = slot.state;
+    if(rec.type === "agent_start") slot.state={...slot.state,isStreaming:true};
+    if(["agent_end","agent_settled","session_settled"].includes(rec.type)) slot.state={...slot.state,isStreaming:false};
     broadcast(slot, slot.replay.accept(rec));
   });
   bridge.on("ui_request", (rec: any) => broadcast(slot, slot.replay.accept(rec)));
@@ -658,12 +671,16 @@ const server = http.createServer((req, res) => {
     json(res, 403, { error: 'A same-origin loopback session is required.' }); return;
   }
   if(!desktopAccess(req,res,url,process.env.OMP_DESKTOP_TOKEN))return;
+  if(process.env.OMP_DESKTOP_TOKEN && url.pathname==='/api/desktop/tray' && req.method==='GET') {
+    if(!trayTimer){trayTimer=setInterval(()=>{void refreshNativeTray().catch(()=>{});},5000);trayTimer.unref();}
+    void refreshNativeTray().then(data=>json(res,200,data)).catch(()=>json(res,500,{error:'Could not refresh tray sessions'}));return;
+  }
   if(process.env.OMP_DESKTOP_TOKEN && url.pathname==="/api/desktop/appearance" && req.method==="POST"){
     void readBody(req,1024).then(body=>{if(!/^#[0-9a-f]{6}$/i.test(body.accent||"")){json(res,400,{error:"Invalid accent"});return;}process.stdout.write("OMP_DESKTOP_APPEARANCE "+JSON.stringify({accent:body.accent})+"\n");res.writeHead(204);res.end();}).catch(()=>json(res,400,{error:"Invalid appearance request"}));return;
   }
   if(process.env.OMP_DESKTOP_TOKEN && url.pathname==="/api/desktop/window" && req.method==="POST"){
     void readBody(req,1024).then(body=>{
-      if(!["drag","minimize","toggle-maximize","close","close-confirmed","sync-state","ready"].includes(body.action) ||
+      if(!["hide","drag","minimize","toggle-maximize","close","close-confirmed","sync-state","ready"].includes(body.action) ||
         (body.action === 'ready' && !['installer','setup','workspace'].includes(body.mode))) {
         json(res,400,{error:"Invalid window action"});return;
       }
@@ -687,6 +704,7 @@ async function shutdown() {
   if(stopping)return;stopping=true;
   log("shutting down");
   await Promise.allSettled([...slots.values()].map((s) => s.bridge.stop(2500)));
+  if(trayTimer)clearInterval(trayTimer);
   await stopNativeOperations();
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(0), 4000);

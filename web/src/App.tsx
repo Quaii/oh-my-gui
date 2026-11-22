@@ -367,6 +367,25 @@ export default function App() {
   const newSession = () => {void leaveProject();};
   const newProjectChat=(path:string)=>{localStorage.setItem(LS_CWD,path);setBoot((b:any)=>({...b,cwd:path}));navigate("/");setHome(false);attach(`new:${Date.now()}`,undefined,path);};
   const openSession = (s: any) => { navigate("/");setHome(false);if(s.cwd){localStorage.setItem(LS_CWD,s.cwd);setBoot((b:any)=>({...b,cwd:s.cwd}));}attach(`s:${s.path}`,s.path,s.cwd); };
+  useEffect(() => {
+    const handle = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail?.action === 'settings') { openSettings(); return; }
+      const session = detail?.session;
+      if (detail?.action !== 'chat') return;
+      if (typeof session?.key === 'string') {
+        navigate('/');
+        setHome(false);
+        if (session.cwd) {
+          setBoot((previous: any) => ({...previous, cwd: session.cwd}));
+          localStorage.setItem(LS_CWD, session.cwd);
+        }
+        void attach(session.key, session.path, session.cwd);
+      } else if (typeof session?.path === 'string') openSession(session);
+    };
+    window.addEventListener('omp:tray-action', handle);
+    return () => window.removeEventListener('omp:tray-action', handle);
+  }, [attach]);
   const deleteSession = async (s: any) => {
     await del(`/api/session?path=${encodeURIComponent(s.path)}`).catch(() => {});
     clearSessionMeta(s.path);
