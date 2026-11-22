@@ -278,7 +278,7 @@ removal or completion toggles. Models show the default first, with workload over
 Advanced disclosure. Custom-provider configuration uses a solid sidebar-colored dialog over the
 blurred workspace, with no horizontal overflow.
 
-Session goals, editable task phases, branch/label controls, execution settings and side-question topics
+Advanced session goals, branch/label controls, execution settings and side-question topics
 use ordinary settings groups with the same sidebar material and spacing. Native operation forms use
 that material too; command help supplies real argument/action choices rather than a JSON-only workflow.
 Log bodies load when their disclosure opens, append native output deltas and retain a bounded tail.

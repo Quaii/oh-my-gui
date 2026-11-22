@@ -188,8 +188,13 @@
       "name": "open_session",
       "status": "direct",
       "surface": "Settings → Session workflows",
-      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
-      "evidence": [],
+      "note": "Advanced session diagnostics: directory sessions and native goal lifecycle/budget. Task progress is agent-owned.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 129
+        }
+      ],
       "inCachedCatalog": true,
       "readProbe": "not executed"
     },
@@ -239,8 +244,13 @@
       "name": "goal",
       "status": "direct",
       "surface": "Settings → Session workflows",
-      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
-      "evidence": [],
+      "note": "Advanced session diagnostics: directory sessions and native goal lifecycle/budget. Task progress is agent-owned.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/SessionWorkflows.tsx",
+          "line": 129
+        }
+      ],
       "inCachedCatalog": true,
       "readProbe": "not executed"
     },
