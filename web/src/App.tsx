@@ -674,6 +674,7 @@ export default function App() {
                 )}
                 {turnSections.length > 1 && (
                   <ScrollProgress
+                    placement="inline"
                     containerRef={scrollRef}
                     sections={turnSections.map((t) => ({ id: t.id, label: t.label }))}
                     offset={60}

@@ -26,6 +26,7 @@ export type ScrollProgressProps = React.ComponentProps<"div"> & {
   sections?: ScrollProgressSection[]
   containerRef?: React.RefObject<HTMLElement | null>
   offset?: number
+  placement?: "floating" | "inline"
 }
 
 const ScrollProgress = ({
@@ -33,6 +34,7 @@ const ScrollProgress = ({
   sections = [],
   containerRef,
   offset = 120,
+  placement = "floating",
   ...props
 }: ScrollProgressProps) => {
   const layoutId = React.useId()
@@ -93,9 +95,11 @@ const ScrollProgress = ({
   const [collapsedSize, setCollapsedSize] = React.useState<Size>()
   const [openSize, setOpenSize] = React.useState<Size>()
   const [labelWidth, setLabelWidth] = React.useState<number>()
+  const [availableWidth, setAvailableWidth] = React.useState(240)
 
   useIsoLayoutEffect(() => {
     const measure = () => {
+      if (rootRef.current?.parentElement) setAvailableWidth(rootRef.current.parentElement.clientWidth)
       if (labelRef.current) setLabelWidth(labelRef.current.offsetWidth)
       if (collapsedRef.current) {
         setCollapsedSize({
@@ -116,9 +120,10 @@ const ScrollProgress = ({
     if (labelRef.current) ro.observe(labelRef.current)
     if (collapsedRef.current) ro.observe(collapsedRef.current)
     if (openRef.current) ro.observe(openRef.current)
+    if (placement === "inline" && rootRef.current?.parentElement) ro.observe(rootRef.current.parentElement)
     document.fonts?.ready.then(measure).catch(() => {})
     return () => ro.disconnect()
-  }, [sections])
+  }, [sections, placement])
 
   React.useEffect(() => {
     if (!open) return
@@ -157,6 +162,7 @@ const ScrollProgress = ({
   }
 
   const size = open ? openSize : collapsedSize
+  const inlineWidth = Math.min(collapsedSize?.width ?? 32, 240, availableWidth * 0.45)
   const radius = open ? 26 : (collapsedSize?.height ?? 32) / 2
   const squircle = "[corner-shape:squircle]"
 
@@ -164,7 +170,9 @@ const ScrollProgress = ({
     <div
       ref={rootRef}
       data-slot="scroll-progress"
-      className={cn("fixed bottom-6 left-1/2 z-50 -translate-x-1/2", className)}
+      data-placement={placement}
+      className={cn(placement === "inline" ? "relative shrink-0" : "fixed bottom-6 left-1/2 z-50 -translate-x-1/2", className)}
+      style={placement === "inline" ? { width: inlineWidth, height: collapsedSize?.height ?? 32 } : undefined}
       {...props}
     >
       <div className="pointer-events-none invisible absolute" aria-hidden>
@@ -197,13 +205,14 @@ const ScrollProgress = ({
         <motion.div
           data-slot="scroll-progress-surface"
           className={cn(
-            "absolute bottom-0 left-1/2 -translate-x-1/2 overflow-hidden border border-border/60 bg-background/70 shadow-lg backdrop-blur-md",
+            "absolute bottom-0 overflow-hidden border border-border/60 bg-background/70 shadow-lg backdrop-blur-md",
+            placement === "inline" ? "right-0" : "left-1/2 -translate-x-1/2",
             squircle
           )}
           initial={false}
           animate={{
-            width: size.width,
-            height: size.height,
+            width: placement === "inline" ? (open ? Math.min(size.width, availableWidth) : inlineWidth) : size.width,
+            height: placement === "inline" && open ? Math.min(size.height, window.innerHeight * 0.5) : size.height,
             borderRadius: radius,
           }}
           transition={reduceMotion ? { duration: 0 } : SIZE_SPRING}
@@ -212,7 +221,7 @@ const ScrollProgress = ({
             {open ? (
               <motion.ul
                 key="list"
-                className="absolute inset-0 flex flex-col p-1.5"
+                className="absolute inset-0 flex flex-col overflow-y-auto p-1.5"
                 initial={{
                   opacity: 0,
                   filter: reduceMotion ? undefined : "blur(4px)",
@@ -269,7 +278,8 @@ const ScrollProgress = ({
                           }}
                         />
                         <motion.span
-                          className="relative whitespace-nowrap"
+                          className="relative min-w-0 truncate"
+                          title={s.label}
                           initial={
                             reduceMotion
                               ? undefined
@@ -331,15 +341,15 @@ const ScrollProgress = ({
                 </span>
 
                 <span
-                  className="relative h-5 shrink-0"
-                  style={{ width: labelWidth }}
+                  className="relative h-5 min-w-0 overflow-hidden"
+                  style={{ width: labelWidth, maxWidth: "calc(100% - 30px)" }}
                 >
                   <AnimatePresence initial={false}>
                     {label && (
                       <motion.span
                         key={labelVersion.current}
                         data-slot="scroll-progress-label"
-                        className="absolute inset-y-0 left-0 flex items-center whitespace-nowrap text-sm font-medium leading-none text-foreground"
+                        className="absolute inset-0 block truncate text-left text-sm font-medium leading-5 text-foreground"
                         initial={
                           reduceMotion
                             ? { opacity: 0 }
