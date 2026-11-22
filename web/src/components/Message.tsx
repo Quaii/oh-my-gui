@@ -10,7 +10,7 @@ import { ToolCard, type ToolRunView } from "./ToolCard";
 import { StreamingResponse } from "@/components/ui/streaming-response";
 import { GridReveal } from "@/components/ui/grid-reveal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, ChevronRight, Copy, Pencil, RefreshCw, Sparkles, ListChecks } from "lucide-react";
+import { Check, ChevronRight, Copy, Pencil, RefreshCw, Sparkles, ListChecks, Undo2 } from "lucide-react";
 
 /** tables are the one thing the streaming renderer does not parse */
 function hasTable(text: string) {
@@ -39,23 +39,26 @@ function ActionButton({
   label,
   onClick,
   children,
+  disabled,
 }: {
   label: string;
   onClick: () => void;
   children: React.ReactNode;
+  disabled?: boolean;
 }) {
   const [done, setDone] = useState(false);
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
+          disabled={disabled}
           onClick={() => {
             onClick();
             if(label.startsWith("Copy"))setDone(true);
             setTimeout(() => setDone(false), 1200);
           }}
           aria-label={label}
-          className="grid size-6 place-items-center rounded text-muted-foreground transition-colors t-fast hover:bg-ink-750 hover:text-fog-100"
+          className="grid size-6 place-items-center rounded text-muted-foreground transition-colors t-fast hover:bg-ink-750 hover:text-fog-100 disabled:opacity-40 disabled:pointer-events-none"
         >
           {done ? <Check className="size-3" /> : children}
         </button>
@@ -77,6 +80,16 @@ export interface MessageActions {
   onCopy?: (text: string) => void;
   onRegenerate?: () => void;
   onEdit?: (text: string) => Promise<boolean>;
+  onRestore?: () => void;
+  restoreDisabled?: boolean;
+}
+
+function RestoreAction({ actions }: { actions?: MessageActions }) {
+  return actions?.onRestore ? (
+    <ActionButton label="Go back to this message (files stay unchanged)" onClick={actions.onRestore} disabled={actions.restoreDisabled}>
+      <Undo2 className="size-3" />
+    </ActionButton>
+  ) : null;
 }
 
 export function UserMessage({ message, actions }: { message: any; actions?: MessageActions }) {
@@ -99,6 +112,7 @@ export function UserMessage({ message, actions }: { message: any; actions?: Mess
           <ActionButton label="Copy message" onClick={() => actions?.onCopy?.(text)}>
             <Copy className="size-3" />
           </ActionButton>
+          <RestoreAction actions={actions} />
           {actions?.onEdit && (
             <ActionButton label="Edit message" onClick={() => {setDraft(text);setEditError("");setEditing(true);}}>
               <Pencil className="size-3" />
@@ -193,6 +207,7 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
               <Copy className="size-3" />
             </ActionButton>
           )}
+          <RestoreAction actions={actions} />
           {actions?.onRegenerate && (
             <ActionButton label="Regenerate response" onClick={actions.onRegenerate}>
               <RefreshCw className="size-3" />

@@ -234,13 +234,35 @@ async function install() {
   }
 }
 
+export function desktopApplicationEnvironment(
+  source: NodeJS.ProcessEnv = process.env,
+) {
+  const environment = { ...source };
+  // A launched app owns a fresh native session; installer flags must never follow it.
+  for (const key of [
+    "OMP_INSTALLER_PAYLOAD",
+    "OMP_INSTALL_PROGRESS",
+    "OMP_DESKTOP_TOKEN",
+    "OMP_DESKTOP_DATA",
+    "OMP_UPDATES_CONFIGURED",
+    "OMP_APP_VERSION",
+  ])
+    delete environment[key];
+  return environment;
+}
+
 export async function launchInstalledDesktop() {
   if (!installed) throw new Error("Finish installation before opening omp.");
   await new Promise<void>((resolve, reject) => {
     const child = spawn(
       path.join(desktopInstallDirectory(), "omp-desktop.exe"),
       [],
-      { detached: true, stdio: "ignore", windowsHide: true },
+      {
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+        env: desktopApplicationEnvironment(),
+      },
     );
     child.once("error", reject);
     child.once("spawn", () => {

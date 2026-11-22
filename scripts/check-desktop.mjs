@@ -4,12 +4,25 @@ import {fileURLToPath} from 'node:url';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {randomBytes} from 'node:crypto';
+import {desktopApplicationEnvironment} from '../server/src/desktop-installer.ts';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const runtime=process.argv[2]?path.resolve(process.argv[2]):path.join(root,'src-tauri/resources/runtime');
 const token=randomBytes(32).toString('hex');
 const child=spawn(path.join(runtime,process.platform==='win32'?'node.exe':'node'),[path.join(runtime,'server/src/index.mjs')],{
-  cwd:root,windowsHide:true,env:{...process.env,HOST:'127.0.0.1',PORT:'0',OMP_DESKTOP_TOKEN:token},stdio:['pipe','pipe','pipe']
+  cwd:root,windowsHide:true,env:{...desktopApplicationEnvironment({...process.env,OMP_INSTALLER_PAYLOAD:'inert-old-installer',OMP_INSTALL_PROGRESS:'inert-old-log'}),HOST:'127.0.0.1',PORT:'0',OMP_DESKTOP_TOKEN:token},stdio:['pipe','pipe','pipe']
+});
+let nativeLines='';
+child.stdout.on('data',chunk=>{
+  nativeLines+=chunk.toString();
+  let end;
+  while((end=nativeLines.indexOf('\n'))>=0){
+    const line=nativeLines.slice(0,end);nativeLines=nativeLines.slice(end+1);
+    if(line.startsWith('OMP_DESKTOP_FOLDER ')){
+      const {id}=JSON.parse(line.slice('OMP_DESKTOP_FOLDER '.length));
+      child.stdin.write('folder '+JSON.stringify({id,path:root})+'\n');
+    }
+  }
 });
 const exited=once(child,'exit');
 let stderr='';child.stderr.on('data',chunk=>{stderr+=chunk;});
@@ -40,6 +53,11 @@ try{
   assert.equal(updates.configured,false);
   assert.equal(updates.phase,'disabled');
   const tray=await (await fetch(base+'/api/desktop/tray',{headers})).json();
+  const requestHeaders={...headers,'Content-Type':'application/json'};
+  const folder=await fetch(base+'/api/desktop/folder',{method:'POST',headers:requestHeaders,body:JSON.stringify({directory:root}),signal:AbortSignal.timeout(5000)});
+  assert.equal(folder.status,200,'The folder route remains available after installer handoff');
+  assert.equal((await folder.json()).path,root);
+  assert.equal((await fetch(base+'/api/desktop/tray-action',{method:'POST',headers:requestHeaders,body:JSON.stringify({action:'dismiss'})})).status,200);
   assert.ok(Array.isArray(tray.recent)&&tray.recent.length<=5);
   assert.ok(Array.isArray(tray.running));
   const html=await (await fetch(base+'/',{headers})).text();

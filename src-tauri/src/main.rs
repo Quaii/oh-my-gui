@@ -62,6 +62,12 @@ impl Drop for Backend {
     }
 }
 
+fn clear_installer_environment(command: &mut Command) {
+    command
+        .env_remove("OMP_INSTALLER_PAYLOAD")
+        .env_remove("OMP_INSTALL_PROGRESS");
+}
+
 fn start_backend(
     app: &tauri::AppHandle,
     installer: bool,
@@ -97,6 +103,8 @@ fn start_backend(
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
+    // Normal launches may originate from an older installer; enforce mode here too.
+    clear_installer_environment(&mut command);
     if installer {
         command.env(
             "OMP_INSTALLER_PAYLOAD",
@@ -241,6 +249,28 @@ fn start_backend(
         backend,
         format!("http://127.0.0.1:{port}/desktop/bootstrap?token={token}"),
     ))
+}
+
+#[cfg(test)]
+mod environment_tests {
+    use super::*;
+    #[test]
+    fn normal_backend_does_not_inherit_installer_mode() {
+        let mut command = Command::new("node");
+        command
+            .env("OMP_INSTALLER_PAYLOAD", "stale-payload")
+            .env("OMP_INSTALL_PROGRESS", "stale-log");
+        clear_installer_environment(&mut command);
+        for key in ["OMP_INSTALLER_PAYLOAD", "OMP_INSTALL_PROGRESS"] {
+            assert_eq!(
+                command
+                    .get_envs()
+                    .find(|(name, _)| *name == std::ffi::OsStr::new(key))
+                    .map(|(_, value)| value),
+                Some(None)
+            );
+        }
+    }
 }
 
 fn sync_window_state(window: &tauri::WebviewWindow) {

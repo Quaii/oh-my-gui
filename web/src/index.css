@@ -890,7 +890,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .composer-blur-gradient {position:absolute;inset:-26px -12px 0;z-index:0;pointer-events:none;backdrop-filter:blur(14px);mask-image:linear-gradient(transparent,#000 64px),linear-gradient(to right,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask-composite:intersect;}
 .workspace-main.is-empty .composer-blur-gradient {display:none;}
 .workspace-main:not(.is-home):not(.is-empty) .transcript-content {padding-bottom:calc(var(--composer-height,190px) + 28px);}
-.workspace-main:not(.is-home):not(.is-empty) .transcript-region>div {scroll-padding-bottom:calc(var(--composer-height,190px) + 20px);}
+.workspace-main:not(.is-home):not(.is-empty) .transcript-region>div {scroll-padding-bottom:calc(var(--composer-height,190px) + 20px);scrollbar-gutter:stable both-edges;}
 .transcript-region button[aria-label='Jump to latest'] {bottom:calc(var(--composer-height,190px) + 12px);}
 /* Dialogs use menu glass; cards keep their independent, solid default. */
 [data-glass=true] [data-slot=dialog-content].project-dialog {background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);}
@@ -1073,8 +1073,8 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 .repo-person:hover{color:var(--primary)}
 .repo-people-separator{width:1px;flex-shrink:0;background:var(--border);margin-block:2px}
 .context-card{padding:16px}
-.context-card-header{min-height:20px}
-.context-card-dismiss{position:absolute;right:2px;top:2px}
+.context-card-header{min-height:24px;padding-right:32px}
+.context-card-dismiss{position:absolute;right:16px;top:16px}
 .context-card .goal-plan-tasks{padding-block:0}
 .goal-plan-tasks>[data-slot=collapsible]{padding-bottom:0}
 .goal-plan-tasks>[data-slot=collapsible]>button{padding-block:4px}

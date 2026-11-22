@@ -63,6 +63,11 @@ the mark must not touch the tile edge. Packaged icons use Carbon's accent and ba
 
 ## Geometry and type
 
+Conversation history keeps symmetric scrollbar space so opening running-turn controls cannot shift
+messages sideways. Return-to-message actions live beside Copy beneath saved messages; do not insert
+turn-number or restore-chat dividers between turns. Routine device mount notices stay out of the chat;
+warnings, failures and actionable runtime output remain visible.
+
 Use a 4px spacing rhythm, with 6px/10px optical adjustments where the existing component requires it.
 Measure inset controls from their **own panel**, not the browser edge or full screen.
 

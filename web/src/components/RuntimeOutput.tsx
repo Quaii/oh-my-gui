@@ -1,5 +1,6 @@
 import type { ChatState } from "../lib/store";
 import { Button } from "./ui/button";
+import { isDeviceMountNotice } from "../lib/conversation-actions";
 
 export function RuntimeOutput({
   outputs,
@@ -8,7 +9,8 @@ export function RuntimeOutput({
   outputs: ChatState["outputs"];
   links?: ChatState["authLinks"];
 }) {
-  if (!outputs.length && !links.length) return null;
+  const visibleOutputs = outputs.filter(output => !isDeviceMountNotice(output.text, output.kind));
+  if (!visibleOutputs.length && !links.length) return null;
   return (
     <div className="space-y-3" aria-live="polite">
       {links.map((link) => (
@@ -36,7 +38,7 @@ export function RuntimeOutput({
           </Button>
         </div>
       ))}
-      {outputs.map((output) => (
+      {visibleOutputs.map((output) => (
         <details
           open
           key={output.id}

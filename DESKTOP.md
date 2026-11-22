@@ -166,6 +166,9 @@ credentials or publish an unsigned update feed. Other platforms require their ow
 ## Native workflow parity
 
 Project folder selection uses `tauri-plugin-dialog` through the authenticated backend/native pipe.
+Installer completion clears installer-only environment flags and stale native-session values before
+starting the installed app. The native host also removes inherited installer flags before starting
+any normal backend; otherwise Browse and tray actions are incorrectly gated off as installer routes.
 The chooser is parented to the main window, returns cancellation as a null selection and does not
 register/create anything until the project form is submitted. Browser hosts have a server-owned,
 read-only directory navigator; React never accesses the filesystem directly.

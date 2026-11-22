@@ -11,7 +11,7 @@ import {projectForSession} from "../../shared/workspace";
 import {groupedTranscript,responsePhase} from "./lib/transcript";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ChatSkeleton, HomeSkeleton, PanelSkeleton } from "@/components/ui/loading-shapes";
-import { Checkpoint } from "./components/Checkpoint";
+import { conversationRestoreTargets } from "./lib/conversation-actions";
 import { FilesChanged } from "./components/FilesChanged";
 import { fileChangeSummaries } from "./lib/file-changes";
 import { HomeOverview, ProjectDialog } from "./components/Projects";
@@ -449,7 +449,13 @@ export default function App() {
   const renderedMessages=useMemo(()=>groupedTranscript(visibleMessages,chat.live),[visibleMessages,chat.live]);
   const [entries,setEntries] = useState<any[]>([]);
   useEffect(()=>{let active=true;if(!chat.loaded || running || !chat.key)return;post("/api/cmd",{key:chat.key,cmd:{type:"get_entries"}}).then(r=>{if(active)setEntries(r.ok?r.data?.entries || []:[])}).catch(()=>{if(active)setEntries([])});return()=>{active=false}},[chat.key,chat.loaded,running,chat.messages.length]);
-  const checkpoints=useMemo(()=>{const map=new Map<number,string>();const byTimestamp=new Map(entries.filter(e=>e.type==="message"&&e.message?.role==="assistant").map(e=>[String(e.message.timestamp),e.id]));for(let i=0;i<chat.messages.length;i++){const m=chat.messages[i];if(m.role==="assistant"&&chat.messages[i+1]?.role==="user"){const id=byTimestamp.get(String(m.timestamp));if(id)map.set(i,id)}}return map;},[entries,chat.messages]);
+  const restoreTargets = useMemo(() => conversationRestoreTargets(chat.messages, entries), [entries, chat.messages]);
+  async function restoreMessage(index: number) {
+    const entryId = restoreTargets.get(index);
+    if (running || !entryId) return;
+    const response = await sendCmd({ type: "navigate_tree", entryId, summarize: false });
+    if (response?.ok && !response.data?.cancelled) await attach(keyRef.current!, activePath || undefined);
+  }
   const empty = chat.loaded && visibleMessages.length === 0 && !chat.live;
 
   const turnSections=useMemo(()=>visibleMessages.flatMap((m,i)=>{if(m.role!=="user")return [];const text=typeof m.content==="string"?m.content:(m.content || []).filter((b:any)=>b.type==="text").map((b:any)=>b.text).join(" ");return [{id:`msg-${i}`,label:String(text).replace(/\s+/g," ").slice(0,80)||"Image request"}]}).slice(-12),[visibleMessages]);
@@ -596,6 +602,8 @@ export default function App() {
                       results={results}
                       actions={{
                         onCopy: copy,
+                        onRestore: !streaming && restoreTargets.has(i) ? () => void restoreMessage(i) : undefined,
+                        restoreDisabled: running,
                         onRegenerate: m.role === "assistant" ? () => regenerate(i) : undefined,
                         onEdit:
                           m.role === "user" && !running
@@ -609,6 +617,8 @@ export default function App() {
                       results={results}
                       actions={{
                         onCopy: copy,
+                        onRestore: !streaming && restoreTargets.has(i) ? () => void restoreMessage(i) : undefined,
+                        restoreDisabled: running,
                         onRegenerate: m.role === "assistant" ? () => regenerate(i) : undefined,
                         onEdit:
                           m.role === "user" && !running
@@ -617,7 +627,6 @@ export default function App() {
                       }}
                     />)}
                     {changes.has(i) && !(m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1) && <FilesChanged files={changes.get(i)!} cwd={changedFilesCwd} projectRoot={changedFilesRoot} />}
-                    {checkpoints.has(i) && !(m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1) && <Checkpoint label={`Turn ${visibleMessages.slice(0,i+1).filter(m=>m.role==="user").length}`} disabled={running} onRestore={async()=>{const r=await sendCmd({type:"navigate_tree",entryId:checkpoints.get(i),summarize:false});if(r?.ok&&!r.data?.cancelled)await attach(keyRef.current!,activePath || undefined);}}/>}
                   </div>
                 ))}
 

@@ -1,5 +1,7 @@
+import { isDeviceMountNotice } from "./conversation-actions.ts";
 function text(content:any):string {return typeof content==="string"?content:Array.isArray(content)?content.filter(b=>b?.type==="text").map(b=>b.text||"").join(""):"";}
 export function hasVisibleMessage(message:any):boolean {
+ if(["developer","custom","hookMessage"].includes(message.role)&&isDeviceMountNotice(text(message.content)||message.text||"",message.level||message.severity||"info"))return false;
  if(message.role==="toolResult")return false;
  if(message.role==="assistant")return !!message.errorMessage||(Array.isArray(message.content)?message.content.some((b:any)=>b&&(b.type==="toolCall"||b.type==="image"||b.type==="redactedThinking"||b.type==="text"&&String(b.text||"").trim()||b.type==="thinking"&&String(b.thinking||b.text||"").trim())):!!text(message.content).trim());
  if(["bashExecution","pythonExecution","compactionSummary","branchSummary"].includes(message.role))return true;
