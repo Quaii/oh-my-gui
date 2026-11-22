@@ -237,7 +237,7 @@ export function SettingsPage(props: SettingsPageProps) {
         {/* content */}
         <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef} viewportClassName="settings-content min-h-0 min-w-0">
           <div className={`settings-page-content mx-auto w-full px-5 pb-10 sm:px-9 ${panel==="usage"&&!searching?"is-wide":"max-w-[920px]"}`}>
-            <div className="mb-7"><h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1><p className="mt-2 text-[13px] text-muted-foreground">{panel === "usage" ? "Token trends, model usage, and activity across your workspace." : panel === "appearance" ? "Choose how your workspace looks and feels." : panel === "skills" ? "Discover and manage the skills available to OMP." : panel === "mcp" ? "Connect the tools and services your agent can use." : panel === "tools" ? "Manage the tools available to your agent." : "Manage your agent and workspace preferences."}</p></div>
+            <div className="mb-7"><h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1><p className="mt-2 text-[13px] text-muted-foreground">{panel === "usage" ? "Token trends, model usage, and activity across your workspace." : panel === "appearance" ? "Choose how your workspace looks and feels." : panel === "skills" ? "Discover and manage the skills available to OMP." : panel === "mcp" ? "Connect the tools and services your agent can use." : panel === "tools" ? "Manage the tools available to your agent." : panel === "session" ? "Controls for the current conversation." : "Configure this part of your workspace."}</p></div>
             <div className="mb-4 md:hidden">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -256,7 +256,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <Suspense fallback={<PanelSkeleton panel={panel}/>}>
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
-            ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null} />
+            ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null}><details className="mb-5"><summary className="cursor-pointer py-3 text-sm">Launch configuration</summary><FlagsPanel flagDraft={flagDraft} setFlagDraft={setFlagDraft} onSave={() => { try { setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft))); onRestart(); } catch (error:any) { setErr(error.message); } }} /></details></RuntimePanel>
             ) : panel === "native" ? (<NativeManager cwd={info?.cwd || ''}/>
             ) : panel === "usage" ? (<UsagePanel />
             ) : panel === "routing" ? (<RoutingPanel chatKey={chat.loaded ? chat.key : null} />
@@ -266,7 +266,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : panel === "capabilities" ? (<CapabilitiesPanel chatKey={chat.loaded ? chat.key : null} />
             ) : panel === "models" ? (<><ModelRolesPanel settingsLoading={loading && !payload} chatKey={chat.loaded ? chat.key : null} settings={settings} onSave={save} /><ConfigList settings={tabSettings.filter(s=>s.key!=="modelRoles")} onSave={save} onReset={reset} /></>
             ) : panel === "session" ? (
-              <><SessionPanel st={st} chat={chat} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></>
+              <><SessionPanel st={st} chat={chat} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><details className="mt-6"><summary className="cursor-pointer py-3 text-sm">Advanced session diagnostics</summary><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></details></>
             ) : panel === "flags" ? (
               <FlagsPanel
                 flagDraft={flagDraft}

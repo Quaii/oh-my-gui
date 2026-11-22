@@ -19,12 +19,12 @@
   },
   "summary": {
     "rpc": {
-      "direct": 61,
+      "direct": 60,
       "integrated": 13,
       "guided": 0,
       "handoff": 0,
       "partial": 0,
-      "console": 0,
+      "console": 1,
       "missing": 0,
       "not-applicable": 0
     },
@@ -66,7 +66,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 243
+          "line": 245
         }
       ],
       "inCachedCatalog": true,
@@ -80,7 +80,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 243
+          "line": 245
         }
       ],
       "inCachedCatalog": true,
@@ -94,7 +94,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 243
+          "line": 245
         }
       ],
       "inCachedCatalog": true,
@@ -136,7 +136,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 243
+          "line": 245
         }
       ],
       "inCachedCatalog": true,
@@ -189,12 +189,7 @@
       "status": "direct",
       "surface": "Settings → Session workflows",
       "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
-      "evidence": [
-        {
-          "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 5
-        }
-      ],
+      "evidence": [],
       "inCachedCatalog": true,
       "readProbe": "not executed"
     },
@@ -206,7 +201,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 162
+          "line": 164
         }
       ],
       "inCachedCatalog": true,
@@ -220,7 +215,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 666
+          "line": 668
         }
       ],
       "inCachedCatalog": true,
@@ -245,12 +240,7 @@
       "status": "direct",
       "surface": "Settings → Session workflows",
       "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
-      "evidence": [
-        {
-          "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 5
-        }
-      ],
+      "evidence": [],
       "inCachedCatalog": true,
       "readProbe": "not executed"
     },
@@ -276,7 +266,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 162
+          "line": 164
         }
       ],
       "inCachedCatalog": true,
@@ -290,7 +280,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -304,7 +294,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -312,13 +302,13 @@
     },
     {
       "name": "set_todos",
-      "status": "direct",
-      "surface": "Settings → Session workflows",
-      "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Manual task mutation was intentionally removed from Session settings. Agent-owned progress remains in the conversation task plan; expert RPC access remains available.",
       "evidence": [
         {
-          "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 5
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -388,7 +378,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 199
+          "line": 201
         }
       ],
       "inCachedCatalog": true,
@@ -528,7 +518,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 666
+          "line": 668
         }
       ],
       "inCachedCatalog": true,
@@ -542,7 +532,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -556,7 +546,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 162
+          "line": 164
         }
       ],
       "inCachedCatalog": true,
@@ -570,7 +560,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 666
+          "line": 668
         }
       ],
       "inCachedCatalog": true,
@@ -584,7 +574,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -598,7 +588,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 162
+          "line": 164
         }
       ],
       "inCachedCatalog": true,
@@ -640,7 +630,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -654,7 +644,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -682,7 +672,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -710,7 +700,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -724,7 +714,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -738,7 +728,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -752,7 +742,7 @@
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 162
+          "line": 164
         }
       ],
       "inCachedCatalog": true,
@@ -766,7 +756,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 646
+          "line": 437
         }
       ],
       "inCachedCatalog": true,
@@ -808,7 +798,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -836,7 +826,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -850,7 +840,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -864,7 +854,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -878,7 +868,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -892,7 +882,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -920,7 +910,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ],
       "inCachedCatalog": true,
@@ -1046,7 +1036,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 664
+          "line": 455
         }
       ],
       "inCachedCatalog": true,
@@ -1060,7 +1050,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 664
+          "line": 455
         }
       ],
       "inCachedCatalog": true,
@@ -1074,7 +1064,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 664
+          "line": 455
         }
       ],
       "inCachedCatalog": true,
@@ -8283,13 +8273,13 @@
     },
     {
       "priority": "P1",
-      "name": "Goal lifecycle and task editing",
+      "name": "Goal lifecycle and agent-owned tasks",
       "status": "Implemented",
-      "note": "Goal creation, pause/resume/drop and budget; phased task editing plus validated import/export. No live goal/model turn was started for verification.",
+      "note": "Goals remain under advanced session diagnostics. Manual task editing has been removed; task progress remains agent-owned.",
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 152
+          "line": 129
         }
       ]
     },
@@ -8325,7 +8315,7 @@
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "line": 361
+          "line": 152
         }
       ]
     },

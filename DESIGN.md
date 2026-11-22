@@ -271,6 +271,13 @@ in the existing Settings screen. Reopening setup hides the workspace without unm
 
 ## Native workflow surfaces
 
+Installation owns launch configuration; provider authentication belongs only to Providers. Routine
+Session settings describe the current conversation. Expert diagnostics and runtime maintenance are
+secondary Advanced surfaces. Task completion is agent-owned; settings do not offer manual phase
+removal or completion toggles. Models show the default first, with workload overrides in a closed
+Advanced disclosure. Custom-provider configuration uses a solid sidebar-colored dialog over the
+blurred workspace, with no horizontal overflow.
+
 Session goals, editable task phases, branch/label controls, execution settings and side-question topics
 use ordinary settings groups with the same sidebar material and spacing. Native operation forms use
 that material too; command help supplies real argument/action choices rather than a JSON-only workflow.

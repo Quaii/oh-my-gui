@@ -1130,3 +1130,6 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 .desktop-installer-confirm{max-width:min(380px,calc(100% - 32px));background:color-mix(in srgb,var(--background) 88%,transparent);backdrop-filter:blur(28px);border-radius:12px}
 .desktop-setup-themes{max-height:240px;overflow:auto;margin-top:24px}
 @media(max-width:600px){.desktop-setup-layout{gap:8px;padding:8px}.desktop-setup-sidebar{width:130px;padding:8px 0}.desktop-setup{padding:20px}.desktop-setup h1{font-size:22px}}
+
+[data-slot=dialog-content].provider-config-dialog,[data-glass=true] [data-slot=dialog-content].provider-config-dialog{background:var(--sidebar);backdrop-filter:none;-webkit-backdrop-filter:none;min-width:0}
+.provider-config-dialog>*{min-width:0}.provider-config-dialog [data-slot=select-trigger]{max-width:100%;min-width:0}

@@ -1,10 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ChatState } from "../../lib/store";
 import { blockText } from "../../lib/store";
-import {
-  validateTodoPhases,
-  type NativeTodoPhase,
-} from "../../lib/native-todos";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
@@ -22,8 +18,6 @@ export function SessionWorkflows({
 }) {
   const [objective, setObjective] = useState(""),
     [budget, setBudget] = useState("");
-  const [phases, setPhases] = useState<NativeTodoPhase[]>([]),
-    [dirty, setDirty] = useState(false);
   const [entries, setEntries] = useState<any[]>([]),
     [entryId, setEntryId] = useState(""),
     [label, setLabel] = useState("");
@@ -39,9 +33,6 @@ export function SessionWorkflows({
     [result, setResult] = useState("");
   const [directory, setDirectory] = useState("");
   const goal = chat.state?.goal?.goal ?? chat.state?.goal;
-  useEffect(() => {
-    if (!dirty) setPhases(structuredClone(chat.todos ?? []));
-  }, [chat.todos, dirty]);
   async function run(command: any, receive?: (data: any) => void) {
     setError("");
     setBusy(command.type);
@@ -57,20 +48,6 @@ export function SessionWorkflows({
     } finally {
       setBusy("");
     }
-  }
-  function edit(next: NativeTodoPhase[]) {
-    setDirty(true);
-    setPhases(next);
-  }
-  function downloadPlan() {
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(phases, null, 2)], { type: "application/json" }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "omp-task-plan.json";
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   return (
     <div className="space-y-5">
@@ -159,193 +136,7 @@ export function SessionWorkflows({
           </p>
         </div>
       </Group>
-      <Group title="Task plan">
-        <div className="space-y-4 py-4">
-          {phases.map((phase, phaseIndex) => (
-            <fieldset key={phaseIndex} className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  aria-label={`Phase ${phaseIndex + 1} name`}
-                  value={phase.name}
-                  onChange={(e) =>
-                    edit(
-                      phases.map((p, i) =>
-                        i === phaseIndex ? { ...p, name: e.target.value } : p,
-                      ),
-                    )
-                  }
-                />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() =>
-                    edit(phases.filter((_, i) => i !== phaseIndex))
-                  }
-                >
-                  Remove phase
-                </Button>
-              </div>
-              {phase.tasks.map((task, taskIndex) => (
-                <div key={taskIndex} className="flex flex-wrap gap-2">
-                  <Input
-                    aria-label={`Task ${taskIndex + 1}`}
-                    className="min-w-48 flex-1"
-                    value={task.content}
-                    onChange={(e) =>
-                      edit(
-                        phases.map((p, i) =>
-                          i === phaseIndex
-                            ? {
-                                ...p,
-                                tasks: p.tasks.map((t, j) =>
-                                  j === taskIndex
-                                    ? { ...t, content: e.target.value }
-                                    : t,
-                                ),
-                              }
-                            : p,
-                        ),
-                      )
-                    }
-                  />
-                  <select
-                    aria-label={`Task ${taskIndex + 1} status`}
-                    className="rounded-md border bg-sidebar px-2 text-xs"
-                    value={task.status}
-                    onChange={(e) =>
-                      edit(
-                        phases.map((p, i) =>
-                          i === phaseIndex
-                            ? {
-                                ...p,
-                                tasks: p.tasks.map((t, j) =>
-                                  j === taskIndex
-                                    ? { ...t, status: e.target.value }
-                                    : t,
-                                ),
-                              }
-                            : p,
-                        ),
-                      )
-                    }
-                  >
-                    {["pending", "in_progress", "completed", "abandoned"].map(
-                      (status) => (
-                        <option key={status}>{status}</option>
-                      ),
-                    )}
-                  </select>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      edit(
-                        phases.map((p, i) =>
-                          i === phaseIndex
-                            ? {
-                                ...p,
-                                tasks: p.tasks.filter(
-                                  (_, j) => j !== taskIndex,
-                                ),
-                              }
-                            : p,
-                        ),
-                      )
-                    }
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  edit(
-                    phases.map((p, i) =>
-                      i === phaseIndex
-                        ? {
-                            ...p,
-                            tasks: [
-                              ...p.tasks,
-                              { content: "", status: "pending" },
-                            ],
-                          }
-                        : p,
-                    ),
-                  )
-                }
-              >
-                Add task
-              </Button>
-            </fieldset>
-          ))}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => edit([...phases, { name: "Tasks", tasks: [] }])}
-            >
-              Add phase
-            </Button>
-            <Button
-              size="sm"
-              disabled={!!busy || !dirty}
-              onClick={() => {
-                try {
-                  void run(
-                    { type: "set_todos", phases: validateTodoPhases(phases) },
-                    () => setDirty(false),
-                  );
-                } catch (e: any) {
-                  setError(e.message);
-                }
-              }}
-            >
-              Save plan
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setDirty(false);
-                setPhases(structuredClone(chat.todos));
-              }}
-            >
-              Reload native plan
-            </Button>
-            <Button size="sm" variant="ghost" onClick={downloadPlan}>
-              Export
-            </Button>
-            <label className="cursor-pointer text-xs underline">
-              Import
-              <input
-                className="sr-only"
-                type="file"
-                accept=".json,application/json"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  try {
-                    if (file.size > 2 * 1024 * 1024)
-                      throw Error("Task plans must be under 2 MB");
-                    edit(validateTodoPhases(JSON.parse(await file.text())));
-                  } catch (error: any) {
-                    setError(error.message);
-                  }
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          </div>
-          {dirty && (
-            <p className="text-xs text-muted-foreground">
-              Unsaved plan. Native changes are loaded when you choose Reload
-              native plan.
-            </p>
-          )}
-        </div>
-      </Group>
+
       <Group title="Branches and checkpoints">
         <div className="space-y-3 py-4">
           <div className="flex flex-wrap gap-2">

@@ -161,18 +161,12 @@
     {
       "names": [
         "open_session",
-        "goal",
-        "set_todos"
+        "goal"
       ],
       "status": "direct",
       "surface": "Settings → Session workflows",
       "note": "Directory sessions, native goal lifecycle/budget and editable phased tasks with validated import/export.",
-      "evidence": [
-        {
-          "file": "web/src/components/settings/SessionWorkflows.tsx",
-          "needle": "validateTodoPhases"
-        }
-      ]
+      "evidence": []
     },
     {
       "names": [
@@ -344,6 +338,20 @@
         {
           "file": "server/src/host-adapters.ts",
           "needle": "HostRpcAdapter"
+        }
+      ]
+    },
+    {
+      "names": [
+        "set_todos"
+      ],
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Manual task mutation was intentionally removed from Session settings. Agent-owned progress remains in the conversation task plan; expert RPC access remains available.",
+      "evidence": [
+        {
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "needle": "export default"
         }
       ]
     }
@@ -1385,9 +1393,9 @@
     },
     {
       "priority": "P1",
-      "name": "Goal lifecycle and task editing",
+      "name": "Goal lifecycle and agent-owned tasks",
       "status": "Implemented",
-      "note": "Goal creation, pause/resume/drop and budget; phased task editing plus validated import/export. No live goal/model turn was started for verification.",
+      "note": "Goals remain under advanced session diagnostics. Manual task editing has been removed; task progress remains agent-owned.",
       "evidence": [
         {
           "file": "web/src/components/settings/SessionWorkflows.tsx",

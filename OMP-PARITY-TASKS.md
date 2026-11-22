@@ -1,5 +1,10 @@
 # OMP GUI parity work
 
+Settings cleanup, 2026-11-22: manual task-plan mutation/import/export controls were intentionally
+removed from Session. Task progress remains agent-owned in the conversation. `set_todos` is now an
+expert diagnostic command, not a normal settings workflow. Historical implementation checkboxes
+below describe the original parity pass; the current coverage map records this deliberate change.
+
 Requested: close the gaps in the versioned [coverage audit](CAPABILITIES.md), while preserving the
 approved interface and shared web/Tauri runtime. Native OMP owns execution and policy. A manual JSON
 console, silent event forwarding or a setting row with no choices does not close a feature gap.

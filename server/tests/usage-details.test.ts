@@ -18,7 +18,7 @@ test("usage supplements keep provider/model identity, count cache tokens, and su
  const insert=db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?)"),stamp=Date.parse("2026-11-14T12:00Z");
  insert.run(stamp,"a","same",100,10,20,5,.1,3000,"main","one");insert.run(stamp+60000,"b","same",50,5,0,0,.2,8000,"advisor","child");insert.run(stamp+3600000,"a","same",20,2,0,0,.1,4000,"main","one");db.close();
  const result=readUsageDetails(dir,"Europe/Berlin",stamp,file);
- assert.equal(result.modelTokenSeries.length,3);assert.equal(result.modelTokenSeries[0].tokens,135);assert.equal(result.activity.peakHourlyTokens,190);assert.equal(result.activity.longestSessionMs,7000);assert.equal(result.activity.currentStreak,1);
+ assert.equal(result.overall?.totalRequests,3);assert.equal(result.overall?.totalInputTokens,170);assert.equal(result.byModel.length,2);assert.equal(result.modelTokenSeries.length,3);assert.equal(result.modelTokenSeries[0].tokens,135);assert.equal(result.activity.peakHourlyTokens,190);assert.equal(result.activity.longestSessionMs,7000);assert.equal(result.activity.currentStreak,1);
  const check=new DatabaseSync(file,{readOnly:true});assert.equal(check.prepare("SELECT COUNT(*) AS n FROM messages").get()!.n,3);check.close();
  }finally{await rm(dir,{recursive:true,force:true});}
 });
