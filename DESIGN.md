@@ -385,3 +385,5 @@ are removed. Only the workspace toolbar shows the command-palette shortcut.
 
 Workspace toolbar card/window-control slots stay mounted and tween width, spacing and opacity over
 240ms when Files opens or closes. Hidden slots are inert; reduced motion applies changes immediately.
+
+The sidebar brand has no subtitle. New chat uses borderless tonal hover/press feedback with a keyboard focus outline. Main chat and Files outer panes have no border or embossing; the explorer section label has no horizontal rule.

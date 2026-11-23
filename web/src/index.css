@@ -1268,3 +1268,10 @@ html[data-tray=true] body,html[data-tray=true] #root{height:100%;background:var(
 .app-shell:has(>.file-panel-motion[data-overlay=true]:not([hidden])) .workspace-main{visibility:hidden}
 
 .workspace-toolbar-slot{display:flex;flex:0 0 auto;align-items:center;height:36px;overflow:clip}
+
+/* Quiet pane edges and borderless navigation feedback. */
+.app-shell .workspace-main,.app-shell .file-panel-motion>.file-workspace{border:0;box-shadow:none}
+.file-browser-section-label{border-top:0}
+.sidebar-new-chat{border:0;box-shadow:none;background:transparent;transition:background-color 160ms ease-out}
+.sidebar-new-chat:hover,.sidebar-new-chat:active{background:color-mix(in srgb,var(--foreground) 7%,transparent)}
+.sidebar-new-chat:focus-visible{outline:2px solid var(--primary);outline-offset:2px;box-shadow:none}
