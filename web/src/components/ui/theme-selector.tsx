@@ -69,7 +69,7 @@ function Preview({ colors }: { colors: ThemePalette }) {
       data-slot="theme-selector-preview"
       style={vars}
       // bleeds past the right and bottom edges so only the top-left corner shows
-      className="absolute -bottom-[10cqw] -right-[10cqw] left-[13cqw] top-[13cqw] flex rounded-tl-[5cqw] bg-(--ts-sidebar) shadow-[0_0_0_1px_var(--ts-border),0_1px_2px_rgba(0,0,0,0.06)]"
+      className="absolute -bottom-[10cqw] -right-[10cqw] left-[13cqw] top-[13cqw] flex rounded-tl-[5cqw] bg-(--ts-sidebar) shadow-xs"
     >
       <span className="flex w-[25cqw] shrink-0 flex-col px-[3cqw] pb-[14cqw] pt-[4cqw]">
         <span className="flex gap-[1.3cqw] px-[1.2cqw]">
@@ -96,7 +96,7 @@ function Preview({ colors }: { colors: ThemePalette }) {
           <span className={cn(bar, "w-[7cqw] bg-(--ts-muted)")} />
         </span>
       </span>
-      <span className="mt-[3cqw] flex min-w-0 flex-1 flex-col overflow-hidden rounded-tl-[4cqw] bg-(--ts-panel) pl-[5cqw] pt-[5cqw] shadow-[0_0_0_1px_var(--ts-border)]">
+      <span className="mt-[3cqw] flex min-w-0 flex-1 flex-col overflow-hidden rounded-tl-[4cqw] bg-(--ts-panel) pl-[5cqw] pt-[5cqw]">
         <span className="flex flex-col gap-[2cqw]">
           <span className={cn(bar, "w-[11cqw] bg-(--ts-strong)")} />
           <span className={cn(bar, "w-[19cqw] bg-(--ts-muted)")} />
@@ -105,11 +105,11 @@ function Preview({ colors }: { colors: ThemePalette }) {
           {[0, 1, 2].map((tile) => (
             <span
               key={tile}
-              className="h-[12cqw] w-[19cqw] shrink-0 rounded-[2.4cqw] bg-(--ts-tile) shadow-[0_0_0_1px_var(--ts-border)]"
+              className="h-[12cqw] w-[19cqw] shrink-0 rounded-[2.4cqw] bg-(--ts-tile)"
             />
           ))}
         </span>
-        <span className="mt-[2.5cqw] h-[20cqw] w-[70cqw] shrink-0 rounded-[2.4cqw] bg-(--ts-tile) shadow-[0_0_0_1px_var(--ts-border)]" />
+        <span className="mt-[2.5cqw] h-[20cqw] w-[70cqw] shrink-0 rounded-[2.4cqw] bg-(--ts-tile)" />
       </span>
     </span>
   );

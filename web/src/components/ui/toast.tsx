@@ -264,22 +264,6 @@ export function ToastCard({
         }}
         className="relative flex h-full items-center bg-white dark:bg-[#1C1C1E]"
       >
-        {outline && (
-          <svg
-            aria-hidden
-            width={width}
-            height={height}
-            className="pointer-events-none absolute inset-0"
-          >
-            {/* half the stroke is clipped away, leaving a 1px inner hairline */}
-            <path
-              d={outline}
-              fill="none"
-              strokeWidth={2}
-              className="stroke-black/[0.07] dark:stroke-white/10"
-            />
-          </svg>
-        )}
         {/* sonner squeezes back toasts to the front one's height, so their content hides */}
         <div className="flex min-w-0 flex-1 items-center gap-3 transition-opacity duration-300 group-data-[expanded=false]/toast:group-data-[front=false]/toast:opacity-0 motion-reduce:transition-none">
           {type !== "default" && <ToastIcon type={type} />}
@@ -327,7 +311,7 @@ export function ToastCard({
           data-slot="toast-close"
           onClick={() => sonner.dismiss(toastId)}
           // sits on the corner, outside the clipped card, so it never pushes the content around
-          className="absolute -left-1.5 -top-1.5 grid size-5 cursor-pointer place-items-center rounded-full bg-white text-[#868593] opacity-0 shadow-[0_0_0_1px_rgba(0,0,0,0.08)] outline-none transition-[opacity,color] hover:text-black focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#FC4C01]/60 group-hover/toast:opacity-100 motion-reduce:transition-none dark:bg-[#2C2C2E] dark:text-[#9B9AA7] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)] dark:hover:text-white [@media(hover:none)]:hidden"
+          className="absolute -left-1.5 -top-1.5 grid size-5 cursor-pointer place-items-center rounded-full bg-white text-[#868593] opacity-0 outline-none transition-[opacity,color] hover:text-black focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[#FC4C01]/60 group-hover/toast:opacity-100 motion-reduce:transition-none dark:bg-[#2C2C2E] dark:text-[#9B9AA7] dark:hover:text-white [@media(hover:none)]:hidden"
         >
           <svg
             viewBox="0 0 24 24"

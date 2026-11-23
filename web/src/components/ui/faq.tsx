@@ -76,7 +76,7 @@ function Question({
       transition={reduced ? INSTANT : SHIFT}
       whileTap={reduced ? undefined : { scale: 0.97 }}
       className={cn(
-        "max-w-[85%] cursor-pointer self-start rounded-[18px] rounded-bl-[6px] px-4 py-2.5 text-left text-[15px] leading-[1.4] tracking-[-0.01em] text-black transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#868593]/50 dark:text-white",
+        "max-w-[85%] cursor-pointer self-start rounded-2xl rounded-bl-[6px] px-4 py-2.5 text-left text-[15px] leading-[1.4] tracking-[-0.01em] text-black transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#868593]/50 dark:text-white",
         open
           ? "bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:bg-[#333333] dark:shadow-none"
           : "bg-[#F4F4F9] dark:bg-[#262626]",
@@ -118,7 +118,7 @@ function Answer({
             id={ids.answer}
             role="region"
             aria-labelledby={ids.question}
-            className="max-w-[85%] rounded-[18px] rounded-br-[6px] bg-[var(--faq-accent)] px-4 py-2.5 text-[15px] leading-[1.45] tracking-[-0.01em] text-white"
+            className="max-w-[85%] rounded-2xl rounded-br-[6px] bg-[var(--faq-accent)] px-4 py-2.5 text-[15px] leading-[1.45] tracking-[-0.01em] text-white"
           >
             {item.answer}
           </div>

@@ -137,7 +137,7 @@ export function ProjectDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="My project"
-                className="h-11 rounded-[10px]"
+                className="h-11 rounded-lg"
               />
             </label>
           )}
@@ -154,7 +154,7 @@ export function ProjectDialog({
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Choose a folder"
-                className="h-11 min-w-0 flex-1 rounded-[10px]"
+                className="h-11 min-w-0 flex-1 rounded-lg"
               />
               <Button
                 type="button"
@@ -196,7 +196,7 @@ export function ProjectDialog({
               !location.trim() ||
               (mode === "new" && !name.trim())
             }
-            className="h-11 w-full rounded-[10px] bg-foreground text-background hover:bg-foreground/90"
+            className="h-11 w-full rounded-lg bg-foreground text-background hover:bg-foreground/90"
           >
             {busy && <LoaderCircle className="size-4 animate-spin" />}
             {busy

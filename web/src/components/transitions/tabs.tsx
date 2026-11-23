@@ -201,7 +201,7 @@ const TabsTrigger = ({
             className={cn(
               "absolute",
               variant === "pill"
-                ? "inset-0 rounded-md bg-background shadow-sm dark:bg-input/30 dark:ring-1 dark:ring-input"
+                ? "inset-0 rounded-md bg-background shadow-sm dark:bg-input/30"
                 : "inset-x-0 -bottom-px h-0.5 rounded-full bg-foreground"
             )}
           />

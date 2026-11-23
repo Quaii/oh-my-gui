@@ -43,7 +43,7 @@ const SIZES = {
     list: "gap-1.5",
   },
   md: {
-    row: "gap-3 rounded-[14px] px-3.5 py-2.5",
+    row: "gap-3 rounded-xl px-3.5 py-2.5",
     check: "h-6 w-6",
     text: "text-[15px] leading-6",
     line: "2px",
