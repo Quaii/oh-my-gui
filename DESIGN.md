@@ -145,6 +145,8 @@ an entry is unavailable before the user tries to import it.
 
 ## Conversation and composer
 
+The composer's trailing controls run left to right: context usage, microphone, then Send/Stop.
+
 User messages are compact right-aligned surfaces; assistant replies remain text on the canvas. Native
 tool iterations group under one Agent activity disclosure, with the final answer outside it. Thinking
 blocks coalesce rather than presenting every streaming fragment as a separate step. Automatic task
