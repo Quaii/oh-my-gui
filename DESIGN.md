@@ -268,6 +268,8 @@ The Windows desktop host disables native decorations and uses the existing float
 for minimize, maximize/restore and close. The three 36px buttons sit flush on one rounded toolbar
 surface. Each button has its own hover and focus state, with a red hover on Close. The group lives
 on the rightmost visible workspace/editor panel and in the Settings toolbar.
+Workspace toolbar slots animate width, spacing and opacity during the Files handoff.
+
 Free header space supports native dragging and double-click maximize/restore; buttons, fields,
 menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
 Browser and non-Windows chrome are unchanged. Window actions remain authenticated and allowlisted.
