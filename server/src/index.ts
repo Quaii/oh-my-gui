@@ -20,7 +20,7 @@ import { readConfig, writeConfig } from "./config.ts";
 import { readSettings, setSetting, resetSetting } from "./settings.ts";
 import { readMcp, writeMcp, probeServer } from "./mcp.ts";
 import { discoverMcp, importMcp } from "./mcp-discovery.ts";
-import { listSkills, invalidateSkills } from "./skills.ts";
+import { listSkills, invalidateSkills, openSkillFolder } from "./skills.ts";
 import { listBuiltinTools } from "./tools.ts";
 import { runSlash } from "./slash.ts";
 import { openSessionFile, readChatSnapshot } from "./snapshot.ts";
@@ -679,6 +679,16 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
     }
 
     /* ---------------- skills ---------------- */
+
+    if (p === "/api/skills/open-folder" && req.method === "POST") {
+      const body = await readBody(req, 16_384);
+      if (typeof body?.name !== "string" || typeof body.filePath !== "string") {
+        return json(res, 400, { error: "Choose a discovered skill to open." }), true;
+      }
+      await openSkillFolder(body.name, body.filePath);
+      json(res, 200, { ok: true });
+      return true;
+    }
 
     if (p === "/api/skills") {
       const force = url.searchParams.get("refresh") === "1";
