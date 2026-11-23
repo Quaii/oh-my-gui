@@ -30,3 +30,16 @@ test('branch tree flattening preserves labels, parent depth and long chains', ()
   assert.equal(entries[0].label, 'Start');
   assert.equal(entries.at(-1).depth, 12000);
 });
+
+test('native completion clears the streaming state that blocks the next draft', () => {
+  const streaming = chatReducer(initialChat, {
+    type: 'snapshot',
+    state: { isStreaming: true },
+  });
+  assert.equal(streaming.running, true);
+  for (const type of ['agent_end', 'agent_settled', 'session_settled']) {
+    const finished = chatReducer(streaming, { type });
+    assert.equal(finished.running, false);
+    assert.equal(finished.state?.isStreaming, false);
+  }
+});

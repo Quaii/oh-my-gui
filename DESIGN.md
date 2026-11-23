@@ -371,8 +371,9 @@ their above/below-editor placement. A native terminal handoff stays visibly dist
 
 Voice is a compact icon control in the existing composer row. Dictation updates only its originating
 draft and never sends a prompt automatically. Native completion appears as a muted suffix, accepted with
-Tab; it does not animate the surrounding input. Queue edits append recovered content without discarding
-an existing draft. Goal/task status and subagent activity always come from native results/events.
+Tab; it does not animate the surrounding input. While a turn is active, the composer keeps the draft
+editable and offers Stop. Sending resumes when the turn ends. Goal/task status and subagent activity
+always come from native results/events.
 
 Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
 

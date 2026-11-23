@@ -26,9 +26,9 @@ Primary sources: matching [v18.20.0 RPC types](https://github.com/can1357/oh-my-
 
 | Classification | Commands |
 | --- | --- |
-| Direct control | 60 |
+| Direct control | 54 |
 | Integrated route | 13 |
-| JSON console only | 1 |
+| JSON console only | 7 |
 
 ## Audited workflows
 
@@ -40,7 +40,7 @@ Primary sources: matching [v18.20.0 RPC types](https://github.com/can1357/oh-my-
 | P1 | Extension composer updates | Implemented | Composer text has an Undo backup; widgets respect above/below placement and replay coalesces their latest values. | [web/src/components/Composer.tsx:56](web/src/components/Composer.tsx#L56) |
 | P1 | Lossless large RPC frames | Implemented | Native v2 chunking and 401-message paged history passed in a disposable keyless profile. Invalid frames/pages fail visibly. | [server/src/rpc-frames.ts:4](server/src/rpc-frames.ts#L4) |
 | P1 | Goal lifecycle and agent-owned tasks | Implemented | Goals remain under advanced session diagnostics. Manual task editing has been removed; task progress remains agent-owned. | [web/src/components/settings/SessionWorkflows.tsx:129](web/src/components/settings/SessionWorkflows.tsx#L129) |
-| P1 | Queue management | Implemented | Explicit withdraw/promote/edit, image restoration, abort-and-restore and interrupt/resubmit; native queue snapshots remain authoritative. | [web/src/components/QueueControls.tsx:141](web/src/components/QueueControls.tsx#L141) |
+| P1 | Queue management | Deferred | Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
 | P1 | Subagent conversations and steering | Implemented | Native event subscription, lifecycle/progress roster, incremental child transcript, steering and cancellation. No real subagent/model was spawned for verification. | [web/src/components/SubagentControls.tsx:43](web/src/components/SubagentControls.tsx#L43) |
 | P1 | Export/fork/tree completion | Implemented | Scoped export download and refreshed native transitions; tree/append-history picker, labels, summaries and abort. | [web/src/components/settings/SessionWorkflows.tsx:152](web/src/components/settings/SessionWorkflows.tsx#L152) |
 | P1 | Provider accounts and MCP authentication | GUI + native handoff | Account-specific sign-out and persistent login links. Secret/pre-URL OAuth and MCP interactive authentication retain the explicit native OMP terminal workflow. No real account changes were tested. | [web/src/components/settings/ProviderAccounts.tsx:18](web/src/components/settings/ProviderAccounts.tsx#L18) |
@@ -58,14 +58,14 @@ Primary sources: matching [v18.20.0 RPC types](https://github.com/can1357/oh-my-
 | RPC | Reachability | GUI route / limits | Read probe | Local source |
 | --- | --- | --- | --- | --- |
 | `negotiate_protocol` | Integrated route | Bridge startup. Negotiates v2, strictly reassembles UTF-8 chunks and surfaces malformed/oversized frames. Native large-frame fixture passed. | not executed | [server/src/omp.ts:157](server/src/omp.ts#L157) |
-| `prompt` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:245](web/src/App.tsx#L245) |
-| `steer` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:245](web/src/App.tsx#L245) |
-| `follow_up` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:245](web/src/App.tsx#L245) |
-| `remove_queued_message` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
-| `promote_queued_message` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
-| `abort` | Direct control | Composer → send, queue delivery and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:245](web/src/App.tsx#L245) |
-| `abort_and_prompt` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
-| `abort_and_restore_queue` | Direct control | Composer → queued messages / running turn controls. Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible. | not executed | [web/src/components/QueueControls.tsx:158](web/src/components/QueueControls.tsx#L158) |
+| `prompt` | Direct control | Composer → send and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:249](web/src/App.tsx#L249) |
+| `steer` | JSON console only | Advanced runtime diagnostics. Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
+| `follow_up` | JSON console only | Advanced runtime diagnostics. Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
+| `remove_queued_message` | JSON console only | Advanced runtime diagnostics. Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
+| `promote_queued_message` | JSON console only | Advanced runtime diagnostics. Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
+| `abort` | Direct control | Composer → send and stop. Text/images follow native prompt admission; tool execution and model capability remain OMP-owned. | not executed | [web/src/App.tsx:249](web/src/App.tsx#L249) |
+| `abort_and_prompt` | JSON console only | Advanced runtime diagnostics. Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
+| `abort_and_restore_queue` | JSON console only | Advanced runtime diagnostics. Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics. | not executed | [web/src/components/settings/CapabilitiesPanel.tsx:10](web/src/components/settings/CapabilitiesPanel.tsx#L10) |
 | `new_session` | Direct control | Settings → Session. Successful session transitions broadcast fresh native history; HTML export returns a scoped download. Cancelled transitions do not replace the transcript. | not executed | [server/src/index.ts:484](server/src/index.ts#L484) |
 | `open_session` | Direct control | Settings → Session workflows. Advanced session diagnostics: directory sessions and native goal lifecycle/budget. Task progress is agent-owned. | not executed | [web/src/components/settings/SessionWorkflows.tsx:129](web/src/components/settings/SessionWorkflows.tsx#L129) |
 | `get_state` | Integrated route | Chat initialization, selectors and usage. Normal GUI reads; no invented progress or totals. | passed | [web/src/App.tsx:164](web/src/App.tsx#L164) |

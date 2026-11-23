@@ -53,7 +53,7 @@ Rare UI attribution is available in Settings → About & credits. ObsidianUI and
 - Usage totals from `omp stats --json`, supplemented by read-only queries to the native stats database for per-model hourly trends, peak tokens, active session duration, and timezone-aware streaks. Stacked trends, a model donut, compact cost bars, and API-equivalent cost disclosure.
 - Host classifier routing: editable nodes/connections, model and thinking controls, test classification, saved configuration. Disabled until explicitly enabled.
 - Opt-in persona library: prepend or append instructions, optionally remove the exact OMP identity sentence, retain project rules and tool schemas, persist the chosen persona with the session.
-- Native goals and agent-owned task plans, queue recovery, branch navigation and labels, scoped HTML exports, subagent conversations and steering, and provider account management.
+- Native goals and agent-owned task plans, branch navigation and labels, scoped HTML exports, subagent conversations and steering, and provider account management.
 - Composer voice/dictation and native word completion; separate side-question topics and history. Hardware/provider acceptance limits are recorded in the audit.
 - Guided native CLI operations with explicit execution, incremental logs, cancellation, profile/folder selection and native terminal handoffs for interactive or credential-bearing flows.
 - Advanced RPC diagnostics and an honest runtime capability check. See [CAPABILITIES.md](CAPABILITIES.md) for coverage and limitations.

@@ -64,7 +64,6 @@ export default function App() {
   const [fileWorkspaces,setFileWorkspaces]=useState<Record<string,{cwd:string;request:{path?:string;n:number}}>>({});
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [connected, setConnected] = useState(false);
-  const [behavior, setBehavior] = useState<"steer" | "followUp">("steer");
   const [atBottom, setAtBottom] = useState(true);
   const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
   const [railOpen, setRailOpen] = useState<boolean>(() => localStorage.getItem(LS_RAIL) === "1");
@@ -206,7 +205,7 @@ export default function App() {
       post("/api/cmd", { key, cmd: { type: "get_subagents" } }).catch(() => null),
     ]);
     if (key !== keyRef.current) return;
-    if (st?.ok) dispatch((x) => ({ ...x, state: st.data,todos:st.data?.todoPhases??x.todos, queue: st.data.queuedMessages ?? x.queue }));
+    if (st?.ok) dispatch((x) => ({ ...x, state: st.data,todos:st.data?.todoPhases??x.todos }));
     if(agents?.ok)dispatch(x=>chatReducer(x,{type:'subagents_snapshot',subagents:agents.data?.subagents??(Array.isArray(agents.data)?agents.data:[])}));
     if (s?.ok) setStats(s.data);
     if (cmds?.ok) dispatch((x) => ({ ...x, commands: cmds.data?.commands ?? [] }));
@@ -247,11 +246,9 @@ export default function App() {
   const onSend = useCallback(
     async (text: string, images: any[]) => {
       const key = keyRef.current;
-      if (!key) return false;
-      const streaming = chat.running || chat.state?.isStreaming;
+      if (!key || chat.running || chat.state?.isStreaming) return false;
       const cmd: any = { type: "prompt", message: text };
       if (images.length) cmd.images = images.map((i) => ({ type: "image", data: i.data, mimeType: i.mimeType }));
-      if (streaming) cmd.streamingBehavior = behavior;
       const r = await post("/api/cmd", { key, cmd }).catch((e) => ({ ok: false, error: String(e) }));
       if (!r.ok) {
         setChat({
@@ -265,7 +262,7 @@ export default function App() {
       setTimeout(() => refreshState(), 400);
       return !!r.ok;
     },
-    [chat.running, chat.state?.isStreaming, behavior, refreshState, setChat]
+    [chat.running, chat.state?.isStreaming, refreshState, setChat]
   );
 
   const onAbort = useCallback(async () => {
@@ -710,8 +707,6 @@ export default function App() {
               onThinkingChange={(level) => sendCmd({ type: "set_thinking_level", level })}
               onToggleFast={() => sendCmd({ type: "set_fast_mode", enabled: !chat.state?.fastModeEnabled })}
               onSlash={() => {}}
-              streamingBehavior={behavior}
-              setStreamingBehavior={setBehavior}
               seed={seed}
               onSeedConsumed={() => setSeed(null)}
             />

@@ -1,5 +1,4 @@
 import { PermissionControl } from "./PermissionControl";
-import { QueueControls } from './QueueControls';
 import { VoiceControls } from './VoiceControls';
 import { appendDictation } from '../lib/dictation-draft';
 import { useWordCompletion } from '../lib/use-word-completion';
@@ -14,7 +13,7 @@ import { ProviderIcon } from "./ProviderIcon";
 import { PromptBox } from "@/components/ui/prompt-box";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ChatState } from "../lib/store";
-import { ArrowDownRight, Check, Brain, ChevronDown, Clock, Paperclip, Search, X, Zap } from "lucide-react";
+import { Check, Brain, ChevronDown, Paperclip, Search, X, Zap } from "lucide-react";
 
 export interface ComposerProps {
   chat: ChatState;
@@ -29,8 +28,6 @@ export interface ComposerProps {
   onThinkingChange: (level: string) => void;
   onToggleFast: () => void;
   onSlash: (name: string) => void;
-  streamingBehavior: "steer" | "followUp";
-  setStreamingBehavior: (v: "steer" | "followUp") => void;
   /** Text pushed in from "edit and resend"; n increments to force a reset. */
   seed?: { text: string; n: number } | null;
   onSeedConsumed?: () => void;
@@ -47,7 +44,7 @@ function draftKey(key: string | null | undefined) {
 }
 
 export function Composer(props: ComposerProps) {
-  const { chat, commands, models, thinkingLevels, onSend, onAbort, streamingBehavior, setStreamingBehavior } = props;
+  const { chat, commands, models, thinkingLevels, onSend, onAbort } = props;
   const [submitting,setSubmitting]=useState(false);
   const [permissionsPending,setPermissionsPending]=useState(false);
   const [text, setText] = useState("");
@@ -166,7 +163,7 @@ export function Composer(props: ComposerProps) {
     (value?: string) => {
       const prompt = (value ?? text).trim();
       if (!prompt && images.length === 0) return;
-      if(submitting||permissionsPending)return;
+      if (running || submitting || permissionsPending) return;
       const sentImages=images;setSubmitting(true);
       void onSend(prompt, images).then(ok=>{if(!ok){setText(current=>current || prompt);setImages(current=>current.length?current:sentImages);}else setExtensionBackup(null);}).finally(()=>setSubmitting(false));
       setText("");
@@ -178,7 +175,7 @@ export function Composer(props: ComposerProps) {
         } catch {}
       }
     },
-    [text, images, onSend, key, submitting, permissionsPending]
+    [text, images, onSend, key, running, submitting, permissionsPending]
   );
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -245,8 +242,6 @@ export function Composer(props: ComposerProps) {
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  const queued = [...(chat.queue.steering ?? []), ...(chat.queue.followUp ?? [])];
-
   const chip = "composer-chip";
   const chipOn = "text-primary [&_svg]:text-primary";
   const menu =
@@ -282,8 +277,6 @@ export function Composer(props: ComposerProps) {
         </div>
       )}
 
-      <QueueControls chat={chat} text={text} images={images} report={setNotice} restore={(restored, attachments) => { setText(previous => previous ? previous + '\n\n' + restored : restored); setImages(previous => [...previous, ...attachments]); }} interrupted={() => { setText(''); setImages([]); setExtensionBackup(null); }} />
-
       {extensionBackup !== null && <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">OMP updated the draft.<button className="underline" onClick={() => { setText(extensionBackup); setExtensionBackup(null); }}>Undo</button><button className="ml-auto" aria-label="Dismiss draft update" onClick={() => setExtensionBackup(null)}><X className="size-3" /></button></div>}
       {notice && (
         <div className="mb-2 rounded-md border-0 bg-primary/10 px-2.5 py-1 text-[11.5px] text-primary">
@@ -309,9 +302,7 @@ export function Composer(props: ComposerProps) {
         status={running || submitting ? "streaming" : "idle"}
         onStop={onAbort}
         efforts={thinkingLevels.slice(Math.max(0, thinkingLevels.indexOf(st?.thinkingLevel ?? "off"))).map((l) => ({ id: l, label: l }))}
-        placeholder={
-          running ? [`Queue a ${streamingBehavior === "steer" ? "steering" : "follow-up"} message…`] : PLACEHOLDERS
-        }
+        placeholder={running ? ["Draft your next message…"] : PLACEHOLDERS}
         hint={null}
         inputRef={taRef as any}
         completion={completion.prediction?.text === text ? completion.prediction.suffix : undefined}
@@ -363,25 +354,6 @@ export function Composer(props: ComposerProps) {
             )}
 
             <PermissionControl launchFlags={props.launchFlags} onPendingChange={setPermissionsPending}/>
-            {running && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setStreamingBehavior(streamingBehavior === "steer" ? "followUp" : "steer")}
-                    className={chip}
-                    aria-label={`Queued message delivery: ${streamingBehavior}`}
-                  >
-                    {streamingBehavior === "steer" ? (
-                      <ArrowDownRight className="size-3" />
-                    ) : (
-                      <Clock className="size-3" />
-                    )}
-                    {streamingBehavior === "steer" ? "steer" : "follow-up"}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top">How queued messages are delivered while running</TooltipContent>
-              </Tooltip>
-            )}
 
           </>
         }
