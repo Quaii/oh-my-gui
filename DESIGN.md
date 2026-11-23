@@ -188,7 +188,7 @@ touch. Session statistics are available on demand rather than occupying every sc
 ## The file workspace is a peer panel
 
 The editor shares the workspace background, breadcrumb styling and separate 36px floating toolbar
-buttons. The explorer sits directly on the canvas with a quiet vertical separator, not another opaque
+buttons. The explorer sits directly on the canvas without a vertical divider or another opaque
 sidebar slab. Its root picker and search use the shared floating blur treatment.
 
 The code/Markdown viewer lives in a 14px rounded, bordered glass rectangle. File-name tabs sit
@@ -373,3 +373,5 @@ Tab; it does not animate the surrounding input. Queue edits append recovered con
 an existing draft. Goal/task status and subagent activity always come from native results/events.
 
 Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
+
+The file split animates through one clipped width and opacity transition. Dirty-close guards run before exit. Drag resizing and reduced motion are immediate.
