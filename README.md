@@ -49,6 +49,7 @@ Rare UI attribution is available in Settings → About & credits. ObsidianUI and
 
 - Runtime version, executable/config paths, credentials' signed-in state, live sessions, task limits, and message counts.
 - Native settings catalog, model roles, thinking selectors, fallback settings, custom/local API providers, MCP, skills with filters, prompts/project rules, extensions and marketplace actions.
+- Settings → Agent → MCP servers scans Codex, Claude Code and ZCode configuration files. Select entries to import into the matching user or registered project scope. Imports start disabled, preserve existing entries, omit detected inline credentials and leave the original configuration files alone.
 - Usage totals from `omp stats --json`, supplemented by read-only queries to the native stats database for per-model hourly trends, peak tokens, active session duration, and timezone-aware streaks. Stacked trends, a model donut, compact cost bars, and API-equivalent cost disclosure.
 - Host classifier routing: editable nodes/connections, model and thinking controls, test classification, saved configuration. Disabled until explicitly enabled.
 - Opt-in persona library: prepend or append instructions, optionally remove the exact OMP identity sentence, retain project rules and tool schemas, persist the chosen persona with the session.

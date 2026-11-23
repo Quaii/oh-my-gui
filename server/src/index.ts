@@ -19,6 +19,7 @@ import { listSessions, deleteSession, AGENT_DIR, SESSIONS_DIR } from "./sessions
 import { readConfig, writeConfig } from "./config.ts";
 import { readSettings, setSetting, resetSetting } from "./settings.ts";
 import { readMcp, writeMcp, probeServer } from "./mcp.ts";
+import { discoverMcp, importMcp } from "./mcp-discovery.ts";
 import { listSkills, invalidateSkills } from "./skills.ts";
 import { listBuiltinTools } from "./tools.ts";
 import { runSlash } from "./slash.ts";
@@ -571,6 +572,26 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
     }
 
     /* ---------------- MCP servers (mcp.json) ---------------- */
+
+    if ((p === "/api/mcp/discover" && req.method === "GET") ||
+        (p === "/api/mcp/import" && req.method === "POST")) {
+      const body = req.method === "POST" ? await readBody(req) : undefined;
+      const cwd = body?.cwd ?? url.searchParams.get("cwd");
+      const project = typeof cwd === "string" && path.isAbsolute(cwd)
+        ? projectForSession({ cwd: path.resolve(cwd) }, (await readControl()).projects)?.path
+        : undefined;
+      if (!body) {
+        json(res, 200, await discoverMcp({ project }));
+        return true;
+      }
+      if ((body.scope !== "user" && body.scope !== "project") || !Array.isArray(body.ids) ||
+          !body.ids.length || body.ids.length > 500 || body.ids.some((id: unknown) => typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))) {
+        json(res, 400, { error: "Select the discovered MCP servers to import." });
+        return true;
+      }
+      json(res, 200, await importMcp({ project }, body.scope, body.ids));
+      return true;
+    }
 
     if (p === "/api/mcp") {
       if (req.method === "GET") {

@@ -7,7 +7,7 @@ import { RuntimeOutput } from '../components/RuntimeOutput';
 import { ProviderAccounts, type LoginProvider } from '../components/settings/ProviderAccounts';
 import { parseLaunchArgs, formatLaunchArgs, validateGuiLaunchArgs } from '../../../shared/launch-args';
 import {supportsFastMode} from "../lib/model-capabilities";
-import { SettingsNavigation, savedSettingsPanel, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
+import { SettingsMobileNavigation, SettingsNavigation, savedSettingsPanel, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
 import { ProviderIcon } from "../components/ProviderIcon";
 import { PanelSkeleton, ListSkeleton, ProviderSkeleton } from "@/components/ui/loading-shapes";
 import { Switch } from "@/components/ui/switch";
@@ -240,10 +240,11 @@ export function SettingsPage(props: SettingsPageProps) {
   const pageDescription = searching ? undefined : PAGE_DESCRIPTIONS[panel];
 
   const st = chat.state;
+  const selectPanel = (id: PanelId) => transitionUpdate(() => { setPanel(id); setQ(""); });
 
   return (
     <div className="settings-layout flex h-full min-h-0 min-w-0 flex-1">
-      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={id=>transitionUpdate(()=>{setPanel(id);setQ("");})}/>
+      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={selectPanel}/>
 
       <main className="settings-main workspace-main relative isolate flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <WorkspaceBackground />
@@ -272,18 +273,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
         {/* mobile section picker */}
         <div className="ml-auto md:hidden">
-          <Select value={panel} onValueChange={(v) => transitionUpdate(()=>{ setPanel(v as PanelId); setQ(""); })}>
-            <SelectTrigger size="sm" className="w-[150px] text-[12px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ALL_ITEMS.map((it) => (
-                <SelectItem key={it.id} value={it.id} className="text-[12px]">
-                  {it.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SettingsMobileNavigation panel={panel} onSelect={selectPanel} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
@@ -372,7 +362,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : panel === "skills" ? (
               <SkillsPanel settingsLoading={loading && !payload} settings={settings} onSave={save} onReset={reset} />
             ) : panel === "mcp" ? (
-              <McpPanel cwd={info?.cwd ?? ""} onRestart={onRestart} />
+              <McpPanel cwd={info?.cwd ?? ""} projectPath={info?.projectPath} onRestart={onRestart} />
             ) : panel === "commands" ? (
               <CommandsPanel
                 commands={chat.commands ?? []}

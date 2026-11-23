@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { get, put, post } from "../../lib/api";
 import { Btn, Empty, Group, Toggle } from "./Controls";
 import { X } from "lucide-react";
-import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
+import { SkeletonReveal } from "@/components/ui/skeleton-reveal";
+import { McpDiscoveryPanel } from "./McpDiscoveryPanel";
 
 type ServerCfg = {
   command?: string;
@@ -37,7 +38,8 @@ interface ProbeResult {
   ms: number;
 }
 
-export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => void }) {
+export function McpPanel({ cwd, projectPath, onRestart }: { cwd: string; projectPath?: string; onRestart: () => void }) {
+  const configCwd = projectPath ?? cwd;
   const [scope, setScope] = useState<"user" | "project">("user");
   const [data, setData] = useState<{ user: ScopePayload; project: ScopePayload } | null>(null);
   const [servers, setServers] = useState<Record<string, ServerCfg>>({});
@@ -50,6 +52,7 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
   const [probes, setProbes] = useState<Record<string, ProbeResult | "running">>({});
   const [live, setLive] = useState<Record<string, { transport: string; status: string; detail: string; source: string }> | null>(null);
   const [liveBusy, setLiveBusy] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const refreshLive = useCallback(async () => {
     setLiveBusy(true);
@@ -58,7 +61,7 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
       const map: Record<string, { transport: string; status: string; detail: string; source: string }> = {};
       for (const line of r.lines ?? []) {
         for (const row of line.split("\n")) {
-          const m = row.match(/^(\S+)\s+\|\s+(\S+)\s+\|\s+(\S+)\s+\|\s+(.*)$/);
+          const m = row.trim().match(/^([^|]+?)\s+\|\s+(stdio|http|sse)\s+\|\s+(\S+)\s+\|\s+(.*)$/i);
           if (m) map[m[1]] = { transport: m[2], status: m[3], detail: m[4].replace(/\s*\[.*\]$/, ""), source: (m[4].match(/\[([^\]]+)\]$/) ?? [])[1] ?? "" };
         }
       }
@@ -77,7 +80,7 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
   const load = useCallback(async () => {
     setErr(null);
     try {
-      const r = await get<{ user: ScopePayload; project: ScopePayload }>(`/api/mcp?cwd=${encodeURIComponent(cwd)}`);
+      const r = await get<{ user: ScopePayload; project: ScopePayload }>(`/api/mcp?cwd=${encodeURIComponent(configCwd)}`);
       setData(r);
       setServers(r[scope].servers ?? {});
       setRaw(JSON.stringify(r[scope].servers ?? {}, null, 2));
@@ -85,7 +88,7 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
     } catch (e: any) {
       setErr(String(e?.message ?? e));
     }
-  }, [cwd, scope]);
+  }, [configCwd, scope]);
 
   useEffect(() => {
     load();
@@ -107,15 +110,29 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
 
   async function save() {
     setErr(null);
+    setBusy(true);
     try {
       const body = rawMode ? JSON.parse(raw) : servers;
-      const r = await put<{ ok: boolean; path: string; backup?: string }>("/api/mcp", { scope, cwd, servers: body });
+      const r = await put<{ ok: boolean; path: string; backup?: string }>("/api/mcp", { scope, cwd: configCwd, servers: body });
       setNote(`saved ${r.path}${r.backup ? " (backup .bak)" : ""}`);
       setDirty(false);
       await load();
       refreshLive();
     } catch (e: any) {
       setErr(String(e?.message ?? e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function importSelected(ids: string[]) {
+    setBusy(true);
+    try {
+      const result = await post<{ imported: string[]; skipped: string[] }>("/api/mcp/import", { cwd, scope, ids });
+      await load();
+      return result;
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -130,7 +147,7 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
   }
 
   return (
-    <div className="space-y-4">
+    <fieldset className="min-w-0 space-y-4" disabled={busy}>
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex gap-1 rounded-lg bg-ink-850 p-0.5">
           {(["user", "project"] as const).map((s) => (
@@ -346,11 +363,25 @@ export function McpPanel({ cwd, onRestart }: { cwd: string; onRestart: () => voi
         </Group>
       )}
 
+      {Object.keys(live ?? {}).some(name => !names.includes(name)) && <Group title="Also discovered by OMP">
+        {Object.entries(live ?? {}).filter(([name]) => !names.includes(name)).map(([name, server]) => (
+          <div key={name} className="min-w-0 border-b border-border py-3 last:border-0">
+            <div className="break-words text-sm font-medium">{name}</div>
+            <div className="break-words text-xs text-muted-foreground">
+              {server.transport} · {server.status}{server.source ? ` · ${server.source}` : ""}
+            </div>
+          </div>
+        ))}
+      </Group>}
+
+      <McpDiscoveryPanel key={`${configCwd}:${scope}`} cwd={cwd} scope={scope} dirty={dirty}
+        busy={busy} nativeNames={new Set(Object.keys(live ?? {}))} onImport={importSelected} />
+
       <div className="flex items-center gap-2 text-[11px] text-fog-500">
         <span>Changes apply to new sessions.</span>
         <Btn onClick={onRestart}>restart session</Btn>
       </div>
-    </div>
+    </fieldset>
   );
 }
 

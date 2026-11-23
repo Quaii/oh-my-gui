@@ -26,6 +26,7 @@ if(!sameRuntime)await fs.copyFile(process.execPath,runtimeNode);
 if(process.platform!=='win32')await fs.chmod(runtimeNode,0o755);
 await fs.mkdir(path.join(runtime,'licenses'),{recursive:true});
 await fs.copyFile(path.join(root,'node_modules/yaml/LICENSE'),path.join(runtime,'licenses/yaml.txt'));
+await fs.copyFile(path.join(root,'node_modules/smol-toml/LICENSE'),path.join(runtime,'licenses/smol-toml.txt'));
 const licenseFile=path.join(runtime,'licenses/node-'+process.versions.node+'.txt');
 try{await fs.access(licenseFile);}catch{
   const response=await fetch(`https://raw.githubusercontent.com/nodejs/node/v${process.versions.node}/LICENSE`,{signal:AbortSignal.timeout(30000)});

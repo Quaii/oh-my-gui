@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import os from "node:os";
 
@@ -27,6 +28,7 @@ export interface McpScope {
   exists: boolean;
   servers: Record<string, McpServerConfig>;
   error?: string;
+  enabledServers?: string[];
   /** Read-only extra files omp also picks up (project root mcp.json / .mcp.json). */
   extra?: { path: string; servers: Record<string, McpServerConfig>; error?: string }[];
 }
@@ -39,18 +41,30 @@ export function projectMcpPath(cwd: string): string {
   return path.join(cwd, ".omp", "mcp.json");
 }
 
-async function readOne(file: string): Promise<{ servers: Record<string, McpServerConfig>; error?: string }> {
+async function readDocument(file: string, replaceMalformed = false): Promise<{ document: Record<string, unknown>; servers: Record<string, McpServerConfig>; exists: boolean }> {
+  const empty = { document: {}, servers: {}, exists: false };
+  const raw = await fs.readFile(file, "utf8").catch(error => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (raw === null) return empty;
   try {
-    const raw = await fs.readFile(file, "utf8");
-    if (!raw.trim()) return { servers: {} };
-    const data = JSON.parse(raw);
-    if (typeof data !== "object" || data === null || Array.isArray(data)) return { servers: {}, error: "mcp.json must be a JSON object" };
-    const servers = data.mcpServers;
-    if (servers === undefined) return { servers: {} };
-    if (typeof servers !== "object" || servers === null || Array.isArray(servers)) return { servers: {}, error: '"mcpServers" must be an object' };
-    return { servers: servers as Record<string, McpServerConfig> };
+    const document = raw.trim() ? JSON.parse(raw) : {};
+    if (typeof document !== "object" || document === null || Array.isArray(document)) throw Error("mcp.json must be a JSON object");
+    const servers = document.mcpServers === undefined ? {} : document.mcpServers;
+    if (typeof servers !== "object" || servers === null || Array.isArray(servers)) throw Error('"mcpServers" must be an object');
+    return { document, servers, exists: true };
+  } catch (error) {
+    if (!replaceMalformed) throw error;
+    return { ...empty, exists: true };
+  }
+}
+
+async function readOne(file: string): Promise<{ servers: Record<string, McpServerConfig>; enabledServers?: string[]; error?: string }> {
+  try {
+    const { document, servers } = await readDocument(file);
+    return { servers, enabledServers: Array.isArray(document.enabledServers) ? document.enabledServers.filter(name => typeof name === "string") : undefined };
   } catch (e: any) {
-    if (e?.code === "ENOENT") return { servers: {} };
     return { servers: {}, error: String(e?.message ?? e) };
   }
 }
@@ -64,13 +78,16 @@ async function exists(file: string): Promise<boolean> {
   }
 }
 
-export async function readMcp(cwd: string): Promise<{ user: McpScope; project: McpScope }> {
+export async function readMcp(cwd: string, { includeProject = true } = {}): Promise<{ user: McpScope; project: McpScope }> {
   const up = userMcpPath();
   const pp = projectMcpPath(cwd);
-  const [u, p, ue, pe] = await Promise.all([readOne(up), readOne(pp), exists(up), exists(pp)]);
+  const [u, p, ue, pe] = await Promise.all([
+    readOne(up), includeProject ? readOne(pp) : { servers: {}, error: undefined },
+    exists(up), includeProject && exists(pp),
+  ]);
 
   const extra: McpScope["extra"] = [];
-  for (const f of [path.join(cwd, "mcp.json"), path.join(cwd, ".mcp.json")]) {
+  for (const f of includeProject ? [path.join(cwd, "mcp.json"), path.join(cwd, ".mcp.json")] : []) {
     if (await exists(f)) {
       const r = await readOne(f);
       extra.push({ path: f, servers: r.servers, error: r.error });
@@ -78,24 +95,55 @@ export async function readMcp(cwd: string): Promise<{ user: McpScope; project: M
   }
 
   return {
-    user: { scope: "user", path: up, exists: ue, servers: u.servers, error: u.error },
+    user: { scope: "user", path: up, exists: ue, ...u },
     project: { scope: "project", path: pp, exists: pe, servers: p.servers, error: p.error, extra },
   };
 }
 
-export async function writeMcp(scope: "user" | "project", cwd: string, servers: Record<string, McpServerConfig>): Promise<{ path: string; backup?: string }> {
+let mcpWrite: Promise<unknown> = Promise.resolve();
+
+function updateMcp(file: string, update: (current: Awaited<ReturnType<typeof readDocument>>) => Record<string, McpServerConfig> | undefined, replaceMalformed = false) {
+  const write = mcpWrite.then(async () => {
+    const current = await readDocument(file, replaceMalformed);
+    const servers = update(current);
+    if (!servers) return { path: file };
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    const backup = current.exists ? file + ".bak" : undefined;
+    const tmp = path.join(path.dirname(file), `.mcp-${randomUUID()}.tmp`);
+    try {
+      await fs.writeFile(tmp, JSON.stringify({ ...current.document, mcpServers: servers }, null, 2) + "\n", { mode: 0o600, flag: "wx" });
+      if (backup) await fs.copyFile(file, backup);
+      await fs.rename(tmp, file);
+    } finally {
+      await fs.rm(tmp, { force: true });
+    }
+    return { path: file, backup };
+  });
+  mcpWrite = write.catch(() => {});
+  return write;
+}
+
+export function writeMcp(scope: "user" | "project", cwd: string, servers: Record<string, McpServerConfig>) {
   const file = scope === "user" ? userMcpPath() : projectMcpPath(cwd);
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  let backup: string | undefined;
-  if (await exists(file)) {
-    backup = file + ".bak";
-    await fs.copyFile(file, backup);
-  }
-  const body = JSON.stringify({ mcpServers: servers }, null, 2) + "\n";
-  const tmp = file + ".tmp";
-  await fs.writeFile(tmp, body, "utf8");
-  await fs.rename(tmp, file);
-  return { path: file, backup };
+  return updateMcp(file, () => servers, true);
+}
+
+export async function appendMcpServers(file: string, entries: Record<string, McpServerConfig>) {
+  const imported: string[] = [];
+  const skipped: string[] = [];
+  await updateMcp(file, ({ servers, document }) => {
+    const next = { ...servers };
+    for (const [name, cfg] of Object.entries(entries)) {
+      if (Object.hasOwn(next, name) || (Array.isArray(document.enabledServers) && document.enabledServers.includes(name))) {
+        skipped.push(name);
+        continue;
+      }
+      next[name] = cfg;
+      imported.push(name);
+    }
+    return imported.length ? next : undefined;
+  });
+  return { imported, skipped };
 }
 
 /* ------------------------------------------------------------------ *

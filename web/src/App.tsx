@@ -489,7 +489,7 @@ export default function App() {
           flags={flags}
           setFlags={setFlags}
           onRestart={async () => { if(running) { dispatch(s=>({...s,toasts:[...s.toasts,{id:String(Date.now()),kind:"info",text:"Finish or stop the current turn before restarting the runtime."}]})); return; } const current=keyRef.current; const file=activePath || chat.state?.sessionFile; unsubRef.current?.(); if(current) await del(`/api/bridge?key=${encodeURIComponent(current)}`); await attach(current || `new:${Date.now()}`,file || undefined); }}
-          info={{ ...boot, cwd }}
+          info={{ ...boot, cwd, projectPath: projectForSession({ cwd }, boot?.control?.projects || [])?.path }}
           onRefreshState={refreshState}
           onRefreshModels={refreshModels}
         />

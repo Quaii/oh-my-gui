@@ -812,6 +812,15 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .settings-sidebar[data-collapsed=true] .settings-nav-group {margin:0;}
 .settings-rail-divider {height:2px;width:24px;margin:14px auto;border-radius:99px;background:color-mix(in srgb,var(--foreground) 12%,transparent);}
 .settings-section-title {margin:0;}
+.settings-sidebar[data-collapsed=false] .settings-nav .settings-advanced-trigger {
+  width: 100%;
+  margin: 0 0 4px;
+  padding-inline: 12px;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+}
+.settings-advanced-trigger[aria-expanded="true"] > svg:last-child { transform: rotate(90deg); }
 .settings-nav [data-slot=scroll-area-viewport] {scrollbar-gutter:stable;overscroll-behavior:contain;}
 .session-sidebar [data-slot=scroll-area-viewport],.collapsed-sidebar [data-slot=scroll-area-viewport] {overscroll-behavior:contain;}
 .appearance-option:not(:last-child)::after {content:"";position:absolute;bottom:0;left:20px;right:20px;height:1px;border-radius:99px;background:color-mix(in srgb,var(--foreground) 9%,transparent);}

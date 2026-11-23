@@ -126,10 +126,17 @@ Settings uses the same sidebar and floating-panel language as chat. Back, search
 type weight and material. Restart is a 36px icon control that expands its label on hover/focus. Reset
 actions sit immediately **before** the right-aligned control and reveal on row hover/focus. Preserve
 discoverable keyboard and touch alternatives. Existing mobile navigation switches to a sheet/compact
-section picker; do not force desktop widths into narrow windows.
+section picker; do not force desktop widths into narrow windows. Settings navigation follows
+Runtime, Appearance, Agent, then Advanced. Advanced opens on demand and contains runtime
+maintenance, all settings, raw config and capabilities. Opening an Advanced page directly reveals
+its selection in the desktop sidebar. The compact picker exposes Advanced as a submenu.
 
 Keep navigation icons in the Settings sidebar. Settings rows start with a 15px semibold label
 and a short, left-aligned description beneath it. Use icons in cards for actions and status.
+
+MCP discovery starts when its settings page opens. Show the source, scope and transport alongside
+each selectable server. Keep the runtime inventory distinct from import candidates, and show why
+an entry is unavailable before the user tries to import it.
 
 ## Conversation and composer
 

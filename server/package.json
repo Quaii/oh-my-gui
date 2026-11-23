@@ -1,5 +1,8 @@
 {
   "name": "server",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "smol-toml": "1.9.1"
+  }
 }
