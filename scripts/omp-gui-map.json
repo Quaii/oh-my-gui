@@ -3,17 +3,15 @@
     {
       "names": [
         "prompt",
-        "steer",
-        "follow_up",
         "abort"
       ],
       "status": "direct",
-      "surface": "Composer → send, queue delivery and stop",
+      "surface": "Composer → send and stop",
       "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "needle": "cmd.streamingBehavior = behavior"
+          "needle": "const cmd: any = { type: \"prompt\", message: text }"
         }
       ]
     },
@@ -219,18 +217,20 @@
     },
     {
       "names": [
+        "steer",
+        "follow_up",
         "remove_queued_message",
         "promote_queued_message",
         "abort_and_prompt",
         "abort_and_restore_queue"
       ],
-      "status": "direct",
-      "surface": "Composer → queued messages / running turn controls",
-      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "needle": "Stop and restore queue"
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "needle": "export default"
         }
       ]
     },
@@ -1411,12 +1411,12 @@
     {
       "priority": "P1",
       "name": "Queue management",
-      "status": "Implemented",
-      "note": "Explicit withdraw/promote/edit, image restoration, abort-and-restore and interrupt/resubmit; native queue snapshots remain authoritative.",
+      "status": "Deferred",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "needle": "abort_and_restore_queue"
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "needle": "export default"
         }
       ]
     },

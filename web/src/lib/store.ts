@@ -47,7 +47,6 @@ export interface ChatState {
   messages: AnyRec[];
   live: AnyRec | null;
   tools: Record<string, ToolRun>;
-  queue: { steering: string[]; followUp: string[]; liveSteered?: number };
   todos: any[];
   subagents: AnyRec[];
   dialogs: DialogRequest[];
@@ -75,7 +74,6 @@ export const initialChat: ChatState = {
   messages: [],
   live: null,
   tools: {},
-  queue: { steering: [], followUp: [] },
   todos: [],
   subagents: [],
   dialogs: [],
@@ -232,9 +230,6 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
         todos: st?.todoPhases ?? s.todos,
         title: st?.sessionName ?? s.title,
         running: !!st?.isStreaming,
-        queue: st?.queuedMessages
-          ? { steering: st.queuedMessages.steering ?? [], followUp: st.queuedMessages.followUp ?? [], liveSteered: st.queuedMessages.liveSteered ?? 0 }
-          : s.queue,
         error: null,
         ...(changed ? { outputs: [], authLinks: [], sideQuestions: [], statuses: {}, widgets: {}, subagents: [], editorUpdate: null } : {}),
       };
@@ -246,10 +241,10 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
     case "agent_start":
       return { ...s, running: true, error: null };
     case "agent_end":
-      return { ...s, running: false };
+      return { ...s, running: false, state: s.state && { ...s.state, isStreaming: false } };
     case "agent_settled":
     case "session_settled":
-      return { ...s, running: false, live: null };
+      return { ...s, running: false, live: null, state: s.state && { ...s.state, isStreaming: false } };
     case "prompt_result":
       return { ...s, running: rec.sessionSettled ? false : s.running, live: rec.sessionSettled ? null : s.live };
     case "advisor_yielded":
@@ -301,15 +296,6 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
         },
       };
     }
-    case "queue_update":
-      return {
-        ...s,
-        queue: {
-          steering: rec.steering ?? s.queue.steering,
-          followUp: rec.followUp ?? s.queue.followUp,
-          liveSteered: rec.liveSteered ?? s.queue.liveSteered,
-        },
-      };
     case "thinking_level_changed":
       return { ...s, state: s.state ? { ...s.state, thinkingLevel: rec.level } : s.state };
     case "session_info_changed":

@@ -19,12 +19,12 @@
   },
   "summary": {
     "rpc": {
-      "direct": 60,
+      "direct": 54,
       "integrated": 13,
       "guided": 0,
       "handoff": 0,
       "partial": 0,
-      "console": 1,
+      "console": 7,
       "missing": 0,
       "not-applicable": 0
     },
@@ -61,12 +61,12 @@
     {
       "name": "prompt",
       "status": "direct",
-      "surface": "Composer → send, queue delivery and stop",
+      "surface": "Composer → send and stop",
       "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 245
+          "line": 249
         }
       ],
       "inCachedCatalog": true,
@@ -74,13 +74,13 @@
     },
     {
       "name": "steer",
-      "status": "direct",
-      "surface": "Composer → send, queue delivery and stop",
-      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/App.tsx",
-          "line": 245
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -88,13 +88,13 @@
     },
     {
       "name": "follow_up",
-      "status": "direct",
-      "surface": "Composer → send, queue delivery and stop",
-      "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/App.tsx",
-          "line": 245
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -102,13 +102,13 @@
     },
     {
       "name": "remove_queued_message",
-      "status": "direct",
-      "surface": "Composer → queued messages / running turn controls",
-      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "line": 158
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -116,13 +116,13 @@
     },
     {
       "name": "promote_queued_message",
-      "status": "direct",
-      "surface": "Composer → queued messages / running turn controls",
-      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "line": 158
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -131,12 +131,12 @@
     {
       "name": "abort",
       "status": "direct",
-      "surface": "Composer → send, queue delivery and stop",
+      "surface": "Composer → send and stop",
       "note": "Text/images follow native prompt admission; tool execution and model capability remain OMP-owned.",
       "evidence": [
         {
           "file": "web/src/App.tsx",
-          "line": 245
+          "line": 249
         }
       ],
       "inCachedCatalog": true,
@@ -144,13 +144,13 @@
     },
     {
       "name": "abort_and_prompt",
-      "status": "direct",
-      "surface": "Composer → queued messages / running turn controls",
-      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "line": 158
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -158,13 +158,13 @@
     },
     {
       "name": "abort_and_restore_queue",
-      "status": "direct",
-      "surface": "Composer → queued messages / running turn controls",
-      "note": "Withdraw/promote/edit with returned images, atomic abort-and-restore, and interrupt/resubmit. Already-delivered steers cannot be withdrawn. Truncated native recovery is visible.",
+      "status": "console",
+      "surface": "Advanced runtime diagnostics",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "line": 158
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ],
       "inCachedCatalog": true,
@@ -8296,12 +8296,12 @@
     {
       "priority": "P1",
       "name": "Queue management",
-      "status": "Implemented",
-      "note": "Explicit withdraw/promote/edit, image restoration, abort-and-restore and interrupt/resubmit; native queue snapshots remain authoritative.",
+      "status": "Deferred",
+      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
       "evidence": [
         {
-          "file": "web/src/components/QueueControls.tsx",
-          "line": 141
+          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
+          "line": 10
         }
       ]
     },
