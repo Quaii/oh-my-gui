@@ -131,6 +131,7 @@ Runtime, Agent, then Advanced. Appearance sits directly below Installation in Ru
 maintenance, all settings, raw config and capabilities. Opening an Advanced page directly reveals
 its selection in the desktop sidebar. The compact picker exposes Advanced as a submenu.
 
+Settings section headers show their names without numeric item-count labels.
 Keep navigation icons in the Settings sidebar. Settings rows start with a 15px semibold label
 and a short, left-aligned description beneath it. Use icons in cards for actions and status.
 Use the shared spacing tokens for page gutters, section gaps, card padding and rows. Settings cards
