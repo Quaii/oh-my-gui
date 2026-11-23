@@ -8,12 +8,16 @@ import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "@
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { ContextUsage } from "./ContextUsage";
 import { Attachment, AttachmentContent, AttachmentTitle, AttachmentDescription, AttachmentMedia, AttachmentActions, AttachmentAction } from "@/components/ui/attachment";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { ProviderIcon } from "./ProviderIcon";
 import { PromptBox } from "@/components/ui/prompt-box";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import type { ChatState } from "../lib/store";
-import { Check, Brain, ChevronDown, Paperclip, Search, X, Zap } from "lucide-react";
+import { Check, Brain, ChevronDown, ListPlus, Paperclip, Search, X, Zap } from "lucide-react";
+import type { DraftImage } from "../lib/composer-queue";
+import type { ComposerQueue } from "../lib/use-composer-queue";
+import { QueuedMessages } from "./QueuedMessages";
 
 export interface ComposerProps {
   chat: ChatState;
@@ -24,7 +28,9 @@ export interface ComposerProps {
   thinkingLevels: string[];
   onSend: (text: string, images: any[]) => Promise<boolean>;
   onAbort: () => void;
+  queue: ComposerQueue;
   onModelChange: (provider: string, id: string) => void;
+  onManageModels?: () => void;
   onThinkingChange: (level: string) => void;
   onToggleFast: () => void;
   onSlash: (name: string) => void;
@@ -44,11 +50,22 @@ function draftKey(key: string | null | undefined) {
 }
 
 export function Composer(props: ComposerProps) {
-  const { chat, commands, models, thinkingLevels, onSend, onAbort } = props;
+  const { chat, commands, models, thinkingLevels, onSend, onAbort, queue } = props;
   const [submitting,setSubmitting]=useState(false);
   const [permissionsPending,setPermissionsPending]=useState(false);
-  const [text, setText] = useState("");
-  const [images, setImages] = useState<any[]>([]);
+  const [draftText, setDraftText] = useState("");
+  const [draftImages, setDraftImages] = useState<DraftImage[]>([]);
+  const editId = queue.editing?.id;
+  const text = queue.editing?.text ?? draftText;
+  const images = queue.editing?.images ?? draftImages;
+  function setText(next: SetStateAction<string>) {
+    if (!editId) setDraftText(next);
+    else queue.updateEdit(editId, item => ({ ...item, text: typeof next === "function" ? next(item.text) : next }));
+  }
+  function setImages(next: SetStateAction<DraftImage[]>) {
+    if (!editId) setDraftImages(next);
+    else queue.updateEdit(editId, item => ({ ...item, images: typeof next === "function" ? next(item.images) : next }));
+  }
   const [notice, setNotice] = useState<string | null>(null);
   const [extensionBackup, setExtensionBackup] = useState<string | null>(null);
   const editorEvent = useRef<string | null>(null);
@@ -59,8 +76,8 @@ export function Composer(props: ComposerProps) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const saveTimer = useRef<number | null>(null);
-  const latestDraft = useRef(text);
-  latestDraft.current = text;
+  const latestDraft = useRef(draftText);
+  latestDraft.current = draftText;
 
   const st = chat.state;
   const running = !!st?.isStreaming || chat.running;
@@ -73,11 +90,11 @@ export function Composer(props: ComposerProps) {
   useEffect(() => {
     if (!key) return;
     try {
-      setText(localStorage.getItem(key) ?? "");
+      setDraftText(localStorage.getItem(key) ?? "");
     } catch {
-      setText("");
+      setDraftText("");
     }
-    setImages([]);
+    setDraftImages([]);
     setExtensionBackup(null);
     setPalette({ open: false, index: 0 });
     return () => {
@@ -94,18 +111,22 @@ export function Composer(props: ComposerProps) {
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
       try {
-        if (text) localStorage.setItem(key, text);
+        if (draftText) localStorage.setItem(key, draftText);
         else localStorage.removeItem(key);
       } catch {}
     }, 400);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [text, key]);
+  }, [draftText, key]);
+
+  useEffect(() => {
+    if (editId) taRef.current?.focus();
+  }, [editId]);
 
   useEffect(() => {
     if (!props.seed) return;
-    setText(props.seed.text);
+    setDraftText(props.seed.text);
     props.onSeedConsumed?.();
     requestAnimationFrame(() => taRef.current?.focus());
   }, [props.seed?.n]);
@@ -114,10 +135,10 @@ export function Composer(props: ComposerProps) {
     const update = chat.editorUpdate;
     if (!update || editorEvent.current === `${chat.key}:${update.id}`) return;
     editorEvent.current = `${chat.key}:${update.id}`;
-    setExtensionBackup(text);
-    setText(update.text);
+    setExtensionBackup(draftText);
+    setDraftText(update.text);
     requestAnimationFrame(() => taRef.current?.focus());
-  }, [chat.editorUpdate, chat.key, text]);
+  }, [chat.editorUpdate, chat.key, draftText]);
   useEffect(() => {
     const receive = (event: Event) => {
       const result = event as CustomEvent<{ owner: string; text: string }>;
@@ -127,7 +148,7 @@ export function Composer(props: ComposerProps) {
     };
     window.addEventListener('omp:dictation-result', receive);
     return () => window.removeEventListener('omp:dictation-result', receive);
-  }, [chat.key]);
+  }, [chat.key, editId]);
 
   useEffect(() => {
     if (!notice) return;
@@ -136,12 +157,12 @@ export function Composer(props: ComposerProps) {
   }, [notice]);
 
   const slashMatches = useMemo(() => {
-    if (!text.startsWith("/")) return [];
+    if (editId || !text.startsWith("/")) return [];
     const q = text.slice(1).toLowerCase();
     return commands
       .filter((c) => c.name.toLowerCase().includes(q) || (c.aliases ?? []).some((a: string) => a.includes(q)))
       .slice(0, 12);
-  }, [text, commands]);
+  }, [text, commands, editId]);
 
   const filteredModels = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -157,17 +178,31 @@ export function Composer(props: ComposerProps) {
 
   useEffect(() => {
     setPalette((p) => ({ ...p, open: text.startsWith("/") && slashMatches.length > 0, index: 0 }));
-  }, [text]);
+  }, [text, editId]);
 
   const submit = useCallback(
     (value?: string) => {
       const prompt = (value ?? text).trim();
       if (!prompt && images.length === 0) return;
-      if (running || submitting || permissionsPending) return;
-      const sentImages=images;setSubmitting(true);
-      void onSend(prompt, images).then(ok=>{if(!ok){setText(current=>current || prompt);setImages(current=>current.length?current:sentImages);}else setExtensionBackup(null);}).finally(()=>setSubmitting(false));
-      setText("");
-      setImages([]);
+      if (submitting || permissionsPending) return;
+      if (editId) {
+        queue.finishEdit(true);
+        return;
+      }
+      if (running || queue.items.length) {
+        if (!queue.add(prompt, images)) return;
+      } else {
+        const sentImages = images;
+        setSubmitting(true);
+        void onSend(prompt, sentImages).then(ok => {
+          if (!ok) {
+            setDraftText(current => current || prompt);
+            setDraftImages(current => current.length ? current : sentImages);
+          } else setExtensionBackup(null);
+        }).finally(() => setSubmitting(false));
+      }
+      setDraftText("");
+      setDraftImages([]);
       setPalette({ open: false, index: 0 });
       if (key) {
         try {
@@ -175,7 +210,7 @@ export function Composer(props: ComposerProps) {
         } catch {}
       }
     },
-    [text, images, onSend, key, running, submitting, permissionsPending]
+    [text, images, onSend, key, running, submitting, permissionsPending, editId, queue]
   );
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -188,6 +223,17 @@ export function Composer(props: ComposerProps) {
       return;
     }
     if (e.key === 'Escape' && completion.prediction) { completion.dismiss(); return; }
+    if (editId && e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      queue.finishEdit(false);
+      return;
+    }
+    if ((running || editId) && !palette.open && e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!e.repeat) submit();
+      return;
+    }
     if (!palette.open) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -277,7 +323,7 @@ export function Composer(props: ComposerProps) {
         </div>
       )}
 
-      {extensionBackup !== null && <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">OMP updated the draft.<button className="underline" onClick={() => { setText(extensionBackup); setExtensionBackup(null); }}>Undo</button><button className="ml-auto" aria-label="Dismiss draft update" onClick={() => setExtensionBackup(null)}><X className="size-3" /></button></div>}
+      {extensionBackup !== null && !editId && <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">OMP updated the draft.<button className="underline" onClick={() => { setDraftText(extensionBackup); setExtensionBackup(null); }}>Undo</button><button className="ml-auto" aria-label="Dismiss draft update" onClick={() => setExtensionBackup(null)}><X className="size-3" /></button></div>}
       {notice && (
         <div className="mb-2 rounded-md border-0 bg-primary/10 px-2.5 py-1 text-[11.5px] text-primary">
           {notice}
@@ -286,23 +332,37 @@ export function Composer(props: ComposerProps) {
 
       {images.length>0&&<div className="mb-3 flex flex-wrap gap-2">{images.map((img,i)=><Attachment key={i} size="sm"><AttachmentMedia variant="image"><img src={`data:${img.mimeType};base64,${img.data}`} alt={img.name || "Attachment"} className="size-full object-cover"/></AttachmentMedia><AttachmentContent><AttachmentTitle>{img.name || "Image"}</AttachmentTitle><AttachmentDescription>{Math.round((img.size || 0)/1024)} KB · ready</AttachmentDescription></AttachmentContent><AttachmentActions><AttachmentAction aria-label={`Remove ${img.name || "attachment"}`} onClick={()=>setImages(p=>p.filter((_,j)=>j!==i))}><X className="size-3"/></AttachmentAction></AttachmentActions></Attachment>)}</div>}
 
+      <QueuedMessages queue={queue} running={running} />
+      {editId && <div className="queued-edit-actions">
+        <span>Editing queued message</span>
+        <Button variant="ghost" size="xs" onClick={() => queue.finishEdit(false)}>Cancel</Button>
+        <Button variant="secondary" size="xs" disabled={!text.trim() && images.length === 0} onClick={() => submit()}>Save</Button>
+      </div>}
       <PromptBox
           trailingActions={<>
             <ContextUsage usage={st?.contextUsage} stats={props.stats}/>
             <VoiceControls chat={chat} draft={text} insert={spoken => setText(previous => appendDictation(previous, spoken))}/>
+            {running && !editId && (text.trim() || images.length > 0) && <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon-sm" aria-label="Queue message" disabled={permissionsPending || submitting} onClick={() => submit()}>
+                  <ListPlus className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Queue message</TooltipContent>
+            </Tooltip>}
           </>}
         disabled={permissionsPending}
         value={text}
         onValueChange={setText}
         onSubmit={(prompt, effort) => {
-          if (effort && effort.id !== st?.thinkingLevel) props.onThinkingChange(effort.id);
+          if (!editId && !running && !queue.items.length && effort && effort.id !== st?.thinkingLevel) props.onThinkingChange(effort.id);
           submit(prompt);
         }}
         hasContent={images.length>0}
         status={running || submitting ? "streaming" : "idle"}
         onStop={onAbort}
         efforts={thinkingLevels.slice(Math.max(0, thinkingLevels.indexOf(st?.thinkingLevel ?? "off"))).map((l) => ({ id: l, label: l }))}
-        placeholder={running ? ["Draft your next message…"] : PLACEHOLDERS}
+        placeholder={editId ? "Edit queued message…" : running ? "Queue a follow-up…" : PLACEHOLDERS}
         hint={null}
         inputRef={taRef as any}
         completion={completion.prediction?.text === text ? completion.prediction.suffix : undefined}
@@ -314,7 +374,7 @@ export function Composer(props: ComposerProps) {
           onBlur: () => { setFocused(false); completion.dismiss(); },
           onCompositionStart: () => setComposing(true),
           onCompositionEnd: () => setComposing(false),
-          "aria-label": "Message OMP",
+          "aria-label": editId ? "Edit queued message" : "Message OMP",
         }}
         actions={
           <>
@@ -335,7 +395,7 @@ export function Composer(props: ComposerProps) {
               onChange={(e) => attach(e.target.files)}
             />
 
-            <Popover open={modelOpen} onOpenChange={setModelOpen}><PopoverTrigger asChild><button className={chip} aria-label={`Model: ${model?.name ?? model?.id ?? "none"}`}><ProviderIcon provider={model?.provider || ""}/><span className="max-w-[170px] truncate">{model?.name ?? model?.id ?? "Model"}</span><ChevronDown className="size-3"/></button></PopoverTrigger><PopoverContent side="top" align="start" className="w-[400px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl p-0"><Command><CommandInput placeholder="Search models" value={filter} onValueChange={setFilter}/><CommandList className="max-h-72 p-1.5"><CommandEmpty>No matching models</CommandEmpty>{filteredModels.map(m=><CommandItem key={`${m.provider}/${m.id}`} value={`${m.provider}/${m.id} ${m.name}`} className="min-h-10 gap-3 rounded-lg px-3" onSelect={()=>{props.onModelChange(m.provider,m.id);setModelOpen(false);}}><ProviderIcon provider={m.provider}/><span className="min-w-0 flex-1 truncate text-[13px]">{m.name}<span className="mt-0.5 block text-[11px] text-muted-foreground">{m.provider}{m.context?` · ${Math.round(m.context/1000)}k context`:""}</span></span>{m.provider===model?.provider&&m.id===model?.id&&<Check className="size-3.5"/>}</CommandItem>)}</CommandList></Command></PopoverContent></Popover>
+            <Popover open={modelOpen} onOpenChange={setModelOpen}><PopoverTrigger asChild><button className={chip} aria-label={`Model: ${model?.name ?? model?.id ?? "none"}`}><ProviderIcon provider={model?.provider || ""}/><span className="max-w-[170px] truncate">{model?.name ?? model?.id ?? "Model"}</span><ChevronDown className="size-3"/></button></PopoverTrigger><PopoverContent side="top" align="start" className="w-[400px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl p-0"><Command><CommandInput placeholder="Search models" value={filter} onValueChange={setFilter}/><CommandList className="max-h-72 p-1.5"><CommandEmpty>No matching models</CommandEmpty>{filteredModels.map(m=><CommandItem key={`${m.provider}/${m.id}`} value={`${m.provider}/${m.id} ${m.name}`} className="min-h-10 gap-3 rounded-lg px-3" onSelect={()=>{props.onModelChange(m.provider,m.id);setModelOpen(false);}}><ProviderIcon provider={m.provider}/><span className="min-w-0 flex-1 truncate text-[13px]">{m.name}<span className="mt-0.5 block text-[11px] text-muted-foreground">{m.provider}{m.context?` · ${Math.round(m.context/1000)}k context`:""}</span></span>{m.provider===model?.provider&&m.id===model?.id&&<Check className="size-3.5"/>}</CommandItem>)}</CommandList></Command>{props.onManageModels && <div className="border-t border-border p-1.5"><Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={()=>{setModelOpen(false);props.onManageModels?.();}}>Manage model visibility</Button></div>}</PopoverContent></Popover>
             <DropdownMenu open={thinkOpen} onOpenChange={setThinkOpen}><DropdownMenuTrigger asChild><button className={chip} aria-label={`Thinking level: ${st?.thinkingLevel ?? "off"}`}><Brain className="size-3.5"/><span>{st?.thinkingLevel ?? "off"}</span><ChevronDown className="size-3"/></button></DropdownMenuTrigger><DropdownMenuContent side="top" align="start" className="w-52 rounded-2xl p-2"><DropdownMenuLabel className="px-3 pb-2 pt-1 text-xs font-medium text-muted-foreground">Thinking level</DropdownMenuLabel><DropdownMenuRadioGroup value={st?.thinkingLevel || "off"} onValueChange={props.onThinkingChange}>{thinkingLevels.map(level=><DropdownMenuRadioItem key={level} value={level} className="min-h-9 rounded-lg text-[13px] capitalize">{level}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu>
             {supportsFastMode(st?.model) && (
             <Tooltip>

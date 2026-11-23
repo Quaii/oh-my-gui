@@ -241,6 +241,7 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
     case "agent_start":
       return { ...s, running: true, error: null };
     case "agent_end":
+      if (rec.yielded === false) return s;
       return { ...s, running: false, state: s.state && { ...s.state, isStreaming: false } };
     case "agent_settled":
     case "session_settled":

@@ -271,7 +271,7 @@ function PromptBox({
 
     const submit = (effort: PromptEffort) => {
         const prompt = value.trim()
-        if (!prompt || disabled || streaming) {
+        if ((!prompt && !hasContent) || disabled || streaming) {
             return
         }
         if (!reduced) {
@@ -286,7 +286,7 @@ function PromptBox({
             })
         }
         setSent(toRgb(effort.color))
-        setValue('')
+        if (valueProp === undefined) setValue('')
         onSubmit?.(prompt, effort)
     }
 
@@ -368,7 +368,7 @@ function PromptBox({
             data-charging={charging || undefined}
             data-disabled={disabled || undefined}
             className={cn(
-                'relative flex w-[560px] max-w-full flex-col rounded-[24px] border border-black/[0.08] bg-white font-[family-name:var(--font-open-runde,ui-rounded),ui-rounded,system-ui,sans-serif] text-black shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-white/10 dark:bg-[#0f0f0f] dark:text-white',
+                'relative flex w-[560px] max-w-full flex-col rounded-3xl border border-black/[0.08] bg-white font-[family-name:var(--font-open-runde,ui-rounded),ui-rounded,system-ui,sans-serif] text-black shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-white/10 dark:bg-[#0f0f0f] dark:text-white',
                 disabled && 'opacity-60',
                 className,
             )}

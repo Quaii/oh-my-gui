@@ -30,6 +30,8 @@ import { DialogHost, Toasts } from "./components/Dialogs";
 import { navigate, useRoutePath } from "./lib/route";
 import { filterChatCommands, getPalettePrefs, subscribePalette } from "./lib/settings";
 import { clearSessionMeta } from "./lib/sessionmeta";
+import { useComposerQueue } from "./lib/use-composer-queue";
+import { deliverComposerDraft, queueOwner, type QueuedDraft } from "./lib/composer-queue";
 import { Brand } from "./components/Brand";
 import {SharedWorkspaceBackground} from "./components/SharedWorkspaceBackground";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -286,12 +288,29 @@ export default function App() {
     [chat.running, chat.state?.isStreaming, refreshState, setChat]
   );
 
+  const running = !!(chat.running || chat.state?.isStreaming);
+  const queueBridge = chat.key;
+  const deliverQueuedDraft = useCallback(async (owner: string, draft: QueuedDraft, interrupt: boolean, canSend: () => boolean): Promise<"sent" | "wait"> => {
+    const key = queueBridge;
+    if (!key) return "wait";
+    const result = await deliverComposerDraft({
+      bridge: key, owner, draft, interrupt,
+      canSend: () => keyRef.current === key && canSend(),
+      call: cmd => post("/api/cmd", { key, cmd }),
+    });
+    if (result === "sent" && keyRef.current === key) void refreshState();
+    return result;
+  }, [queueBridge, refreshState]);
+  const composerQueue = useComposerQueue(queueOwner(queueBridge, chat.state), connected && chat.loaded && !running, deliverQueuedDraft);
+  const pauseQueue = composerQueue.pause;
+
   const onAbort = useCallback(async () => {
     const key = keyRef.current;
     if (!key) return;
+    pauseQueue();
     await post("/api/cmd", { key, cmd: { type: "abort" } }).catch(() => {});
     refreshState();
-  }, [refreshState]);
+  }, [pauseQueue, refreshState]);
 
   const onRespond = useCallback(async (d: any, response: any) => {
     const key = keyRef.current;
@@ -471,7 +490,6 @@ export default function App() {
 
   const results = useMemo(() => buildResultMap(chat.messages), [chat.messages]);
   const changes = useMemo(()=>fileChangeSummaries(chat.messages,results),[chat.messages,results]);
-  const running = !!(chat.running || chat.state?.isStreaming);
   const visibleMessages = chat.messages;
   const renderedMessages=useMemo(()=>groupedTranscript(visibleMessages,chat.live),[visibleMessages,chat.live]);
   const [entries,setEntries] = useState<any[]>([]);
@@ -716,6 +734,7 @@ export default function App() {
               thinkingLevels={thinkingLevels}
               onSend={onSend}
               onAbort={onAbort}
+              queue={composerQueue}
               onModelChange={(provider, id) => sendCmd({ type: "set_model", provider, modelId: id })}
               onThinkingChange={(level) => sendCmd({ type: "set_thinking_level", level })}
               onToggleFast={() => sendCmd({ type: "set_fast_mode", enabled: !chat.state?.fastModeEnabled })}
