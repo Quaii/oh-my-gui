@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
+import { AuthLinkActions } from "./RuntimeOutput";
 import {
   initialAnswers,
   changeAnswer,
@@ -20,9 +21,11 @@ import {
 
 export function DialogHost({
   dialogs,
+  authLinks = [],
   onRespond,
 }: {
   dialogs: DialogRequest[];
+  authLinks?: ChatState["authLinks"];
   onRespond: (d: DialogRequest, response: any) => unknown;
 }) {
   const d = dialogs[0];
@@ -30,6 +33,7 @@ export function DialogHost({
     <NativeDialog
       key={d.id}
       d={d}
+      authLink={d.authProvider ? authLinks.find(link => link.authProvider === d.authProvider) : undefined}
       count={dialogs.length}
       onRespond={onRespond}
     />
@@ -37,10 +41,12 @@ export function DialogHost({
 }
 function NativeDialog({
   d,
+  authLink,
   count,
   onRespond,
 }: {
   d: DialogRequest;
+  authLink?: ChatState["authLinks"][number];
   count: number;
   onRespond: (d: DialogRequest, response: any) => unknown;
 }) {
@@ -114,7 +120,7 @@ function NativeDialog({
           <DialogTitle className="whitespace-pre-wrap text-sm">
             {d.method === "confirm"
               ? "Permission requested"
-              : d.title || "A question from OMP"}
+              : d.authProvider ? "Complete provider sign-in" : d.title || "A question from OMP"}
             {count > 1 && (
               <span className="ml-2 text-xs text-muted-foreground">
                 {count} pending
@@ -125,8 +131,12 @@ function NativeDialog({
             {d.message ||
               (d.method === "ask"
                 ? "Choose an option or write your own answer."
-                : "Your response is sent to the running agent.")}
+                : d.authProvider
+                  ? "OMP uses the callback to complete sign-in."
+                  : "Your response is sent to the running agent.")}
           </DialogDescription>
+          {authLink && <AuthLinkActions link={authLink} />}
+          {d.authProvider === 'zai-coding-plan' && <p className="text-xs text-muted-foreground">If the browser offers to open Z Code, cancel and paste the final redirect URL or code here.</p>}
         </DialogHeader>
         <div
           className="max-h-[60vh] space-y-4 overflow-auto p-5"

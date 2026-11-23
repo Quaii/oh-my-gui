@@ -56,6 +56,7 @@ interface Slot {
   exports?: Map<string, string>;
   host?: HostRpcAdapter;
   hostEnabled?: boolean;
+  login?: { providerId: string; hasAuthLink: boolean };
 }
 const slots = new Map<string, Slot>();
 let trayRecent: ReturnType<typeof listSessions> | undefined;
@@ -140,7 +141,15 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
     if(["agent_end","agent_settled","session_settled"].includes(rec.type)) slot.state={...slot.state,isStreaming:false};
     broadcast(slot, slot.replay.accept(rec));
   });
-  bridge.on("ui_request", (rec: any) => broadcast(slot, slot.replay.accept(rec)));
+  bridge.on("ui_request", (rec: any) => {
+    if (slot.login && rec.method === 'open_url') {
+      slot.login.hasAuthLink = true;
+      rec = { ...rec, authProvider: slot.login.providerId };
+    } else if (slot.login?.hasAuthLink && rec.method === 'input' && !rec.secret) {
+      rec = { ...rec, authProvider: slot.login.providerId };
+    }
+    broadcast(slot, slot.replay.accept(rec));
+  });
   bridge.on("exit", (info: any) => {
     slot.host?.dispose();
     broadcast(slot, { type: "bridge_exit", ...info });
@@ -471,6 +480,23 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       if (!slot) return json(res, 404, { error: "no such bridge" }), true;
       try {
         await slot.initializing;
+        if (body.cmd?.type === 'login') {
+          const providerId = body.cmd.providerId;
+          if (typeof providerId !== 'string' || !providerId) throw Error('Choose a provider to sign in.');
+          if (slot.login) throw Error('A provider sign-in is already in progress.');
+          if (slot.state?.isStreaming) throw Error('Finish the current turn before signing in.');
+          slot.login = { providerId, hasAuthLink: false };
+          let connected = false;
+          try {
+            const data = await slot.bridge.send({ type: 'login', providerId }, 660_000);
+            connected = true;
+            json(res, 200, { ok: true, data });
+          } finally {
+            slot.login = undefined;
+            broadcast(slot, slot.replay.accept({ type: 'provider_login_finished', providerId, connected }));
+          }
+          return true;
+        }
         if (body.cmd?.type === "abort") slot.routingAbort?.abort();
         if (body.cmd?.type === "prompt" && !String(body.cmd.message || "").startsWith("/")) {
           const config = await readControl();

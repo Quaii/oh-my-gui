@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { execFile, spawn } from "node:child_process";
 import { connect } from "node:net";
 import os from "node:os";
+import { installDesktopOmp } from "./desktop-setup.ts";
 import {
   nativeInstallStage,
   type InstallProgress,
@@ -131,6 +132,13 @@ async function install() {
         progress.totalBytes = totalBytes;
       },
     );
+    stage("omp", "Checking the installed OMP runtime…");
+    const runtime = await installDesktopOmp({
+      checkUpdates: true,
+      report: detail => { progress.detail = detail; },
+    });
+    if (!runtime.available || !runtime.version)
+      throw Error("The OMP runtime could not be verified. Retry installation.");
     work = await fs.mkdtemp(path.join(os.tmpdir(), "omp-install-progress-"));
     const log = path.join(work, "stages.log");
     await fs.writeFile(log, "");
@@ -223,6 +231,7 @@ async function install() {
     );
     installed = true;
     stage("complete", "Installation verified. Continue to first-launch setup.");
+    progress.runtimeVersion = runtime.version;
   } catch (error: any) {
     progress.error = error.message;
     throw error;

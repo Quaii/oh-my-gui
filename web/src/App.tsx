@@ -137,6 +137,14 @@ export default function App() {
   const [projectDialog,setProjectDialog] = useState(false);
 
   /* ---------- session lifecycle ---------- */
+  const refreshModels = useCallback(async () => {
+    const key = keyRef.current;
+    if (!key) return;
+    const version = attachVersion.current;
+    const result = await post("/api/cmd", { key, cmd: { type: "get_available_models" } }).catch(() => null);
+    if (result?.ok && version === attachVersion.current) setModels(result.data?.models ?? []);
+  }, []);
+
   const attach = useCallback(
     async (key: string, sessionPath?: string, sessionCwd?:string) => {
       if (!cwd) return;
@@ -157,6 +165,7 @@ export default function App() {
           (rec) => {
             if (version !== attachVersion.current) return;
             setChat(rec);
+            if (rec.type === 'provider_login_finished' && rec.connected) void refreshModels();
           },
           (s) => version === attachVersion.current && setConnected(s === "open")
         );
@@ -176,7 +185,7 @@ export default function App() {
         setChat({ type: "snapshot_error", message: String(e?.message ?? e) });
       }
     },
-    [cwd, flags]
+    [cwd, flags, refreshModels]
   );
 
   useEffect(() => {
@@ -482,6 +491,7 @@ export default function App() {
           onRestart={async () => { if(running) { dispatch(s=>({...s,toasts:[...s.toasts,{id:String(Date.now()),kind:"info",text:"Finish or stop the current turn before restarting the runtime."}]})); return; } const current=keyRef.current; const file=activePath || chat.state?.sessionFile; unsubRef.current?.(); if(current) await del(`/api/bridge?key=${encodeURIComponent(current)}`); await attach(current || `new:${Date.now()}`,file || undefined); }}
           info={{ ...boot, cwd }}
           onRefreshState={refreshState}
+          onRefreshModels={refreshModels}
         />
       ) : (
         <>
@@ -730,7 +740,7 @@ export default function App() {
       />
 
       {(chat.error || offline) && <div className="pointer-events-none fixed inset-0 z-40 grid place-items-center p-6"><div role="alert" className="pointer-events-auto w-full max-w-md rounded-2xl border bg-popover p-6 shadow-2xl"><h2 className="text-base font-semibold">OMP is unavailable</h2><p className="mt-3 break-words text-sm leading-relaxed text-muted-foreground">{chat.error || "The connection to the runtime was interrupted."}</p><p className="mt-3 text-xs leading-relaxed text-muted-foreground">Make sure the local server and OMP runtime are running, then reconnect. Runtime details are available in Settings → Installation.</p><button className="mt-5 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground" onClick={async()=>{reconnects.current=0;setOffline(false);if(!boot){try{const b=await get("/api/bootstrap");setBoot(b);dispatch(s=>({...s,error:null}));}catch(e:any){setChat({type:"snapshot_error",message:e.message});}}else await attach(keyRef.current || `new:${Date.now()}`,activePath || chat.state?.sessionFile || undefined);}}>Reconnect</button></div></div>}
-      <DialogHost dialogs={chat.dialogs} onRespond={onRespond} />
+      <DialogHost dialogs={chat.dialogs} authLinks={chat.authLinks} onRespond={onRespond} />
       <Toasts chat={chat} onDismiss={(id) => dispatch((s) => dismissToast(s, id))} />
       <Toaster position="bottom-right" theme="dark" />
 

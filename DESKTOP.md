@@ -231,8 +231,13 @@ target machines remain release acceptance. No real upgrade is run merely to insp
 versions and duplicate targets, and refuses incomplete platform sets when combining a release.
 CI execution and a live signed N→N+1 upgrade are not established by local unit/build checks.
 
-The custom Windows installer reports explicit progress through preflight, package checksum, native
-dependency checks, app/runtime copy, installed-file verification and setup handoff. The NSIS pre/post
+The custom Windows installer reports explicit progress through preflight, package checksum, OMP
+runtime, native dependency checks, app/runtime copy, installed-file verification and setup handoff.
+The OMP step checks the stable release for the current platform and installs a missing or newer
+runtime into desktop app data. It checks the release checksum and executable version before replacing
+the managed copy. Newer runtimes and explicit `OMP_BIN` overrides are kept. An update can make the
+app use its managed copy while the existing standalone binary remains available.
+The NSIS pre/post
 install hooks append boundaries to a temporary stage log supplied only to the owned installation
 process. The GUI polls its local status; no clock-driven percentage is used. The overall bar measures
 completed stages and the checksum percentage measures actual read bytes. Copy/dependency stages

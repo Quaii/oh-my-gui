@@ -54,6 +54,26 @@ test('replay retains only the latest presentation update and bounds native outpu
   assert.equal(updates[0].text, '2');
   assert.ok(replay.snapshot().length <= 64);
 });
+test('ended provider sign-in removes its browser link and callback prompt, including on reconnect', () => {
+  const replay = new UiReplay();
+  const authProvider = 'zai-coding-plan';
+  replay.accept({ type: 'extension_ui_request', method: 'open_url', id: 'first', url: 'https://example.test/', authProvider });
+  replay.accept({ type: 'extension_ui_request', method: 'open_url', id: 'latest', url: 'https://example.test/', launchUrl: 'http://127.0.0.1:12345/redirect', authProvider });
+  replay.accept({ type: 'extension_ui_request', method: 'open_url', id: 'other', url: 'https://example.test/' });
+  replay.accept({ type: 'extension_ui_request', method: 'input', id: 'callback', authProvider });
+  const before = replay.snapshot().reduce(chatReducer, initialChat);
+  assert.deepEqual(before.authLinks.map(link => link.id), ['latest', 'other']);
+  assert.equal(before.authLinks[0].url, 'http://127.0.0.1:12345/redirect');
+  assert.equal(before.dialogs[0].authProvider, authProvider);
+
+  const finish = replay.accept({ type: 'provider_login_finished', providerId: authProvider, connected: false });
+  const after = chatReducer(before, finish);
+  const reconnected = replay.snapshot().reduce(chatReducer, initialChat);
+  assert.deepEqual(after.authLinks.map(link => link.id), ['other']);
+  assert.deepEqual(after.dialogs, []);
+  assert.deepEqual(reconnected.authLinks, after.authLinks);
+  assert.deepEqual(reconnected.dialogs, after.dialogs);
+});
 test('structured questions preserve ids, recommendations, multi-select and free text', () => {
   let answers = initialAnswers([{ id: 'q', options: [{ label: 'A' }, { label: 'B' }], recommended: 1 }]);
   assert.deepEqual(answers, [{ id: 'q', selectedOptions: ['B'] }]);

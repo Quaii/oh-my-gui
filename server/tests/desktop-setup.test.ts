@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup } from '../src/desktop-setup.ts';
+import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, installDesktopOmp, needsStableOmp } from '../src/desktop-setup.ts';
 import { desktopInstallDirectory, installerManifest, desktopApplicationEnvironment } from '../src/desktop-installer.ts';
 import { OMP_BINARY, selectOmpBinary } from '../src/omp.ts';
 import { promises as fs } from 'node:fs';
@@ -27,6 +27,50 @@ test('OMP build metadata requires a release version, checksum and credential-fre
   assert.equal(validateOmpBuild(good).sha256, good.file.sha256);
   for (const patch of [{ build: { version: '../escape' } }, { file: { sha256: 'bad' } }, { download: 'http://example.com/omp' }, { download: 'https://user:secret@example.com/omp' }]) {
     assert.throws(() => validateOmpBuild({ ...good, ...patch }));
+  }
+});
+
+test('installer upgrades to stable by numeric version without downgrading a newer runtime', () => {
+  assert.equal(needsStableOmp('omp 9.9.9', '10.0.0'), true);
+  assert.equal(needsStableOmp('omp 10.0.0-preview.1', '10.0.0'), true);
+  assert.equal(needsStableOmp('omp 10.0.0+build.2', '10.0.0'), false);
+  assert.equal(needsStableOmp('omp 10.1.0', '10.0.0'), false);
+});
+
+test('installer checks a working runtime against stable and leaves it available after a bad download', async t => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'omp-runtime-update-'));
+  const previousDirectory = process.env.OMP_DESKTOP_DATA;
+  const previousOverride = process.env.OMP_BIN;
+  const previousBinary = OMP_BINARY;
+  const metadata = {
+    build: { version: process.versions.node },
+    file: { sha256: 'a'.repeat(64) },
+    download: 'https://example.com/omp',
+  };
+  const fetchMock = t.mock.method(globalThis, 'fetch', async (url: string) => {
+    if (url === metadata.download) return new Response('corrupted executable');
+    assert.match(url, /\/latest\/[^?]+\?channel=stable$/);
+    return Response.json(metadata);
+  });
+  process.env.OMP_DESKTOP_DATA = directory;
+  delete process.env.OMP_BIN;
+  selectOmpBinary(process.execPath);
+  try {
+    assert.equal((await installDesktopOmp({ checkUpdates: true })).available, true);
+    assert.equal(fetchMock.mock.callCount(), 1);
+    metadata.build.version = `${Number(process.versions.node.split('.')[0]) + 1}.0.0`;
+    await assert.rejects(installDesktopOmp({ checkUpdates: true }), /checksum verification failed/);
+    assert.equal(fetchMock.mock.callCount(), 3);
+    assert.equal(OMP_BINARY, process.execPath);
+    assert.equal((await desktopSetupStatus()).available, true);
+    assert.deepEqual(await fs.readdir(path.join(directory, 'runtime')), []);
+  } finally {
+    selectOmpBinary(previousBinary);
+    if (previousOverride === undefined) delete process.env.OMP_BIN;
+    else process.env.OMP_BIN = previousOverride;
+    if (previousDirectory === undefined) delete process.env.OMP_DESKTOP_DATA;
+    else process.env.OMP_DESKTOP_DATA = previousDirectory;
+    await fs.rm(directory, { recursive: true, force: true });
   }
 });
 
@@ -62,6 +106,10 @@ test('setup completion persists in native app data and cannot complete with an u
     assert.equal((await desktopSetupStatus()).completed, true);
     const saved = await fs.readFile(path.join(directory, 'setup.json'), 'utf8');
     selectOmpBinary(path.join(directory, 'missing-runtime'));
+    assert.equal((await desktopSetupStatus()).available, false);
+    const invalid = path.join(directory, 'damaged-runtime.exe');
+    await fs.writeFile(invalid, 'This is an inert test fixture.');
+    selectOmpBinary(invalid);
     assert.equal((await desktopSetupStatus()).available, false);
     await assert.rejects(completeDesktopSetup(), /Connect or install OMP/);
     assert.equal(await fs.readFile(path.join(directory, 'setup.json'), 'utf8'), saved);

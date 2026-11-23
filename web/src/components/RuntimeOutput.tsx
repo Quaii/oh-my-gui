@@ -2,6 +2,15 @@ import type { ChatState } from "../lib/store";
 import { Button } from "./ui/button";
 import { isDeviceMountNotice } from "../lib/conversation-actions";
 
+export function AuthLinkActions({ link }: { link: ChatState['authLinks'][number] }) {
+  return <div className="flex flex-wrap items-center gap-2">
+    <Button variant="outline" size="sm" asChild>
+      <a href={link.url} target="_blank" rel="noopener noreferrer">Open sign-in page</a>
+    </Button>
+    <Button variant="ghost" size="sm" onClick={() => void navigator.clipboard.writeText(link.url)}>Copy link</Button>
+  </div>;
+}
+
 export function RuntimeOutput({
   outputs,
   links = [],
@@ -21,21 +30,7 @@ export function RuntimeOutput({
           <p className="mb-2 text-sm">
             {link.instructions || "Continue sign-in in your browser."}
           </p>
-          <a
-            className="text-sm underline"
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open sign-in page
-          </a>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => void navigator.clipboard.writeText(link.url)}
-          >
-            Copy link
-          </Button>
+          <AuthLinkActions link={link} />
         </div>
       ))}
       {visibleOutputs.map((output) => (

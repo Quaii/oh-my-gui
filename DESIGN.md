@@ -307,8 +307,8 @@ readable release notes, actual download progress and a separate Install and rest
 signature verification. Unsaved/saving editor documents and active work block installation. An
 unconfigured release channel is visibly unavailable, never presented as “up to date.”
 
-The custom Windows installer shows System checks, Verify package, Windows dependencies, App and
-runtime, Verify installation, and Open setup in its sidebar. Its overall bar counts completed stages;
+The custom Windows installer shows System checks, Verify package, OMP runtime, Windows dependencies,
+App and runtime, Verify installation, and Open setup in its sidebar. Its overall bar counts completed stages;
 package-check progress uses bytes actually read. Native dependency and copy operations remain active
 without fabricated byte percentages. Keep the stage detail and bar visible in the compact window.
 Successful installation requires installed-file, Node runtime and uninstall-registration checks.
@@ -329,6 +329,11 @@ secondary Advanced surfaces. Task completion is agent-owned; settings do not off
 removal or completion toggles. Models show the default first, with workload overrides in a closed
 Advanced disclosure. Custom-provider configuration uses the same frosted menu glass as Appearance,
 with no horizontal overflow.
+
+Provider cards show sign-in only when the runtime reports no connected credential. Hover or keyboard
+focus reveals account management for connected providers. Touch screens keep the action visible.
+Accounts expand inside their card. Keep browser launch and manual sign-in completion in the same
+dialog when the runtime requests a callback.
 
 Advanced session goals, branch/label controls, execution settings and side-question topics
 use ordinary settings groups with the same sidebar material and spacing. Native operation forms use

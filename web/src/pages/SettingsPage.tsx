@@ -4,7 +4,7 @@ import {transitionUpdate} from '../lib/motion';
 import {ErrorBoundary} from "../components/ErrorBoundary";
 import { SessionWorkflows } from '../components/settings/SessionWorkflows';
 import { RuntimeOutput } from '../components/RuntimeOutput';
-import { ProviderAccounts } from '../components/settings/ProviderAccounts';
+import { ProviderAccounts, type LoginProvider } from '../components/settings/ProviderAccounts';
 import { parseLaunchArgs, formatLaunchArgs, validateGuiLaunchArgs } from '../../../shared/launch-args';
 import {supportsFastMode} from "../lib/model-capabilities";
 import { SettingsNavigation, savedSettingsPanel, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
@@ -21,7 +21,7 @@ import { AppVersion } from '../components/settings/UpdatesPanel';
 import { CustomProvidersPanel, ModelRolesPanel } from "../components/settings/ModelsPanel";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
-import { get, post, put } from "../lib/api";
+import { api, get, post, put } from "../lib/api";
 import { fetchSettings, resetSetting, saveSetting, type Setting, type SettingsPayload } from "../lib/settings";
 import { Btn, Empty, Group } from "../components/settings/Controls";
 import { ConfigList } from "../components/settings/ConfigList";
@@ -86,10 +86,11 @@ export interface SettingsPageProps {
   onRestart: () => void;
   info: any;
   onRefreshState: () => void;
+  onRefreshModels: () => void;
 }
 
 export function SettingsPage(props: SettingsPageProps) {
-  const { onBack, sidebarCollapsed, onToggleSidebar, chat, config, onConfigSaved, onSend, flags, setFlags, onRestart, info, onRefreshState } = props;
+  const { onBack, sidebarCollapsed, onToggleSidebar, chat, config, onConfigSaved, onSend, flags, setFlags, onRestart, info, onRefreshState, onRefreshModels } = props;
 
   const contentRef=useRef<HTMLDivElement>(null);
   const [panel,setPanel]=useState<PanelId>(savedSettingsPanel);
@@ -107,7 +108,13 @@ export function SettingsPage(props: SettingsPageProps) {
   const [exportUrl, setExportUrl] = useState('');
   const [providersLoading,setProvidersLoading]=useState(true);
   const [providersError,setProvidersError]=useState("");
-  const [providers, setProviders] = useState<any[]>([]);
+  const [providers, setProviders] = useState<LoginProvider[]>([]);
+  const [loginBusy, setLoginBusy] = useState(false);
+  const pendingLogin = useRef(false);
+  const providerRequest = useRef<AbortController | null>(null);
+  const lastProviderStatus = useRef<string | undefined>(undefined);
+  const providerView = useRef({ panel, key: chat.key });
+  providerView.current = { panel, key: chat.key };
   const [nameDraft, setNameDraft] = useState("");
   const [flagDraft, setFlagDraft] = useState(formatLaunchArgs(flags));
   const [cfg, setCfg] = useState<any>(config);
@@ -127,14 +134,47 @@ export function SettingsPage(props: SettingsPageProps) {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (panel === "providers" && chat.loaded) {
-      setProvidersLoading(true);setProvidersError("");
-      post("/api/cmd", { key: chat.key, cmd: { type: "get_login_providers" } })
-        .then((r) => {if(!r.ok)throw Error(r.error);setProviders(r.data?.providers ?? []);})
-        .catch(e=>setProvidersError(e.message)).finally(()=>setProvidersLoading(false));
+  const refreshProviders = useCallback(async () => {
+    if (!chat.key || !chat.loaded || providerView.current.panel !== "providers" || providerView.current.key !== chat.key) return;
+    providerRequest.current?.abort();
+    const controller = new AbortController();
+    providerRequest.current = controller;
+    try {
+      const response = await api<{ ok: boolean; data?: { providers: LoginProvider[] }; error?: string }>("/api/cmd", {
+        method: "POST",
+        body: JSON.stringify({ key: chat.key, cmd: { type: "get_login_providers" } }),
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      if (!response.ok) throw Error(response.error || "Could not load providers.");
+      const next = response.data?.providers ?? [];
+      const signature = JSON.stringify(next.map(provider => [provider.id, provider.authenticated]));
+      if (lastProviderStatus.current !== undefined && lastProviderStatus.current !== signature) onRefreshModels();
+      lastProviderStatus.current = signature;
+      setProviders(next);
+      setProvidersError("");
+    } catch (error) {
+      if (!controller.signal.aborted) setProvidersError(error instanceof Error ? error.message : "Could not load providers.");
+    } finally {
+      if (!controller.signal.aborted) setProvidersLoading(false);
     }
-  }, [panel, chat.key, chat.loaded]);
+  }, [chat.key, chat.loaded, onRefreshModels]);
+  useEffect(() => {
+    if (panel !== "providers" || !chat.loaded) return;
+    setProvidersLoading(true);
+    lastProviderStatus.current = undefined;
+    void refreshProviders();
+    const onReturn = () => {
+      if (document.visibilityState === "visible" && !pendingLogin.current) void refreshProviders();
+    };
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
+    return () => {
+      providerRequest.current?.abort();
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
+    };
+  }, [panel, chat.loaded, refreshProviders]);
 
   const cmd = useCallback(
     async (c: any) => {
@@ -147,6 +187,21 @@ export function SettingsPage(props: SettingsPageProps) {
     },
     [chat.key, onRefreshState]
   );
+
+  async function signIn(providerId: string) {
+    if (pendingLogin.current) return false;
+    pendingLogin.current = true;
+    setLoginBusy(true);
+    try {
+      const response = await post("/api/cmd", { key: chat.key, cmd: { type: "login", providerId } });
+      if (!response.ok) throw Error(response.error || "Sign-in failed.");
+      return true;
+    } finally {
+      pendingLogin.current = false;
+      setLoginBusy(false);
+      void refreshProviders();
+    }
+  }
 
   const save = useCallback(async (key: string, value: unknown) => {
     setErr(null);
@@ -299,7 +354,12 @@ export function SettingsPage(props: SettingsPageProps) {
               />
             ) : panel === "providers" ? (
               <><RuntimeOutput outputs={[]} links={chat.authLinks} /><CustomProvidersPanel onRestart={onRestart} /><ProvidersPanel
-                providers={providers}
+                key={chat.key}
+              providers={providers}
+              cwd={info?.cwd || ""}
+              loginBusy={loginBusy || chat.running || !!chat.state?.isStreaming}
+              onSignIn={signIn}
+              onCredentialsChanged={() => { void refreshProviders(); onRefreshModels(); }}
                 loading={providersLoading}
                 error={providersError}
                 cmd={cmd}
@@ -550,6 +610,10 @@ function FlagsPanel({
 
 function ProvidersPanel({
   providers,
+  cwd,
+  loginBusy,
+  onSignIn,
+  onCredentialsChanged,
   loading,
   error,
   cmd,
@@ -557,7 +621,11 @@ function ProvidersPanel({
   onSave,
   onReset,
 }: {
-  providers: any[];
+  providers: LoginProvider[];
+  cwd: string;
+  loginBusy: boolean;
+  onSignIn: (providerId: string) => Promise<boolean>;
+  onCredentialsChanged: () => void;
   loading:boolean;
   error:string;
   cmd: (c: any) => Promise<any>;
@@ -570,17 +638,7 @@ function ProvidersPanel({
     <div className="space-y-4"><div className="flex items-center justify-between gap-4"><h2 className="text-sm font-semibold">Provider accounts</h2><Input value={filter} onChange={e=>setFilter(e.target.value)} aria-label="Filter providers" placeholder="Find a provider…" className="h-9 max-w-64 rounded-xl"/></div>
       <SkeletonReveal loading={loading} skeleton={<ProviderSkeleton/>} label="Loading provider accounts"><div className="space-y-1.5">
         {providers.filter(p=>`${p.name} ${p.id}`.toLowerCase().includes(filter.toLowerCase())).map((p) => (
-          <div key={p.id} className="rounded-xl bg-card/50 px-4 py-3"><div className="flex items-center gap-3"><ProviderIcon provider={p.id} className="size-6"/>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[12.5px] text-fog-100">{p.name}</div>
-              <div className="font-mono text-[11px] text-muted-foreground">{p.id}</div>
-            </div>
-            <Badge variant={p.authenticated ? "default" : "secondary"} className="text-[10.5px] font-normal">
-              {p.authenticated ? "signed in" : "not signed in"}
-            </Badge>
-            {p.available && <Btn onClick={() => cmd({ type: "login", providerId: p.id })}>login</Btn>}
-            </div><ProviderAccounts providerId={p.id} cmd={cmd}/>
-          </div>
+          <ProviderAccounts key={p.id} provider={p} cwd={cwd} cmd={cmd} loginBusy={loginBusy} onSignIn={onSignIn} onCredentialsChanged={onCredentialsChanged} />
         ))}
         {error&&<p role="alert" className="text-sm text-destructive">{error}</p>}{!loading&&!error&&providers.length===0&&<Empty>No providers available.</Empty>}
       </div></SkeletonReveal>

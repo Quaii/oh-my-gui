@@ -29,6 +29,7 @@ export interface DialogRequest {
   optionDetails?: { description?: string }[];
   secret?: boolean;
   promptStyle?: boolean;
+  authProvider?: string;
   questions?: { id: string; question: string; header?: string; multi?: boolean; recommended?: number; options: { label: string; description?: string; preview?: string }[] }[];
 }
 
@@ -60,7 +61,7 @@ export interface ChatState {
   notice: string | null;
   outputs: { id: string; text: string; kind: string; at: number }[];
   editorUpdate: { id: string; text: string } | null;
-  authLinks: { id: string; url: string; instructions?: string }[];
+  authLinks: { id: string; url: string; instructions?: string; authProvider?: string }[];
   sideQuestions: AnyRec[];
   dictation: AnyRec | null;
   voice: { phase: string; input?: number; output?: number; error?: string; turns: AnyRec[] };
@@ -331,13 +332,24 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
       return { ...s, statuses: { ...s.statuses, cache: `Cache ${rec.outcome}${rec.warmingStopReason ? ' · ' + rec.warmingStopReason : ''}` } };
     case "available_commands_update":
       return { ...s, commands: rec.commands ?? [] };
+    case 'provider_login_finished':
+      return {
+        ...s,
+        authLinks: s.authLinks.filter(link => link.authProvider !== rec.providerId),
+        dialogs: s.dialogs.filter(dialog => dialog.authProvider !== rec.providerId),
+      };
     case "extension_ui_request": {
       const method = rec.method;
       if (method === 'cancel') return { ...s, dialogs: s.dialogs.filter(dialog => dialog.id !== rec.targetId) };
       if (method === 'open_url') {
         const url = rec.launchUrl || rec.url;
         if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return pushToast(s, 'error', 'OMP returned an unsupported sign-in link.');
-        return { ...s, authLinks: [...s.authLinks.filter(link => link.id !== rec.id), { id: rec.id, url, instructions: rec.instructions }] };
+        return {
+          ...s,
+          authLinks: [...s.authLinks.filter(link => link.id !== rec.id && (!rec.authProvider || link.authProvider !== rec.authProvider)), {
+            id: rec.id, url, instructions: rec.instructions, authProvider: rec.authProvider,
+          }],
+        };
       }
       if (method === "notify") {
         return pushToast(s, rec.notifyType ?? "info", rec.message ?? "");
@@ -379,6 +391,7 @@ export function chatReducer(s: ChatState, rec: AnyRec): ChatState {
             optionDetails: rec.optionDetails,
             secret: rec.secret,
             promptStyle: rec.promptStyle,
+            authProvider: rec.authProvider,
             questions: rec.questions,
           },
         ],

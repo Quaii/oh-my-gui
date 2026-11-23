@@ -1136,6 +1136,10 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 .desktop-setup-sidebar ol{display:flex;flex-direction:column;gap:8px;margin-top:32px}
 .desktop-setup-sidebar li{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:var(--muted-foreground);font-size:12px}
 .desktop-setup-sidebar li[data-state=current]{background:var(--sidebar-accent);color:var(--foreground)}
+@media (max-height: 500px) {
+  .desktop-setup-sidebar ol { gap: 6px; margin-top: 24px; }
+  .desktop-setup-sidebar li { padding-block: 8px; }
+}
 .desktop-setup-step-icon{display:grid;place-items:center;width:18px;height:18px;flex-shrink:0;font-size:11px;border:1px solid var(--border);border-radius:5px}
 .desktop-setup-step-icon svg{width:13px;height:13px;color:var(--primary)}
 .desktop-setup{position:relative;display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;padding:20px 24px;border:1px solid var(--border);border-radius:14px;overflow:hidden}
@@ -1154,6 +1158,22 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 @media(max-width:600px){.desktop-setup-layout{gap:8px;padding:8px}.desktop-setup-sidebar{width:130px;padding:8px 0}.desktop-setup{padding:20px}.desktop-setup h1{font-size:22px}}
 
 .provider-config-dialog{min-width:0}
+.provider-manage-trigger {
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .provider-manage-trigger {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .provider-account-card:is(:hover, :focus-within, [data-state="open"]) .provider-manage-trigger {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .provider-manage-trigger { transition: none; }
+}
 .provider-config-dialog>*{min-width:0}.provider-config-dialog [data-slot=select-trigger]{max-width:100%;min-width:0}
 
 .desktop-installer-progress{margin-top:16px;padding:14px}.desktop-installer-progress p{margin-top:8px}

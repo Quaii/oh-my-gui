@@ -11,6 +11,16 @@ export class UiReplay {
       uiEventId: `view-${++this.sequence}`,
       uiReceivedAt: Date.now(),
     };
+    if (record.type === 'provider_login_finished') {
+      this.events = this.events.filter(event => {
+        const finished = event.record.method === 'open_url' && event.record.authProvider === record.providerId;
+        if (finished) this.bytes -= event.bytes;
+        return !finished;
+      });
+      for (const [id, dialog] of this.dialogs) {
+        if (dialog.authProvider === record.providerId) this.dialogs.delete(id);
+      }
+    }
     if (record.type === "extension_ui_request") {
       if (record.method === "cancel") this.dialogs.delete(record.targetId);
       else if (
@@ -33,7 +43,7 @@ export class UiReplay {
             ? "widgetKey"
             : record.method === "setStatus"
               ? "statusKey"
-              : "method";
+              : record.method === "open_url" ? "authProvider" : "method";
         this.events = this.events.filter((event) => {
           const obsolete =
             event.record.method === record.method &&

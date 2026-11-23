@@ -4,6 +4,21 @@ import { execFile } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { OMP_BINARY, selectOmpBinary } from './omp.ts';
 
+const versionPattern = /\bv?(\d+\.\d+\.\d+(?:-[\w.-]+)?)(?:\+[\w.-]+)?\b/;
+
+export function needsStableOmp(installed: string, stable: string) {
+  const current = installed.match(versionPattern)?.[1];
+  if (!current) throw new Error('Could not determine the installed OMP version.');
+  const [currentCore, currentPre] = current.split('-', 2);
+  const [stableCore, stablePre] = stable.split('-', 2);
+  const currentParts = currentCore.split('.').map(Number);
+  const stableParts = stableCore.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if (currentParts[i] !== stableParts[i]) return currentParts[i] < stableParts[i];
+  }
+  return !!currentPre && !stablePre;
+}
+
 export function ompTarget(platform: string, arch: string): string {
   const os = ({ win32: 'windows', darwin: 'macos', linux: 'linux' } as Record<string, string>)[platform];
   const cpu = ({ x64: 'x86_64', arm64: 'arm64' } as Record<string, string>)[arch];
@@ -20,8 +35,15 @@ export function validateOmpBuild(value: any) {
 }
 
 export function probeExecutable(executable: string): Promise<string | null> {
-  return new Promise(resolve => execFile(executable, ['--version'], { timeout: 10000, maxBuffer: 65536, windowsHide: true },
-    (error, stdout) => resolve(error || !String(stdout).trim() ? null : String(stdout).trim())));
+  return new Promise(resolve => {
+    try {
+      execFile(executable, ['--version'], { timeout: 10000, maxBuffer: 65536, windowsHide: true },
+        (error, stdout) => resolve(error ? null : stdout.trim() || null));
+    } catch {
+      // Windows can throw synchronously for an invalid executable image.
+      resolve(null);
+    }
+  });
 }
 
 // This location comes only from the native host, never from a request body.
@@ -50,21 +72,34 @@ export async function completeDesktopSetup() {
   } finally { await fs.rm(temporary, { force: true }); }
 }
 
+type OmpInstallOptions = { checkUpdates?: boolean; report?: (detail: string) => void };
+
 let installation: Promise<Awaited<ReturnType<typeof desktopSetupStatus>>> | undefined;
-export function installDesktopOmp() {
+export function installDesktopOmp(options: OmpInstallOptions = {}) {
   // Repeated clicks share one installation; a failure can be retried.
-  return installation ??= install().finally(() => { installation = undefined; });
+  return installation ??= install(options).finally(() => { installation = undefined; });
 }
 
-async function install() {
-  if (await probeExecutable(OMP_BINARY)) return desktopSetupStatus();
-  if (process.env.OMP_BIN) throw new Error('The configured OMP_BIN cannot start. Correct it before installing another runtime.');
+async function install({ checkUpdates = false, report }: OmpInstallOptions) {
+  const current = await probeExecutable(OMP_BINARY);
   const directory = path.join(dataDirectory(), 'runtime');
   const destination = path.join(directory, process.platform === 'win32' ? 'omp.exe' : 'omp');
+  if (current && !checkUpdates) return desktopSetupStatus();
+  if (process.env.OMP_BIN && path.resolve(OMP_BINARY) !== destination) {
+    if (!current) throw new Error('The configured OMP_BIN cannot start. Correct it before installing another runtime.');
+    report?.(`Using the runtime selected by OMP_BIN (${current}).`);
+    return desktopSetupStatus();
+  }
+  report?.('Checking the latest stable OMP release…');
   const response = await fetch(`https://build.stencil.so/api/products/omp/latest/${ompTarget(process.platform, process.arch)}?channel=stable`,
     { signal: AbortSignal.timeout(60000) });
   if (!response.ok) throw new Error(`OMP build lookup failed (${response.status}).`);
   const build = validateOmpBuild(await response.json());
+  if (current && !needsStableOmp(current, build.version)) {
+    report?.(`Using installed OMP ${current.match(versionPattern)?.[1]}.`);
+    return desktopSetupStatus();
+  }
+  report?.(`${current ? 'Updating to' : 'Downloading'} OMP ${build.version}…`);
   const download = await fetch(build.url, { signal: AbortSignal.timeout(300000) });
   if (!download.ok || !download.body) throw new Error(`OMP download failed (${download.status}).`);
   await fs.mkdir(directory, { recursive: true });
@@ -83,8 +118,11 @@ async function install() {
       await file.writeFile(chunk);
     }
     await file.close();
+    report?.(`Verifying OMP ${build.version}…`);
     if (hash.digest('hex') !== build.sha256) throw new Error('OMP checksum verification failed. Nothing was installed.');
-    if (!await probeExecutable(temporary)) throw new Error('The downloaded OMP runtime cannot start on this system.');
+    const downloaded = await probeExecutable(temporary);
+    if (downloaded?.match(versionPattern)?.[1] !== build.version)
+      throw new Error('The downloaded runtime did not report the expected OMP version.');
     await fs.rename(temporary, destination);
     selectOmpBinary(destination);
     return desktopSetupStatus();

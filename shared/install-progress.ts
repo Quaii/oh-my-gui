@@ -1,6 +1,7 @@
 export const INSTALL_STEPS = [
   { id: "checks", label: "System checks" },
   { id: "package", label: "Verify package" },
+  { id: "omp", label: "OMP runtime" },
   { id: "dependencies", label: "Windows dependencies" },
   { id: "files", label: "App and runtime" },
   { id: "verify", label: "Verify installation" },
@@ -12,6 +13,7 @@ export type InstallProgress = {
   detail: string;
   bytes?: number;
   totalBytes?: number;
+  runtimeVersion?: string;
   error?: string;
 };
 export function nativeInstallStage(log: string) {

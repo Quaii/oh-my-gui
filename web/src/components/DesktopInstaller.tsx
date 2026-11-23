@@ -136,7 +136,7 @@ export function DesktopInstaller() {
           <p>
             {status?.installed
               ? "Continue to set up OMP and connect your providers."
-              : "Install for your account. Existing chats and settings are kept when upgrading."}
+              : "Install for your account and bring the OMP runtime up to date. Your chats and settings are kept."}
           </p>
           <div className="desktop-setup-inset desktop-installer-progress">
             <div className="flex items-center gap-3">
@@ -165,7 +165,9 @@ export function DesktopInstaller() {
                 ? "This window will close when the current installation step finishes."
                 : busy
                   ? status?.progress?.detail || "Starting installation…"
-                  : "No administrator access is needed. You can uninstall from Windows Settings."}
+                  : status?.progress?.runtimeVersion
+                    ? `OMP runtime verified · ${status.progress.runtimeVersion}`
+                    : "No administrator access is needed. You can uninstall from Windows Settings."}
             </p>
             {(started || status?.installed) && (
               <div className="mt-4 space-y-2" aria-live="polite">
