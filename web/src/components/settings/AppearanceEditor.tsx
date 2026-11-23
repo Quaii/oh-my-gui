@@ -11,10 +11,11 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { getAppearance, saveAppearance, DEFAULT_APPEARANCE, validateAppearance, type CustomAppearance, type AppearanceColor } from "@/lib/appearance";
 import { getTheme, applyTheme, APP_THEMES } from "@/lib/theme";
-import { BACKGROUND_OPTIONS } from "../Appearance";
+import { getAmbience, importedBackground } from "../Appearance";
 import { Notice } from "./ManagementShared";
+import { SettingsHeading } from "./SettingsHeading";
 
-function Section({title,icon,children}:{title:string;icon:ReactNode;children:ReactNode}) {return <section className="settings-group"><header><h3 className="flex items-center gap-2 text-sm font-semibold">{icon}{title}</h3></header><div className="appearance-options settings-card settings-card-list">{children}</div></section>;}
+function Section({title,icon,children}:{title:string;icon:ReactNode;children:ReactNode}) {return <section className="settings-group"><SettingsHeading level="h3" title={<span className="flex items-center gap-2">{icon}{title}</span>} /><div className="appearance-options settings-card settings-card-list">{children}</div></section>;}
 function Row({label,hint,children}:{label:string;hint?:string;children:ReactNode}) {return <div className="appearance-option"><div className="min-w-0"><p className="text-[13px] font-medium">{label}</p>{hint&&<p className="mt-1 text-xs leading-relaxed text-muted-foreground">{hint}</p>}</div><div className="appearance-option-control">{children}</div></div>;}
 function Choice({label,value,options,onChange}:{label:string;value:string|number;options:[string|number,string][];onChange:(v:string)=>void}) {return <Select value={String(value)} onValueChange={onChange}><SelectTrigger aria-label={label} className="h-9 w-full rounded-lg"><SelectValue/></SelectTrigger><SelectContent>{options.map(([v,l])=><SelectItem key={v} value={String(v)}>{l}</SelectItem>)}</SelectContent></Select>;}
 
@@ -33,19 +34,18 @@ export function AppearanceEditor() {
   {key:"userMessages",label:"User messages",hint:"Your message surface",fallback:base.colors.tile},
   {key:"replies",label:"Replies",hint:"Assistant reply text",fallback:a.foreground||base.foreground},
   {key:"codeBlocks",label:"Code blocks",hint:"Code and terminal surfaces",fallback:base.colors.sidebar},
-  {key:"borders",label:"Borders",hint:"Dividers and panel edges",fallback:base.colors.border},
+  {key:"borders",label:"Dividers",hint:"Section rules and chart guides",fallback:base.colors.border},
  ];
  async function importTheme(f:File) {
   if(f.size>3_100_000)throw Error("Theme file is too large");
   const data=JSON.parse(await f.text()), valid=validateAppearance(data.appearance);
   if(!APP_THEMES.some(t=>t.value===data.theme))throw Error("Unknown base theme");
-  if(data.background!==undefined&&!BACKGROUND_OPTIONS.some(o=>o.value===data.background))throw Error("Unknown background");
-  if(data.background!==undefined)localStorage.setItem("ompfe.ambience",data.background);
+  if(data.background!==undefined)localStorage.setItem("ompfe.ambience",importedBackground(data.background));
   if(typeof data.animated==="boolean")localStorage.setItem("ompfe.ambience.motion",data.animated?"1":"0");
   saveAppearance(valid);applyTheme(data.theme);setError("");
  }
  return <div className="settings-stack">
-  <div className="flex items-center justify-between"><div><h2 className="text-base font-semibold">Customize this theme</h2><p className="mt-1 text-xs text-muted-foreground">Changes apply across this workspace and are saved on this device.</p></div><Button variant="ghost" size="sm" onClick={()=>saveAppearance(DEFAULT_APPEARANCE)}>Reset</Button></div>
+  <SettingsHeading title="Customize this theme" description="Changes apply across this workspace and are saved on this device." action={<Button variant="ghost" size="sm" onClick={()=>saveAppearance(DEFAULT_APPEARANCE)}>Reset</Button>} />
   <Notice error={error}/>
   <Section title="Colors" icon={<Palette className="size-4 text-muted-foreground"/>}>
    {colors.map(c=><Row key={c.key} label={c.label} hint={c.hint}><label className="appearance-color-control"><span className="font-mono text-xs text-muted-foreground">{(a[c.key]||c.fallback).toUpperCase()}</span><ColorPicker label={`${c.label} color`} value={a[c.key]||c.fallback} onChange={value=>update({[c.key]:value})}/></label></Row>)}
@@ -72,7 +72,7 @@ export function AppearanceEditor() {
   </div></section>
   <section><h3 className="mb-3 flex items-center gap-2 text-sm font-semibold"><Shapes className="size-4 text-muted-foreground"/>Editor icons</h3><p className="mb-3 text-xs text-muted-foreground">File icons in the explorer, editor tabs, and changed files. Independent of workspace icons.</p><div className="grid gap-3 sm:grid-cols-3" role="group" aria-label="Editor icon theme">{FILE_ICON_THEMES.map(theme=><button key={theme.value} aria-pressed={a.fileIcons===theme.value} onClick={()=>update({fileIcons:theme.value})} className="icon-theme-card"><span className="mb-4 flex items-center gap-5" aria-hidden="true">{['index.tsx','README.md','package.json'].map(path=><FileIcon key={path} path={path} theme={theme.value}/>)}</span><span className="flex items-center justify-between text-sm font-medium">{theme.label}{a.fileIcons===theme.value&&<Check className="size-4 text-primary"/>}</span><span className="mt-1 block text-xs text-muted-foreground">{theme.description}</span></button>)}</div></section>
   <Section title="Background image" icon={<ImageIcon className="size-4 text-muted-foreground"/>}><Row label="Custom image" hint="PNG, JPEG, or WebP up to 2 MB, stored on this device"><div className="flex justify-end gap-2"><Button variant="outline" size="sm" onClick={()=>image.current?.click()}>Choose image</Button>{a.image&&<Button variant="ghost" size="sm" onClick={()=>update({image:""})}>Remove</Button>}</div></Row>{a.image&&<img src={a.image} alt="Selected workspace background" className="m-4 h-32 w-[calc(100%-32px)] rounded-xl object-cover"/>}</Section>
-  <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>{const blob=new Blob([JSON.stringify({version:2,theme:getTheme(),background:localStorage.getItem("ompfe.ambience")||"off",animated:localStorage.getItem("ompfe.ambience.motion")!=="0",appearance:a},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const el=document.createElement("a");el.href=url;el.download="omp-theme.json";el.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}><Download className="size-4"/>Export theme</Button><Button variant="outline" onClick={()=>file.current?.click()}><Upload className="size-4"/>Import theme</Button></div>
+  <div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>{const blob=new Blob([JSON.stringify({version:2,theme:getTheme(),background:getAmbience(),animated:localStorage.getItem("ompfe.ambience.motion")!=="0",appearance:a},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const el=document.createElement("a");el.href=url;el.download="omp-theme.json";el.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}><Download className="size-4"/>Export theme</Button><Button variant="outline" onClick={()=>file.current?.click()}><Upload className="size-4"/>Import theme</Button></div>
   <input ref={file} type="file" accept="application/json,.json" className="hidden" onChange={async e=>{try{const f=e.target.files?.[0];if(f)await importTheme(f);}catch(e:any){setError(e.message);}e.target.value="";}}/>
   <input ref={image} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={async e=>{try{const f=e.target.files?.[0];if(!f)return;if(f.size>2_000_000)throw Error("Choose an image smaller than 2 MB");const reader=new FileReader();reader.onload=()=>update({image:String(reader.result)});reader.readAsDataURL(f);}catch(e:any){setError(e.message);}e.target.value="";}}/>
  </div>;

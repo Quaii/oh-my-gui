@@ -39,8 +39,6 @@ export function applyCustomAppearance() {
  root.style.setProperty("--workspace-ui-font",UI_FONTS[a.uiFont]); root.style.setProperty("--workspace-code-font",CODE_FONTS[a.codeFont]); root.style.setProperty("--workspace-heading-font",HEADING_FONTS[a.headingFont]);
  root.style.setProperty("--chat-text-size",`${a.chatSize}px`); root.style.setProperty("--chat-line-height",String(a.lineHeight)); root.style.setProperty("--workspace-radius",`${a.radius}px`);
  root.style.setProperty("--workspace-shadow",a.shadow==="none"?"none":a.shadow==="deep"?"0 20px 64px #0005":"0 8px 28px #0002");
- // Match the native 12 DIP window region independently of content zoom.
- root.style.setProperty("--desktop-frame-radius",`${12/(a.scale/100)}px`);
  updateFavicon(a.accent||root.style.getPropertyValue("--theme-accent")||"#ff5f2e");
  root.style.setProperty("zoom",String(a.scale/100)); root.dataset.glass=String(a.glass);root.dataset.cardGlass=String(a.glassCards); root.dataset.sidebarGlass=String(a.translucentSidebar); root.dataset.icons=a.icons;root.dataset.fileIcons=a.fileIcons; root.dataset.contrast=a.contrast;
 }

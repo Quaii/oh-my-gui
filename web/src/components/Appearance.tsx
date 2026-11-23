@@ -17,10 +17,21 @@ export type Ambience=ClassicAmbience|ReactBitsBackgroundId;
 const palettes:Record<Exclude<ClassicAmbience,"off">,string[]> = { ember:["#ed7545","#a4432b","#e6a75d","#7d3831"], ocean:["#458c9b","#5b65a4","#71ada2","#3b4f77"], aurora:["#517d80","#496650","#888bba","#283546"], dusk:["#885c82","#b57c72","#6b6695","#453c65"], moss:["#7d8755","#486857","#b3ad7c","#354939"], blush:["#bb8a99","#d8ada1","#947a98","#715c74"], silver:["#81909d","#bac1c6","#707b83","#535c6a"] };
 export const BACKGROUND_PALETTES=palettes;
 export const BACKGROUND_OPTIONS: {value:Ambience;label:string}[] = [{value:"off",label:"None"},{value:"ember",label:"Ember"},{value:"ocean",label:"Tide"},{value:"aurora",label:"Aurora"},{value:"dusk",label:"Dusk"},{value:"moss",label:"Moss"},{value:"blush",label:"Blush"},{value:"silver",label:"Silver"},...REACT_BITS_BACKGROUNDS];
+const retiredBackgrounds = new Set(["rb-radar", "rb-ballpit", "rb-magic-rings", "rb-grid-distortion", "rb-orb"]);
 
-function getAmbience(): Ambience {
-  const value = localStorage.getItem(KEY);
-  return BACKGROUND_OPTIONS.some(o=>o.value===value) ? value as Ambience : "off";
+function knownBackground(value: unknown): Ambience | undefined {
+  return BACKGROUND_OPTIONS.find(option => option.value === value)?.value;
+}
+
+export function importedBackground(value: unknown): Ambience {
+  if (typeof value === "string" && retiredBackgrounds.has(value)) return "off";
+  const background = knownBackground(value);
+  if (!background) throw Error("Unknown background");
+  return background;
+}
+
+export function getAmbience(): Ambience {
+  return knownBackground(localStorage.getItem(KEY)) ?? "off";
 }
 
 function useAppearance() {
@@ -71,7 +82,6 @@ export function AppearanceControls({expanded=false}:{expanded?:boolean}={}) {
       <div className="space-y-5">{([{key:"backgroundFade",label:"Background fade",max:100,unit:"%"},{key:"backgroundBlur",label:"Background blur",max:40,unit:"px"}] as const).map(control=><div className="space-y-3" key={control.key}><div className="flex items-center justify-between text-[13px]"><label id={control.key+"-label"}>{control.label}</label><output className="text-xs tabular-nums text-muted-foreground">{adjustment[control.key]}{control.unit}</output></div><Slider aria-label={control.label} aria-labelledby={control.key+"-label"} min={0} max={control.max} step={1} value={[adjustment[control.key]]} disabled={ambience==="off"&&!custom.image} onValueChange={([value])=>{setAdjustment(a=>({...a,[control.key]:value}));document.documentElement.style.setProperty(control.key==="backgroundBlur"?"--background-blur":"--background-mask",control.key==="backgroundBlur"?`${value}px`:value===0?"none":`linear-gradient(#000 ${100-value}%,transparent 100%)`);}} onValueCommit={([value])=>saveAppearance({...getAppearance(),[control.key]:value})}/></div>)}<div className="flex items-center justify-between gap-4"><div><p className="text-[13px]">Blur tint</p><p className="mt-1 text-xs text-muted-foreground">Color and opacity over the background</p></div><ColorPicker label="Background blur tint" value={custom.backgroundTint||custom.background||APP_THEMES.find(t=>t.value===theme)!.colors.panel} opacity={custom.backgroundTint?custom.backgroundTintOpacity:20} onChange={(backgroundTint,opacity)=>saveAppearance({...getAppearance(),backgroundTint,backgroundTintOpacity:opacity??20})}/></div></div>
 
       </section>
-      <p className="text-[11px] text-muted-foreground">Backgrounds by <a href="https://www.23rd.dev/" target="_blank" rel="noreferrer" className="underline underline-offset-2">23rd</a> and <a href="https://reactbits.dev/" target="_blank" rel="noreferrer" className="underline underline-offset-2">React Bits</a>. Saved on this device.</p>
     </div>
   );
 }
