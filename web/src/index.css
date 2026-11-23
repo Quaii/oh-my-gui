@@ -589,6 +589,16 @@
 .composer-chip:hover { color: var(--foreground); background: var(--secondary); }
 .workspace-ambience { pointer-events: none; position: absolute; inset: 0; z-index: -1; opacity:var(--background-opacity,.25); mask-image:var(--background-mask,linear-gradient(#000,transparent 100%));filter:blur(var(--background-blur,0px)); }
 .workspace-ambience + .workspace-header { background: transparent; }
+
+/* The single background canvas never adopts either pane's changing dimensions. */
+.shared-workspace-background{position:absolute;inset:0;z-index:0;isolation:isolate;pointer-events:none;background:var(--custom-chatArea,var(--custom-background,var(--theme-background)))}
+.shared-workspace-background>.workspace-ambience{z-index:0}
+.app-shell>.workspace-route{position:relative;z-index:1}
+.app-shell>.file-panel-motion{z-index:2}
+.app-shell :is(.workspace-main,.file-workspace):not(.settings-main){background:transparent;box-shadow:none}
+
+/* In narrow overlay mode, hide covered chat content, not the shared renderer. */
+.app-shell:has(> :is(.file-panel-motion,.file-workspace)[data-overlay=true]:not([hidden])) .workspace-main{visibility:hidden}
 .ambience-swatch { display: block; position: relative; height: 64px; border-radius: 10px; background-color: var(--background); border: 1px solid var(--border); transition: box-shadow 160ms; }
 .ambience-swatch.is-selected { box-shadow: 0 0 0 2px var(--background), 0 0 0 3px var(--foreground); }
 .ambience-ember { background-image: radial-gradient(ellipse at 20% 90%, #b75a3e, transparent 80%), radial-gradient(ellipse at 90% 0%, #d8aa73, #342b29); }
