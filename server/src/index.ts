@@ -24,7 +24,7 @@ import { listSkills, invalidateSkills, openSkillFolder } from "./skills.ts";
 import { listBuiltinTools } from "./tools.ts";
 import { runSlash } from "./slash.ts";
 import { openSessionFile, readChatSnapshot } from "./snapshot.ts";
-import { readControl, writeControl, selectedPersona, PERSONA_EXTENSION, validateControl } from "./control.ts";
+import { CONTROL_PATH, readControl, writeControl, selectedPersona, PERSONA_EXTENSION, validateControl } from "./control.ts";
 import { readModelConfig, removeProvider, saveProvider } from "./model-config.ts";
 import { usagePricing } from "./usage-pricing.ts";
 import { providerFavicon } from "./provider-favicon.ts";
@@ -121,6 +121,9 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
   const existing = slots.get(key);
   if (existing && existing.bridge.alive) return existing;
   if (sessionPath && args?.includes('--no-session')) throw Error('Saved chats require session persistence. Remove --no-session from Launch flags before opening a saved chat.');
+  const control = await readControl();
+  const persona = sessionPath ? null : selectedPersona(control, personaId);
+  if (!sessionPath && personaId && !persona) throw Error("This persona is no longer in the library.");
 
   const bridge = new OmpBridge(key, cwd);
   const slot: Slot = { bridge, cwd, subscribers: new Set(), state: null, startedAt: Date.now(), replay: new UiReplay() };
@@ -165,12 +168,14 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
     if (process.env.OMP_FE_DEBUG) process.stderr.write(s);
   });
 
-  const control = await readControl();
-  const persona = sessionPath ? null : selectedPersona(control, personaId);
   const flags = [...validateGuiLaunchArgs(args ?? [])];
   // The extension also restores a persona snapshot stored in an existing session.
   flags.push("-e", PERSONA_EXTENSION);
-  bridge.start({ cwd, mode: 'rpc-ui', args: flags, env: persona ? { OMP_WEB_PERSONA: JSON.stringify(persona) } : {} });
+  bridge.start({ cwd, mode: 'rpc-ui', args: flags, env: {
+    OMP_WEB_PERSONA: "",
+    OMP_WEB_PERSONA_ID: persona?.id ?? "",
+    OMP_WEB_PERSONA_LIBRARY: persona ? path.resolve(CONTROL_PATH) : "",
+  } });
   await new Promise<void>((resolve, reject) => {
     const t = setTimeout(() => reject(new Error("omp did not become ready in 60s")), 60_000);
     bridge.once("ready", () => {

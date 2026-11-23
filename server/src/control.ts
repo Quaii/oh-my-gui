@@ -47,6 +47,5 @@ export async function writeControl(value: unknown) {
   return config;
 }
 export function selectedPersona(config: WebControlConfig, requested?: string | null): Persona | null {
-  const id = requested === undefined ? config.defaultPersona : requested;
-  return config.personas.find(p => p.id === id) ?? null;
+  return config.personas.find(p => p.id === requested) ?? null;
 }

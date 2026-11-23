@@ -4,7 +4,10 @@ import { validateControl, selectedPersona } from "../src/control.ts";
 import { DEFAULT_CONTROL_CONFIG } from "../../shared/control.ts";
 import { parseRoute } from "../src/classifier.ts";
 import { validateProvider } from "../src/model-config.ts";
-import { composePersona } from "../src/persona-extension.mjs";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import personaExtension, { composePersona } from "../src/persona-extension.mjs";
 
 test("routing cannot enable missing models or save dangling/duplicate connections",()=>{
  const cfg=structuredClone(DEFAULT_CONTROL_CONFIG);assert.doesNotThrow(()=>validateControl(cfg));
@@ -24,7 +27,46 @@ test("persona placement preserves project rules, tool context, and nonidentity i
  const persona={id:"p",name:"Editor",prompt:"Be concise.",placement:"first",stripIdentity:true};
  const result=composePersona(original,persona);assert.equal(result.length,3);assert.match(result[0],/Be concise/);assert.match(result[1],/Use tools/);assert.match(result[1],/Follow safety rules/);assert.doesNotMatch(result[1],/trusted coding/);assert.equal(result[2],original[1]);assert.equal(original.length,2);
  const keep=composePersona(original,{...persona,stripIdentity:false,placement:"append"});assert.equal(keep[0],original[0]);assert.match(keep.at(-1),/Be concise/);
- const c=structuredClone(DEFAULT_CONTROL_CONFIG);c.personas=[persona as any];c.defaultPersona=null;assert.equal(selectedPersona(c),null);assert.equal(selectedPersona(c,"p")?.name,"Editor");
+ const c=structuredClone(DEFAULT_CONTROL_CONFIG);c.personas=[persona as any];c.defaultPersona="p";assert.equal(selectedPersona(c),null);assert.equal(selectedPersona(c,"p")?.name,"Editor");
+});
+test("a chosen Markdown persona snapshots on the first turn and stays scoped to that chat", async t => {
+  const folder = await mkdtemp(path.join(os.tmpdir(), "omp-persona-"));
+  const library = path.join(folder, "web-control.json");
+  const persona = { id: "p", name: "Reviewer", prompt: "# Role\nReview changes.", placement: "first", stripIdentity: false };
+  await writeFile(library, JSON.stringify({ personas: [persona] }));
+  const env = { OMP_WEB_PERSONA_ID: "p", OMP_WEB_PERSONA_LIBRARY: library };
+  const original = Object.keys(env).map(key => [key, process.env[key]] as const);
+  Object.assign(process.env, env);
+  t.after(async () => {
+    for (const [key, value] of original) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    await rm(folder, { recursive: true, force: true });
+  });
+  const listeners = new Map<string, (...args: any[]) => any>();
+  const entries: any[] = [];
+  const runtime = {
+    on: (event: string, fn: (...args: any[]) => any) => listeners.set(event, fn),
+    appendEntry: (customType: string, data: unknown) => entries.push({ type: "custom", customType, data }),
+  };
+  const context = { sessionManager: { getBranch: () => entries } };
+  const prompt = { systemPrompt: ["Project rules"] };
+  personaExtension(runtime);
+  listeners.get("session_start")!({}, context);
+  assert.equal(entries.length, 0);
+  const first = listeners.get("before_agent_start")!(prompt, context);
+  assert.match(first.systemPrompt[0], /# Role\nReview changes/);
+  assert.deepEqual(entries[0].data, persona);
+  assert.deepEqual(listeners.get("before_agent_start")!(prompt, context), first);
+  assert.equal(entries.length, 1);
+  delete process.env.OMP_WEB_PERSONA_ID;
+  personaExtension(runtime);
+  listeners.get("session_start")!({}, context);
+  assert.deepEqual(listeners.get("before_agent_start")!(prompt, context), first);
+  entries.length = 0;
+  listeners.get("session_switch")!({ reason: "new" }, context);
+  assert.equal(listeners.get("before_agent_start")!(prompt, context), undefined);
 });
 test("local providers permit keyless discovery and reject embedded credentials and invalid model limits",()=>{
  const p={id:"local",baseUrl:"http://127.0.0.1:1234/v1",api:"openai-completions",auth:"none",discovery:"openai-models-list",models:[]};

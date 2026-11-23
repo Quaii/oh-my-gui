@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 // OMP's native before_agent_start hook preserves tools and project context.
 export function composePersona(systemPrompt, persona) {
   const transform = text => persona.stripIdentity ? text.replace(/^You are omp's trusted coding assistant\.\r?\n?/m, "") : text;
@@ -6,13 +8,20 @@ export function composePersona(systemPrompt, persona) {
   return persona.placement === "append" ? [...blocks, prefix] : [prefix, ...blocks];
 }
 export default function (pi) {
-  let launch = process.env.OMP_WEB_PERSONA ? JSON.parse(process.env.OMP_WEB_PERSONA) : null;
+  const { OMP_WEB_PERSONA_ID: id, OMP_WEB_PERSONA_LIBRARY: library, OMP_WEB_PERSONA: legacy } = process.env;
+  let launch = id && library
+    ? JSON.parse(readFileSync(library, "utf8")).personas.find(persona => persona.id === id) ?? null
+    : legacy ? JSON.parse(legacy) : null;
   let active = null;
   const restore = (_event, ctx) => {
     const saved = ctx.sessionManager.getBranch().filter(entry => entry.type === "custom" && entry.customType === "omp.web.persona").at(-1);
     active = saved?.data ?? null;
   };
   for (const event of ["session_start", "session_branch", "session_tree"]) pi.on(event, restore);
+  pi.on("session_switch", (event, ctx) => {
+    launch = null;
+    restore(event, ctx);
+  });
   pi.on("before_agent_start", (event, ctx) => {
     if (event.reason === "revive") return;
     if (!active && launch && !ctx.sessionManager.getBranch().some(entry => entry.type === "message")) {
