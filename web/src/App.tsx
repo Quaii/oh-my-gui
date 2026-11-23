@@ -24,7 +24,6 @@ import { TopBar } from "./components/TopBar";
 import { RightRail } from "./components/RightRail";
 import { Composer } from "./components/Composer";
 import { RuntimeOutput, ExtensionWidgets } from './components/RuntimeOutput';
-import { CommandPalette } from "./components/CommandPalette";
 import { MessageRow, AssistantMessage, buildResultMap } from "./components/Message";
 import { DialogHost, Toasts } from "./components/Dialogs";
 
@@ -69,7 +68,6 @@ export default function App() {
   const closeSettings = useCallback(() => navigate("/"), []);
   const [focusedEditor,setFocusedEditor]=useState<string|null>(null);
   const [fileWorkspaces,setFileWorkspaces]=useState<Record<string,{cwd:string;request:{path?:string;n:number}}>>({});
-  const [paletteOpen, setPaletteOpen] = useState(false);
   const [connected, setConnected] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
   const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
@@ -386,6 +384,11 @@ export default function App() {
       if(e.defaultPrevented)return;
       const tag = (e.target as HTMLElement)?.tagName;
       const typing = tag === "TEXTAREA" || tag === "INPUT";
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        openFiles();
+        return;
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === ",") {
         e.preventDefault();
         if (inSettings) navigate("/");
@@ -406,7 +409,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [chat.running, chat.state?.isStreaming, onAbort, inSettings]);
+  }, [chat.running, chat.state?.isStreaming, onAbort, inSettings, openFiles]);
 
   /* ---------- actions ---------- */
   const leaveProject=async()=>{const b=await get("/api/bootstrap");localStorage.setItem(LS_CWD,b.cwd);setBoot(b);navigate("/");setHome(false);await attach(`new:${Date.now()}`,undefined,b.cwd);};
@@ -629,6 +632,7 @@ export default function App() {
       <main className={`workspace-main relative isolate flex min-w-0 flex-1 flex-col ${home?"is-home":empty?"is-empty":""}`}>
 
         <TopBar
+          chatKey={chat.key ?? undefined}
           showWindowControls={!fileRequest || home}
           title={home ? "Home" : chat.title || boot?.sessions?.find((s:any)=>s.path===activePath)?.name || (chat.messages.length ? "Untitled session" : "New session")}
           cwd={cwd}
@@ -646,8 +650,6 @@ export default function App() {
           inspector={home||fileRequest?null:<RightRail enabled={!home} manual={railOpen} chat={chat} stats={stats} cwd={cwd} onCancelSubagent={id=>sendCmd({type:"cancel_subagent",subagentId:id})} onRequestPlan={()=>{setHome(false);setRailOpen(false);setSeed({text:"Help me create a step-by-step plan for ",n:Date.now()});}} />}
           railOpen={railOpen}
           onOpenSidebar={() => setMobileNav(true)}
-          onOpenPalette={() => setPaletteOpen(true)}
-          onOpenSettings={openSettings}
           onToggleRail={() => transitionUpdate(()=>setRailOpen((v) => !v))}
         />
 
@@ -766,19 +768,6 @@ export default function App() {
       </PageTransition>
       {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={null}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
-      <CommandPalette
-        open={paletteOpen}
-        onOpenChange={setPaletteOpen}
-        commands={paletteCommands}
-        sessions={boot?.allSessions ?? boot?.sessions ?? []}
-        activePath={activePath}
-        onSlash={(name) => onSend(`/${name}`, [])}
-        onNew={newSession}
-        onOpenFiles={()=>openFiles()}
-        onOpenSettings={openSettings}
-        onRefresh={refreshSessions}
-        onOpenSession={openSession}
-      />
 
       {(chat.error || offline) && <div className="pointer-events-none fixed inset-0 z-40 grid place-items-center p-6"><div role="alert" className="pointer-events-auto w-full max-w-md rounded-2xl border bg-popover p-6 shadow-2xl"><h2 className="text-base font-semibold">OMP is unavailable</h2><p className="mt-3 break-words text-sm leading-relaxed text-muted-foreground">{chat.error || "The connection to the runtime was interrupted."}</p><p className="mt-3 text-xs leading-relaxed text-muted-foreground">Make sure the local server and OMP runtime are running, then reconnect. Runtime details are available in Settings → Installation.</p><button className="mt-5 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground" onClick={async()=>{reconnects.current=0;setOffline(false);if(!boot){try{const b=await get("/api/bootstrap");setBoot(b);dispatch(s=>({...s,error:null}));}catch(e:any){setChat({type:"snapshot_error",message:e.message});}}else await attach(keyRef.current || `new:${Date.now()}`,activePath || chat.state?.sessionFile || undefined);}}>Reconnect</button></div></div>}
       <DialogHost dialogs={chat.dialogs} authLinks={chat.authLinks} onRespond={onRespond} />
