@@ -1,36 +1,198 @@
 import { PanelSkeleton } from "@/components/ui/loading-shapes";
+import { SettingsHeading } from "./SettingsHeading";
 import { useState } from "react";
 import { post } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
+import { SkeletonReveal } from "@/components/ui/skeleton-reveal";
 import { useRemote, Notice } from "./ManagementShared";
-import { Download, RefreshCw } from "lucide-react";
 
-export default function ExtensionsPanel({ cwd, onRestart }: { cwd: string; onRestart: () => void }) {
-  const { data, loading, error, refresh } = useRemote("/api/plugins");
-  const [q, setQ] = useState(""); const [source, setSource] = useState(""); const [output, setOutput] = useState(""); const [busy, setBusy] = useState(false); const [failure, setFailure] = useState("");
-  const [catalog, setCatalog] = useState<any>(null); const [pending, setPending] = useState<{ action: string; target: string } | null>(null);
-  const installed = Object.entries(data?.plugins ?? {}).flatMap(([group, entries]) => Array.isArray(entries) ? entries.map(p => ({ ...(typeof p === "string" ? { name: p } : p), group })) : []);
-  async function action(kind: string, target = "") {
-    setBusy(true); setFailure("");
-    try {
-      const result = await post("/api/plugins/action", { action: kind, target, cwd });
-      setOutput(result.output || "Completed.");
-      if (kind === "discover") setCatalog(result.data);
-      else refresh();
-    } catch (e: any) { setFailure(e.message); } finally { setBusy(false); setPending(null); }
+const suggestedCatalogs = [
+  { id: "claude-plugins-official", name: "Claude Plugins", repo: "anthropics/claude-plugins-official" },
+  { id: "anthropic-agent-skills", name: "Anthropic Agent Skills", repo: "anthropics/skills" },
+  { id: "compound-engineering-plugin", name: "Compound Engineering", repo: "EveryInc/compound-engineering-plugin" },
+];
+
+type Marketplace = { name: string; source: string };
+type CatalogPlugin = { id: string; name: string; version?: string; description: string };
+type Pending = { action: "install" | "install-from-marketplace" | "uninstall" | "marketplace-add" | "marketplace-remove"; target: string };
+type Scope = "user" | "project";
+
+export default function ExtensionsPanel({ cwd, projectPath, onRestart }: { cwd: string; projectPath?: string; onRestart: () => void }) {
+  const installedList = useRemote(`/api/plugins?cwd=${encodeURIComponent(cwd)}`);
+  const registry = useRemote<{ sources: Marketplace[] }>("/api/plugins/marketplaces");
+  const [marketplace, setMarketplace] = useState("");
+  const active = registry.data?.sources.find(item => item.name === marketplace) ?? registry.data?.sources[0];
+  const catalog = useRemote<{ plugins: CatalogPlugin[] }>(
+    active ? `/api/plugins/marketplaces?catalog=${encodeURIComponent(active.name)}` : null,
+  );
+  const [filter, setFilter] = useState("");
+  const [catalogSource, setCatalogSource] = useState("");
+  const [packageSource, setPackageSource] = useState("");
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [scope, setScope] = useState<Scope>("user");
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState("");
+  const [notice, setNotice] = useState("");
+  const [diagnostics, setDiagnostics] = useState("");
+  const installed = Object.entries(installedList.data?.plugins ?? {}).flatMap(([group, entries]) =>
+    Array.isArray(entries) ? entries.map(item => ({ ...(typeof item === "string" ? { name: item } : item), group })) : [],
+  );
+  const plugins = catalog.data?.plugins.filter(plugin => plugin.id.endsWith(`@${active?.name}`)) ?? [];
+  const query = filter.trim().toLowerCase();
+  const shownPlugins = plugins.filter(plugin => `${plugin.name} ${plugin.description}`.toLowerCase().includes(query));
+
+  function confirm(action: Pending["action"], target: string, initialScope: Scope = "user") {
+    setScope(initialScope);
+    setFailure("");
+    setPending({ action, target: target.trim() });
   }
-  return <div><Notice error={error || failure} /><SkeletonReveal loading={loading && !data} skeleton={<PanelSkeleton panel="extensions"/>} label="Loading installed extensions"><div className="settings-stack">
-    <div className="flex flex-wrap gap-2"><Button variant="outline" size="sm" onClick={() => action("discover")} disabled={busy}>Browse marketplaces</Button><Button variant="outline" size="sm" onClick={() => action("marketplace-list")} disabled={busy}>Marketplace sources</Button><Button variant="outline" size="sm" onClick={() => action("doctor")} disabled={busy}>Check installation</Button><Button variant="outline" size="sm" onClick={onRestart}><RefreshCw className="size-3.5" />Reload in current session</Button></div>
-    <div className="settings-card"><h2 className="mb-2 text-sm font-semibold">Install an extension</h2><p className="mb-4 text-xs leading-relaxed text-muted-foreground">Enter a package, repository, or marketplace ID. Reload the session to use its commands and tools.</p><div className="flex flex-wrap gap-2"><Input aria-label="Extension package source" placeholder="Package or repository source" value={source} onChange={e => setSource(e.target.value)} className="min-w-0 flex-1" /><Button onClick={() => setPending({ action: "install", target: source })} disabled={!source.trim() || busy}><Download className="size-4" />Install</Button></div><details className="mt-4 text-xs text-muted-foreground"><summary className="cursor-pointer">Add a marketplace</summary><div className="mt-3 flex gap-2"><Input aria-label="Marketplace source" placeholder="Marketplace repository URL" value={source} onChange={e => setSource(e.target.value)} /><Button variant="outline" onClick={() => setPending({ action: "marketplace-add", target: source })} disabled={!source.trim() || busy}>Add source</Button></div></details></div>
-    <Input aria-label="Filter installed extensions" placeholder="Filter extensions…" value={q} onChange={e => setQ(e.target.value)} className="max-w-sm" />
-    <div className="settings-card-stack empty:hidden">{installed.filter(p => JSON.stringify(p).toLowerCase().includes(q.toLowerCase())).map((p, i) => { const id = p.name || p.id || p.package || p.source || String(i); return <div key={id} className="flex flex-wrap items-center gap-3 settings-card"><div className="min-w-0 flex-1"><h3 className="setting-label truncate">{id}</h3><p className="mt-1 truncate text-xs text-muted-foreground">{p.description || p.source || p.path || p.group}</p></div><Badge variant="secondary">{p.enabled === false ? "Disabled" : "Installed"}</Badge><Button variant="ghost" size="sm" onClick={() => action(p.enabled === false ? "enable" : "disable", id)} disabled={busy}>{p.enabled === false ? "Enable" : "Disable"}</Button><Button variant="ghost" size="sm" onClick={() => setPending({ action: "uninstall", target: id })} disabled={busy}>Remove</Button></div>; })}</div>
-    {!installed.length && !loading && <p className="py-6 text-sm text-muted-foreground">No extensions installed. Add a package or configure a marketplace above.</p>}
-    {catalog && <div><h2 className="mb-3 text-sm font-semibold">Marketplace results</h2><pre className="max-h-96 overflow-auto settings-card text-xs">{JSON.stringify(catalog, null, 2)}</pre></div>}
-    {output && <div><p className="mb-2 text-xs text-muted-foreground">{busy ? "Working…" : "OMP result"}</p><pre className="max-h-64 overflow-auto whitespace-pre-wrap settings-card text-xs leading-relaxed">{output}</pre></div>}
-    <p className="text-xs leading-relaxed text-muted-foreground">Extension commands, tools, status messages, questions, and text output are supported. Custom terminal-rendered widgets need a web renderer; they are not silently treated as browser components.</p>
-  </div></SkeletonReveal><Dialog open={!!pending} onOpenChange={v => !v && !busy && setPending(null)}><DialogContent><DialogHeader><DialogTitle>{pending?.action === "uninstall" ? "Remove extension?" : "Add this extension source?"}</DialogTitle><DialogDescription>{pending?.target}</DialogDescription></DialogHeader><p className="text-sm leading-relaxed text-muted-foreground">Extensions run code with OMP’s access to this machine. Install sources you trust.</p><DialogFooter><Button variant="ghost" onClick={() => setPending(null)} disabled={busy}>Cancel</Button><Button onClick={() => pending && action(pending.action, pending.target)} disabled={busy}>{busy ? "Working…" : "Confirm"}</Button></DialogFooter></DialogContent></Dialog></div>;
+
+  async function run(action: string, target = "", scope: Scope = "user") {
+    setBusy(true);
+    setFailure("");
+    setNotice("");
+    try {
+      const result = await post("/api/plugins/action", { action, target, scope, cwd: scope === "project" ? projectPath : cwd });
+      if (action === "doctor") setDiagnostics(result.output || "");
+      else if (action.startsWith("marketplace-")) {
+        registry.refresh();
+        catalog.refresh();
+        if (action === "marketplace-add") {
+          const suggested = suggestedCatalogs.find(item => item.repo === target);
+          if (suggested) {
+            setMarketplace(suggested.id);
+            setFilter("");
+          }
+          setCatalogSource("");
+        }
+        setNotice(action === "marketplace-add" ? "Marketplace added." : action === "marketplace-remove" ? "Marketplace removed." : "Marketplace refreshed.");
+      } else {
+        installedList.refresh();
+        if (action === "install") setPackageSource("");
+        setNotice("Extensions updated. Reload the session to apply the change.");
+      }
+      setPending(null);
+    } catch (error) {
+      setFailure(error instanceof Error ? error.message : "OMP could not complete the action.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const isInstall = pending?.action === "install" || pending?.action === "install-from-marketplace";
+  const title = isInstall ? "Install plugin?"
+    : pending?.action === "marketplace-add" ? "Add marketplace?"
+    : pending?.action === "marketplace-remove" ? "Remove marketplace?" : "Remove extension?";
+
+  return <div className="settings-stack">
+    <Notice error={pending ? undefined : failure} text={notice} />
+    <section className="settings-card settings-card-stack">
+      <SettingsHeading title="Marketplace" description="Add a catalog from a publisher you trust, then browse its plugins." />
+      <Notice error={registry.error} />
+      {registry.loading && <p role="status" className="text-xs text-muted-foreground">Loading marketplaces…</p>}
+      {registry.data && <div className="divide-y divide-border">
+        {suggestedCatalogs.filter(item => !registry.data?.sources.some(source => source.name === item.id || source.source.replace(/\.git$/, "").endsWith(item.repo))).map(item =>
+          <div key={item.id} className="flex items-center justify-between gap-3 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{item.name}</p>
+              <a className="block truncate text-xs text-muted-foreground hover:underline" href={`https://github.com/${item.repo}`} target="_blank" rel="noreferrer">{item.repo}</a>
+            </div>
+            <Button variant="outline" size="sm" disabled={busy} onClick={() => confirm("marketplace-add", item.repo)}>Add catalog</Button>
+          </div>,
+        )}
+      </div>}
+      <div className="flex flex-wrap gap-2">
+        <Input aria-label="Marketplace source" placeholder="owner/repo, URL, or local path" value={catalogSource} onChange={e => setCatalogSource(e.target.value)} className="min-w-0 flex-1" />
+        <Button variant="outline" disabled={busy || !catalogSource.trim()} onClick={() => confirm("marketplace-add", catalogSource)}>Add source</Button>
+      </div>
+      {!!registry.data?.sources.length && <details>
+        <summary className="cursor-pointer text-sm font-medium">Manage catalogs</summary>
+        <div className="mt-2 divide-y divide-border">
+          {registry.data.sources.map(item => <div key={item.name} className="flex flex-wrap items-center gap-2 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{item.name}</p>
+              <p className="truncate text-xs text-muted-foreground" title={item.source}>{item.source}</p>
+            </div>
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => run("marketplace-update", item.name)}>Refresh</Button>
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => confirm("marketplace-remove", item.name)}>Remove</Button>
+          </div>)}
+        </div>
+      </details>}
+    </section>
+    {active && <section className="settings-card settings-card-stack">
+      <SettingsHeading title="Browse plugins" />
+      <div className="flex flex-wrap gap-2" aria-label="Configured catalogs">
+        {registry.data?.sources.map(item => <Button key={item.name} size="sm" variant={active.name === item.name ? "secondary" : "outline"} aria-pressed={active.name === item.name} onClick={() => { setMarketplace(item.name); setFilter(""); }}>{item.name}</Button>)}
+      </div>
+      <Notice error={catalog.error} />
+      {catalog.loading && <p role="status" className="text-xs text-muted-foreground">Loading plugins…</p>}
+      {plugins.length > 0 && <Input aria-label="Filter marketplace plugins" placeholder="Filter plugins…" value={filter} onChange={event => setFilter(event.target.value)} />}
+      {catalog.data && <div className="divide-y divide-border">
+        {shownPlugins.map(plugin => <div key={plugin.id} className="settings-card-row py-3">
+          <div className="min-w-0">
+            <h3 className="break-all text-sm font-medium">{plugin.name}{plugin.version && <span className="ml-2 text-xs font-normal text-muted-foreground">{plugin.version}</span>}</h3>
+            {plugin.description && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{plugin.description}</p>}
+          </div>
+          <Button variant="outline" size="sm" disabled={busy} onClick={() => confirm("install-from-marketplace", plugin.id, projectPath ? "project" : "user")}>Install</Button>
+        </div>)}
+        {!shownPlugins.length && <p className="text-xs text-muted-foreground">{query ? "No matching plugins." : "This catalog has no plugins available."}</p>}
+      </div>}
+    </section>}
+    <section className="settings-card settings-card-stack">
+      <SettingsHeading title="Installed extensions" action={<Button variant="outline" size="sm" onClick={onRestart}>Reload session</Button>} />
+      <Notice error={installedList.error} />
+      <SkeletonReveal loading={installedList.loading} skeleton={<PanelSkeleton panel="extensions" />} label="Loading installed extensions">
+        <div className="divide-y divide-border">
+          {installed.map((item, index) => {
+            const id = item.id || item.name || item.package || item.source;
+            if (!id) return null;
+            const itemScope = item.scope === "project" || item.group === "project" ? "project" : "user";
+            return <div key={`${id}-${itemScope}-${index}`} className="flex flex-wrap items-center gap-2 py-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="break-all text-sm font-medium">{id}</h3>
+                <p className="text-xs text-muted-foreground">{item.description || item.group}</p>
+              </div>
+              <Badge variant="secondary">{item.enabled === false ? "Disabled" : "Installed"}</Badge>
+              <Button variant="ghost" size="sm" disabled={busy} onClick={() => run(item.enabled === false ? "enable" : "disable", id, itemScope)}>{item.enabled === false ? "Enable" : "Disable"}</Button>
+              <Button variant="ghost" size="sm" disabled={busy} onClick={() => confirm("uninstall", id, itemScope)}>Remove</Button>
+            </div>;
+          })}
+          {!installed.length && <p className="text-xs text-muted-foreground">No extensions installed.</p>}
+        </div>
+      </SkeletonReveal>
+      <details>
+        <summary className="cursor-pointer text-sm font-medium">Install from a source</summary>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Input aria-label="Extension package source" placeholder="Package or repository" value={packageSource} onChange={event => setPackageSource(event.target.value)} className="min-w-0 flex-1" />
+          <Button disabled={busy || !packageSource.trim()} onClick={() => confirm("install", packageSource)}>Install</Button>
+        </div>
+      </details>
+      <details>
+        <summary className="cursor-pointer text-sm font-medium">Diagnostics</summary>
+        <Button className="mt-3" variant="outline" size="sm" disabled={busy} onClick={() => run("doctor")}>Check installation</Button>
+        {diagnostics && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap text-xs">{diagnostics}</pre>}
+      </details>
+    </section>
+    <Dialog open={!!pending} onOpenChange={open => { if (!open && !busy) { setPending(null); setFailure(""); } }}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{title}</DialogTitle><DialogDescription className="break-all">{pending?.target}</DialogDescription></DialogHeader>
+        <Notice error={failure} />
+        {isInstall && <p className="text-xs text-muted-foreground">Plugin code runs with OMP’s access to this device.</p>}
+        {pending?.action === "install-from-marketplace" && projectPath && <fieldset className="space-y-2 text-sm">
+          <legend className="mb-2 text-xs text-muted-foreground">Install scope</legend>
+          <label className="flex items-center gap-2"><input type="radio" name="plugin-scope" checked={scope === "project"} onChange={() => setScope("project")} />This project</label>
+          <label className="flex items-center gap-2"><input type="radio" name="plugin-scope" checked={scope === "user"} onChange={() => setScope("user")} />All projects</label>
+        </fieldset>}
+        {pending?.action === "marketplace-add" && <p className="text-xs text-muted-foreground">Adding the catalog makes its plugins available to browse. Each installation requires a separate action.</p>}
+        {pending?.action === "marketplace-remove" && <p className="text-xs text-muted-foreground">Plugins already installed from this catalog stay installed.</p>}
+        <DialogFooter>
+          <Button variant="outline" disabled={busy} onClick={() => { setPending(null); setFailure(""); }}>Cancel</Button>
+          <Button disabled={busy} onClick={() => pending && run(pending.action, pending.target, scope)}>{busy ? "Working…" : isInstall ? "Install" : pending?.action === "marketplace-add" ? "Add catalog" : "Remove"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </div>;
 }

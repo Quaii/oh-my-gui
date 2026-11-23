@@ -6,20 +6,45 @@ import { OMP_BINARY } from "./omp.ts";
 import { AGENT_DIR } from "./sessions.ts";
 import { invalidateSkills } from "./skills.ts";
 import { invalidateSettings } from "./settings.ts";
+import { parseMarketplaceList, parseMarketplacePlugins } from "./marketplace-output.ts";
 
 export function runCommand(bin: string, args: string[], cwd?: string, timeout = 60_000): Promise<string> {
   return new Promise((resolve, reject) => execFile(bin, args, { cwd, windowsHide: true, timeout, maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => error ? reject(new Error(String(stderr || error.message))) : resolve(String(stdout))));
 }
+export async function marketplaceCatalog(name?: string) {
+  const sources = parseMarketplaceList(await runCommand(OMP_BINARY, ["plugin", "marketplace", "list"]));
+  if (!name) return { sources, plugins: [] };
+  if (!sources.some(source => source.name === name)) throw new Error("Choose a configured marketplace.");
+  const output = await runCommand(OMP_BINARY, ["plugin", "discover", name], undefined, 120_000);
+  return { sources, plugins: parseMarketplacePlugins(output, name) };
+}
+
 export async function pluginAction(body: any, cwd: string) {
-  const actions = ["list", "discover", "doctor", "features", "install", "uninstall", "enable", "disable", "upgrade", "marketplace-list", "marketplace-add", "marketplace-remove"];
+  const actions = ["list", "discover", "doctor", "features", "install", "uninstall", "enable", "disable", "upgrade", "marketplace-list", "marketplace-add", "marketplace-remove", "marketplace-update", "install-from-marketplace"];
   if (!actions.includes(body.action)) throw new Error("Unsupported extension action");
   const target = String(body.target || "").trim();
   if (target.startsWith("-") || target.length > 2000) throw new Error("Invalid extension source");
-  const needsTarget = ["install", "uninstall", "enable", "disable", "features", "marketplace-add", "marketplace-remove"].includes(body.action);
+  const needsTarget = ["install", "install-from-marketplace", "uninstall", "enable", "disable", "features", "marketplace-add", "marketplace-remove", "marketplace-update"].includes(body.action);
   if (needsTarget && !target) throw new Error("Choose an extension or marketplace source");
-  const args = body.action.startsWith("marketplace-") ? ["plugin", "marketplace", body.action.slice(12), ...(target ? [target] : [])] : ["plugin", body.action, ...(target ? [target] : [])];
+  const installFromMarketplace = body.action === "install-from-marketplace";
+  let catalogName: string | undefined;
+  if (installFromMarketplace) {
+    catalogName = target.split("@")[1];
+    if (!catalogName || !(await marketplaceCatalog(catalogName)).plugins.some(plugin => plugin.id === target)) {
+      throw new Error("This plugin is no longer listed in the marketplace.");
+    }
+  }
+  const command = installFromMarketplace ? "install" : body.action;
+  const args = command.startsWith("marketplace-") ? ["plugin", "marketplace", command.slice(12), ...(target ? [target] : [])] : ["plugin", command, ...(target ? [target] : [])];
   if (["list", "discover", "features"].includes(body.action)) args.push("--json");
-  if (body.scope === "project" && !body.action.startsWith("marketplace-")) args.push("--scope=project");
+  if (["install", "uninstall", "enable", "disable", "upgrade"].includes(command) &&
+    (body.scope === "project" || body.scope === "user")) args.push("--scope", body.scope);
+  if (installFromMarketplace) {
+    const preview = JSON.parse(await runCommand(OMP_BINARY, [...args, "--dry-run", "--json"], cwd, 120_000));
+    if (preview.marketplace !== catalogName || `${preview.plugin}@${preview.marketplace}` !== target) {
+      throw new Error("OMP could not resolve this plugin as a marketplace installation.");
+    }
+  }
   const output = await runCommand(OMP_BINARY, args, cwd, 120_000);
   invalidateSkills(); invalidateSettings();
   let data: any = null;

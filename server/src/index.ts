@@ -32,7 +32,7 @@ import { isProviderWebsiteHost, providerWebsiteHost } from "../../shared/provide
 import { runtimeInfo, runtimeUsage, rpcCatalog } from "./runtime.ts";
 import { includeConnectedPlanAccounts, invalidatePlanUsage, listConnectedPlanAccounts, planUsage } from "./plan-usage.ts";
 import { classifyRequest } from "./classifier.ts";
-import { pluginAction, contextFiles, contextFile, projectActivity } from "./workspace-features.ts";
+import { marketplaceCatalog, pluginAction, contextFiles, contextFile, projectActivity } from "./workspace-features.ts";
 import { createProject } from "./projects.ts";
 import {overviewWork} from "./overview.ts";
 import {workspacePath} from "../../shared/workspace.ts";
@@ -304,7 +304,14 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
     }
     if (p === "/api/plugins/action" && req.method === "POST") {
       const body = await readBody(req);
-      json(res, 200, await pluginAction(body, String(body.cwd || process.cwd())));
+      const cwd = String(body.cwd || "");
+      const project = body.scope === "project" ? projectForSession({ cwd }, (await readControl()).projects) : undefined;
+      if (body.scope === "project" && !project) throw new Error("Open a registered project to manage project plugins.");
+      json(res, 200, await pluginAction(body, project?.path || cwd || process.cwd()));
+      return true;
+    }
+    if (p === "/api/plugins/marketplaces" && req.method === "GET") {
+      json(res, 200, await marketplaceCatalog(url.searchParams.get("catalog") || undefined));
       return true;
     }
     if (p === "/api/context") {
@@ -693,8 +700,9 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
     }
 
     if (p === "/api/plugins") {
+      const cwd = projectForSession({ cwd: url.searchParams.get("cwd") || "" }, (await readControl()).projects)?.path;
       const plugins = await new Promise<any>((resolve,reject) => {
-        execFile(OMP_BINARY, ["plugin", "list", "--json"], { timeout: 40000, maxBuffer: 16 * 1024 * 1024, windowsHide: true }, (error, stdout, stderr) => {
+        execFile(OMP_BINARY, ["plugin", "list", "--json"], { cwd, timeout: 40000, maxBuffer: 16 * 1024 * 1024, windowsHide: true }, (error, stdout, stderr) => {
           if(error){reject(new Error(String(stderr || error.message)));return;}
           try {
             resolve(JSON.parse(String(stdout ?? "{}")));
