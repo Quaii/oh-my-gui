@@ -132,6 +132,8 @@ maintenance, all settings, raw config and capabilities. Opening an Advanced page
 its selection in the desktop sidebar. The compact picker exposes Advanced as a submenu.
 
 Settings section headers show their names without numeric item-count labels.
+Settings switches use a larger liquid SVG thumb without internal On/Off text. Reduced motion snaps to the checked state.
+
 Keep navigation icons in the Settings sidebar. Settings rows start with a 15px semibold label
 and a short, left-aligned description beneath it. Use icons in cards for actions and status.
 Use the shared spacing tokens for page gutters, section gaps, card padding and rows. Settings cards
