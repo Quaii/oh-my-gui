@@ -81,11 +81,11 @@ export function CommandsPanel({
         panel — nothing is removed from the runtime.
       </p>
 
-      <Group title="In chat palette" hint={String(inChat.length)}>
+      <Group title="In chat palette">
         {inChat.length === 0 ? <div className="text-[11.5px] text-fog-500">none</div> : inChat.map((c) => row(c, true))}
       </Group>
 
-      <Group title="Settings only" hint={String(onlySettings.length)}>
+      <Group title="Settings only">
         {onlySettings.length === 0 ? <div className="text-[11.5px] text-fog-500">none</div> : onlySettings.map((c) => row(c, false))}
       </Group>
 
