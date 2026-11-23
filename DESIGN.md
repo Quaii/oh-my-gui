@@ -268,17 +268,21 @@ on the rightmost visible workspace/editor panel and in the Settings toolbar.
 Free header space supports native dragging and double-click maximize/restore; buttons, fields,
 menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
 Browser and non-Windows chrome are unchanged. Window actions remain authenticated and allowlisted.
-Both Windows windows use the native DWM rounded-corner preference and shadow. The frame is styled
-before the window is shown, so the opaque WebView is clipped by Windows at the real outer corners.
-Windows owns maximized/snapped geometry; CSS rounding is not used to simulate the outer frame.
-The native light border is suppressed to match the dark custom chrome. Older Windows versions can
-ignore these Windows 11 compositor attributes.
+The Windows app and installer use a 12 DIP rounded window region, applied before showing and
+refreshed on resize or display-DPI changes. The workspace, Settings and setup panels use the same
+12 DIP radius, compensated for content zoom. This overrides the panel-radius preference in Windows
+custom chrome; browser and other platform panels retain their existing radius settings.
+Maximized/fullscreen windows clear the region to fill the display. The tray retains native DWM
+rounding. The Windows app and installer disable the native shadow so no second frame extends
+beyond the custom region. The region follows client-area bounds, excluding hidden resize borders.
+The native light border is suppressed to match the dark custom chrome.
 
 ## Desktop installation and setup
 
 The custom installer and first-launch setup are a compact workspace: a left progress rail and one
 floating content panel, with 12px outer padding and gap. The Windows setup window is 680×460,
 with no separate caption strip or large canvas around a centered card. Its panel has 14px corners
+outside Windows custom chrome, where it follows the 12 DIP native frame radius described above,
 and 24px horizontal padding; the top-right X is the only close control. Once installation starts,
 closing asks for confirmation. If the installation engine is already writing, Finish and exit waits
 for that operation to finish safely without opening setup. Never kill NSIS mid-write. The brand/header

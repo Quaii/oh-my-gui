@@ -1167,6 +1167,7 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 /* Windows-only custom chrome replaces the native caption; web layout stays unchanged. */
 [data-desktop-chrome=true] #root{display:flex;flex-direction:column}
 [data-desktop-chrome=true] .workspace-motion-root{flex:1;height:auto;min-height:0;overflow:hidden}
+[data-desktop-chrome=true] :is(.workspace-main,.settings-main,.desktop-setup){border-radius:var(--desktop-frame-radius,12px)}
 .desktop-window-controls{position:relative;display:flex;align-items:center;flex-shrink:0}
 .desktop-window-controls button{display:grid;place-items:center;width:36px;height:36px;color:var(--muted-foreground)}
 .desktop-window-controls button:first-of-type{border-start-start-radius:inherit;border-end-start-radius:inherit}

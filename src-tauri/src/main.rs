@@ -338,7 +338,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
         .title(if installer { "Install omp." } else { "omp." })
         .decorations(!cfg!(windows))
-        .shadow(true)
+        .shadow(!cfg!(windows))
         .visible(false)
         .inner_size(680.0, 460.0)
         .min_inner_size(640.0, 440.0)
@@ -395,7 +395,11 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
                     state_window.eval("window.dispatchEvent(new Event('omp:close-requested'));");
             }
         }
-        if matches!(event, tauri::WindowEvent::Resized(_)) {
+        if matches!(
+            event,
+            tauri::WindowEvent::Resized(_) | tauri::WindowEvent::ScaleFactorChanged { .. }
+        ) {
+            window_frame::apply(&state_window);
             sync_window_state(&state_window);
         }
     });

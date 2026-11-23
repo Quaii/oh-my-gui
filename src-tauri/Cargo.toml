@@ -1,6 +1,6 @@
 [package]
 name = "omp-desktop"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2021"
 
 [build-dependencies]
@@ -16,4 +16,4 @@ tauri-plugin-updater = "2"
 tauri-plugin-dialog = "2"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_Graphics_Dwm"] }
+windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi"] }
