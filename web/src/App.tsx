@@ -17,7 +17,7 @@ import { FilesChanged } from "./components/FilesChanged";
 import { fileChangeSummaries } from "./lib/file-changes";
 import { HomeOverview, ProjectDialog } from "./components/Projects";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { get, post, del, subscribeEvents } from "./lib/api";
+import { api, get, post, del, subscribeEvents } from "./lib/api";
 import { chatReducer, initialChat, dismissToast, type ChatState } from "./lib/store";
 import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
@@ -490,6 +490,29 @@ export default function App() {
 
   const results = useMemo(() => buildResultMap(chat.messages), [chat.messages]);
   const changes = useMemo(()=>fileChangeSummaries(chat.messages,results),[chat.messages,results]);
+  const [runningPaths, setRunningPaths] = useState<ReadonlySet<string>>(() => new Set());
+  const sidebarReady = !!boot && !inSettings;
+  useEffect(() => {
+    if (!sidebarReady) return;
+    const request = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    async function refresh() {
+      try {
+        const { paths } = await api<{ paths: string[] }>("/api/sessions/running", { signal: request.signal });
+        if (!request.signal.aborted) {
+          setRunningPaths(current => current.size === paths.length && paths.every(path => current.has(path))
+            ? current
+            : new Set(paths));
+        }
+      } catch {
+        if (!request.signal.aborted) setRunningPaths(current => current.size ? new Set() : current);
+      } finally {
+        if (!request.signal.aborted) timer = setTimeout(refresh, 5000);
+      }
+    }
+    void refresh();
+    return () => { request.abort(); clearTimeout(timer); };
+  }, [sidebarReady, activePath, running]);
   const visibleMessages = chat.messages;
   const renderedMessages=useMemo(()=>groupedTranscript(visibleMessages,chat.live,running),[visibleMessages,chat.live,running]);
   const [entries,setEntries] = useState<any[]>([]);
@@ -543,6 +566,7 @@ export default function App() {
           sessions={boot?.allSessions ?? boot?.sessions ?? []}
           activeSessionPath={activePath}
           busy={running}
+          runningPaths={runningPaths}
           connected={connected}
           collapsed={sidebarCollapsed}
           onNew={newSession}
@@ -567,10 +591,12 @@ export default function App() {
             loading={!boot}
             onHome={()=>{setHome(true);setMobileNav(false);}}
             onNewProject={()=>{setProjectDialog(true);setMobileNav(false);}}
+            onNewProjectChat={path=>{newProjectChat(path);setMobileNav(false);}}
             projects={boot?.control?.projects || []}
             sessions={boot?.allSessions ?? boot?.sessions ?? []}
             activeSessionPath={activePath}
             busy={running}
+            runningPaths={runningPaths}
             connected={connected}
             collapsed={false}
             onNew={() => {

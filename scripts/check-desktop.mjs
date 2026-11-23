@@ -35,12 +35,16 @@ try{
   });
   const base=`http://127.0.0.1:${port}`;
   assert.equal((await fetch(base+'/api/health')).status,403);
+  assert.equal((await fetch(base+'/api/sessions/running')).status,403);
   assert.equal((await fetch(base+'/api/desktop/setup/install',{method:'POST'})).status,403);
   assert.equal((await fetch(base+'/api/desktop/installer',{method:'POST'})).status,403);
   const boot=await fetch(base+'/desktop/bootstrap?token='+token,{redirect:'manual'});
   assert.equal(boot.status,303);
   const headers={Cookie:boot.headers.get('set-cookie').split(';')[0]};
   assert.equal((await fetch(base+'/api/health',{headers})).status,200);
+  const running=await fetch(base+'/api/sessions/running',{headers});
+  assert.equal(running.status,200);
+  assert.deepEqual(await running.json(),{paths:[]});
   assert.equal((await fetch(base+'/api/desktop/tray')).status,403);
   assert.equal((await fetch(base+'/api/desktop/updates')).status,403);
   assert.equal((await fetch(base+'/api/desktop/folder',{method:'POST'})).status,403);

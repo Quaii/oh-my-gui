@@ -1,14 +1,16 @@
 /**
- * Client-side session metadata (pin / archive).
+ * Client-side session metadata (pin, archive, and sidebar project).
  *
  * OMP stores a session's name in the JSONL file (RPC `set_session_name`), but
  * it has no notion of pinning or archiving a thread. Rather than fake a
- * backend, those two flags live in localStorage keyed by session path. They
- * are purely a view preference — deleting the session drops them, and they
+ * backend, these preferences live in localStorage keyed by session path. They
+ * are only used for organization — deleting the session drops them, and they
  * never leave this browser.
  */
 
-export type SessionMeta = { pinned?: boolean; archived?: boolean };
+import { projectForSession } from "../../../shared/workspace.ts";
+
+export type SessionMeta = { pinned?: boolean; archived?: boolean; projectId?: string | null };
 
 const KEY = "ompfe.sessionmeta";
 
@@ -40,7 +42,7 @@ export function getSessionMeta(path: string): SessionMeta {
 export function setSessionMeta(path: string, patch: SessionMeta) {
   const map = read();
   const next = { ...map[path], ...patch };
-  if (!next.pinned && !next.archived) delete map[path];
+  if (!next.pinned && !next.archived && next.projectId === undefined) delete map[path];
   else map[path] = next;
   write(map);
 }
@@ -55,6 +57,15 @@ export function clearSessionMeta(path: string) {
 export function subscribeSessionMeta(fn: () => void): () => void {
   listeners.add(fn);
   return () => listeners.delete(fn);
+}
+
+export function sidebarProjectForSession<T extends { id: string; path: string }>(
+  session: { path: string; cwd?: string },
+  projects: T[],
+): T | undefined {
+  const { projectId } = getSessionMeta(session.path);
+  if (projectId === null) return undefined;
+  return projects.find(project => project.id === projectId) ?? projectForSession(session, projects);
 }
 
 export type Group = { label: string; items: any[] };

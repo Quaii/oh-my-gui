@@ -2,17 +2,16 @@ import {LayoutMotion} from "./transitions/WorkspaceMotion";
 import {transitionUpdate} from "../lib/motion";
 import {Collapsible,CollapsibleTrigger,CollapsibleContent} from "@/components/ui/collapsible";
 import { ListSkeleton } from "@/components/ui/loading-shapes";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useId, useMemo, useState, useRef, type DragEvent } from "react";
 import {useSmoothWheel} from "@/lib/use-smooth-wheel";
-import { ago } from "../lib/api";
 import {
   archivedCount,
   getSessionMeta,
   groupSessions,
   setSessionMeta,
+  sidebarProjectForSession,
   subscribeSessionMeta,
 } from "../lib/sessionmeta";
-import {projectForSession} from "../../../shared/workspace";
 import { Brand } from "./Brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -43,6 +46,7 @@ import {
   MessageSquarePlus,
   MessageSquare,
   MoreHorizontal,
+  ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   Pencil,
@@ -53,8 +57,10 @@ import {
   Search,
   Settings2,
   Trash2,
-  Sparkles,
 } from "./NavigationIcons";
+
+type SidebarProject = { id: string; path: string; name: string };
+const CHAT_DRAG_TYPE = "application/x-omp-sidebar-chat";
 
 export interface SidebarProps {
   loading?:boolean;
@@ -62,6 +68,7 @@ export interface SidebarProps {
   sessions: any[];
   activeSessionPath: string | null;
   busy: boolean;
+  runningPaths?: ReadonlySet<string>;
   connected: boolean;
   collapsed: boolean;
   onNew: () => void;
@@ -69,7 +76,7 @@ export interface SidebarProps {
   onLeaveProject?:()=>void;
   onNewProjectChat?:(path:string)=>void;
   onHome?: () => void;
-  projects?: any[];
+  projects?: SidebarProject[];
   onOpen: (s: any) => void;
   onDelete: (s: any) => void;
   onRename: (s: any, name: string) => void;
@@ -86,6 +93,7 @@ const NAV = [
 ];
 
 export function Sidebar(props: SidebarProps) {
+  const headingId = useId();
   const scrollRoot=useRef<HTMLElement|null>(null);useSmoothWheel(scrollRoot,'[data-slot=scroll-area-viewport]',props.collapsed);
   const [q, setQ] = useState("");
   const [filterQuery,setFilterQuery]=useState("");
@@ -96,6 +104,9 @@ export function Sidebar(props: SidebarProps) {
   const [deleting, setDeleting] = useState<any | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [metaVersion, bump] = useState(0);
+  const [menuPath, setMenuPath] = useState<string | null>(null);
+  const [dropProject, setDropProject] = useState<string | null>(null);
+  const draggedChat = useRef<{ path: string; cwd?: string } | null>(null);
 
   useEffect(() => subscribeSessionMeta(() => bump((n) => n + 1)), []);
 
@@ -110,8 +121,48 @@ export function Sidebar(props: SidebarProps) {
   const groups = useMemo(() => groupSessions(filtered, showArchived), [filtered, showArchived, metaVersion]);
   const archived = useMemo(() => archivedCount(props.sessions), [props.sessions, metaVersion]);
 
-  const ordinaryGroups=useMemo(()=>groupSessions(filtered.filter(session=>!projectForSession(session,props.projects||[])),showArchived),[filtered,props.projects,showArchived,metaVersion]);
-  const projectGroups=useMemo(()=>(props.projects||[]).map(project=>({project,sessions:groups.flatMap(g=>g.items).filter(session=>projectForSession(session,props.projects||[])?.id===project.id)})).filter(g=>!q||g.sessions.length||g.project.name.toLowerCase().includes(q.toLowerCase())),[props.projects,groups,q]);
+  const pinned = groups.find(group => group.label === "Pinned")?.items ?? [];
+  const navigation = useMemo(() => {
+    const projects = props.projects ?? [];
+    const byProject = new Map(projects.map(project => [project.id, { project, sessions: [] as any[] }]));
+    const chats = groups.filter(group => group.label !== "Pinned").map(group => ({
+      ...group,
+      items: group.items.filter(session => {
+        const project = sidebarProjectForSession(session, projects);
+        if (!project) return true;
+        byProject.get(project.id)?.sessions.push(session);
+        return false;
+      }),
+    })).filter(group => group.items.length);
+    const query = filterQuery.trim().toLowerCase();
+    return {
+      chats,
+      projects: [...byProject.values()].filter(({ project, sessions }) =>
+        !query || sessions.length > 0 || project.name.toLowerCase().includes(query)),
+    };
+  }, [groups, props.projects, filterQuery]);
+
+  function moveChat(path: string, projectId: string | null | undefined) {
+    setSessionMeta(path, { projectId });
+    if (projectId) setClosedProjects(previous => ({ ...previous, [projectId]: false }));
+  }
+
+  function chatRunning(path: string) {
+    return path === props.activeSessionPath ? props.busy : props.runningPaths?.has(path);
+  }
+
+  function handleProjectDragOver(event: DragEvent, project: SidebarProject) {
+    const chat = draggedChat.current;
+    if (!chat || !event.dataTransfer.types.includes(CHAT_DRAG_TYPE)) return;
+    event.preventDefault();
+    if (sidebarProjectForSession(chat, props.projects ?? [])?.id === project.id) {
+      event.dataTransfer.dropEffect = "none";
+      setDropProject(null);
+      return;
+    }
+    event.dataTransfer.dropEffect = "move";
+    setDropProject(project.id);
+  }
 
   function nav(key: string) {
     if (key === "settings") props.onOpenSettings();
@@ -124,71 +175,103 @@ export function Sidebar(props: SidebarProps) {
     }
   }
 
-      function renderSession(s:any) {
-                const active = s.path === props.activeSessionPath;
-                const meta = getSessionMeta(s.path);
-                return (
-                  <LayoutMotion key={s.path}><div
-                    data-active={active}
-                    className={`session-row group relative mb-1 rounded-md px-3 py-2.5 pr-10 transition-colors t-fast ${
-                      active
-                        ? "bg-sidebar-accent"
-                        : "hover:bg-sidebar-accent/60"
-                    }`}
-                  >
-                    <button onClick={() => props.onOpen(s)} className="flex w-full min-w-0 items-center gap-1.5 text-left after:absolute after:inset-0 after:rounded-lg" aria-current={active ? "page" : undefined}>
-                      <span
-                        className={`truncate text-[13px] ${active ? "font-medium text-fog-100" : "text-fog-200"}`}
-                        title={s.name || s.preview || s.id}
-                      >
-                        {s.name || s.preview?.slice(0, 46) || s.id}
-                      </span>
-                      {meta.pinned && <Pin className="size-2.5 shrink-0 text-primary/70" aria-label="pinned" />}
-                      {meta.archived && <Archive className="size-2.5 shrink-0 text-muted-foreground" aria-label="archived" />}
-                    </button>
-                    <div className="mt-1 flex items-center gap-1.5 text-[10.5px] text-muted-foreground/75">
-                      <span className="font-mono">{s.updatedAt ? ago(s.updatedAt) : ""}</span>
-                      {s.messageCount ? <span>· {s.messageCount} msg</span> : null}
-                    </div>
+  function renderSession(session: any) {
+    const { path } = session;
+    const title = session.name || session.preview || session.id || "Untitled chat";
+    const active = path === props.activeSessionPath;
+    const running = chatRunning(path);
+    const meta = getSessionMeta(path);
+    const projects = props.projects ?? [];
+    const project = sidebarProjectForSession(session, projects);
+    const pin = () => setSessionMeta(path, { pinned: !meta.pinned, archived: false });
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 grid size-6 place-items-center rounded text-muted-foreground opacity-0 transition-opacity t-fast hover:bg-ink-700 hover:text-fog-100 focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100"
-                          aria-label={`Actions for ${s.name || s.preview || s.id}`}
-                        >
-                          <MoreHorizontal className="size-3.5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="session-actions-menu w-48 rounded-2xl p-1.5" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onSelect={() => setRenaming({ session: s, value: s.name ?? "" })}>
-                          <Pencil className="size-3.5" /> Rename
+    return (
+      <LayoutMotion key={path}>
+        <div className="session-row group" data-active={active} onContextMenu={event => {
+          event.preventDefault();
+          setMenuPath(path);
+        }}>
+          <button
+            className="session-open"
+            aria-current={active ? "page" : undefined}
+            onClick={() => props.onOpen(session)}
+            draggable
+            onDragStart={event => {
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData(CHAT_DRAG_TYPE, path);
+              draggedChat.current = session;
+            }}
+            onDragEnd={() => {
+              draggedChat.current = null;
+              setDropProject(null);
+            }}
+          >
+            {running && <span className="sidebar-chat-running"><span className="sr-only">Running: </span></span>}
+            {meta.archived && <Archive className="size-3 shrink-0 text-muted-foreground" aria-label="Archived" />}
+            <span className="truncate" title={title}>{title}</span>
+          </button>
+          <div className="session-row-actions">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="session-row-action"
+                  aria-label={meta.pinned ? "Unpin chat" : "Pin chat"}
+                  aria-pressed={!!meta.pinned}
+                  onClick={pin}
+                >
+                  {meta.pinned ? <PinOff className="size-3" /> : <Pin className="size-3" />}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{meta.pinned ? "Unpin chat" : "Pin chat"}</TooltipContent>
+            </Tooltip>
+            <DropdownMenu open={menuPath === path} onOpenChange={open => setMenuPath(current => open ? path : current === path ? null : current)}>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className="session-row-action" aria-label={`Actions for ${title}`}>
+                  <MoreHorizontal className="size-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="session-actions-menu w-48 rounded-2xl p-1.5">
+                <DropdownMenuItem onSelect={() => setRenaming({ session, value: session.name ?? "" })}>
+                  <Pencil className="size-3.5" /> Rename
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <FolderOpen className="size-3.5" /> Move chat
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent className="max-h-64 max-w-64 overflow-y-auto" aria-label="Move chat to">
+                      {projects.map(destination => (
+                        <DropdownMenuItem key={destination.id} disabled={destination.id === project?.id} onSelect={() => moveChat(path, destination.id)}>
+                          <FolderOpen className="size-3.5" /><span className="truncate">{destination.name}</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setSessionMeta(s.path, { pinned: !meta.pinned })}>
-                          {meta.pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
-                          {meta.pinned ? "Unpin" : "Pin to top"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => setSessionMeta(s.path, { archived: !meta.archived, pinned: false })}
-                        >
-                          {meta.archived ? <ArchiveRestore className="size-3.5" /> : <Archive className="size-3.5" />}
-                          {meta.archived ? "Unarchive" : "Archive"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => navigator.clipboard?.writeText(s.path).catch(() => {})}
-                        >
-                          <Link2 className="size-3.5" /> Copy path
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(s)}>
-                          <Trash2 className="size-3.5" /> Delete…
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div></LayoutMotion>
-                );
-
+                      ))}
+                      <DropdownMenuItem disabled={!project} onSelect={() => moveChat(path, null)}>Chats</DropdownMenuItem>
+                      {meta.projectId !== undefined && <DropdownMenuItem onSelect={() => moveChat(path, undefined)}>Group by working folder</DropdownMenuItem>}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+                <DropdownMenuItem onSelect={pin}>
+                  {meta.pinned ? <PinOff className="size-3.5" /> : <Pin className="size-3.5" />}
+                  {meta.pinned ? "Unpin" : "Pin to top"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setSessionMeta(path, { archived: !meta.archived, pinned: false })}>
+                  {meta.archived ? <ArchiveRestore className="size-3.5" /> : <Archive className="size-3.5" />}
+                  {meta.archived ? "Unarchive" : "Archive"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigator.clipboard?.writeText(path).catch(() => {})}>
+                  <Link2 className="size-3.5" /> Copy path
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(session)}>
+                  <Trash2 className="size-3.5" /> Delete…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </LayoutMotion>
+    );
   }
 
   if (props.collapsed) {
@@ -239,7 +322,28 @@ export function Sidebar(props: SidebarProps) {
           ))}
         </div>
 
-        <div className="collapsed-chat-list mt-3 min-h-0 w-full flex-1"><div className="mx-auto mb-3 h-0.5 w-6 rounded-full bg-foreground/10"/><ScrollArea className="h-[calc(100%-14px)]"><div className="flex flex-col items-center gap-1 px-2 pb-2">{groups.flatMap(g=>g.items).map(session=><Tooltip key={session.path}><TooltipTrigger asChild><button onClick={()=>props.onOpen(session)} aria-label={`Open chat: ${session.name||session.preview||"Untitled chat"}`} aria-current={props.activeSessionPath===session.path?"page":undefined} className={`grid size-10 shrink-0 place-items-center rounded-lg transition-colors hover:bg-sidebar-accent ${props.activeSessionPath===session.path?"bg-sidebar-accent text-primary":"text-muted-foreground"}`}><MessageSquare className="size-4"/></button></TooltipTrigger><TooltipContent side="right" className="max-w-64"><p className="truncate">{session.name||session.preview||"Untitled chat"}</p><p className="mt-1 text-[10px] opacity-65">{session.messageCount||0} messages</p></TooltipContent></Tooltip>)}</div></ScrollArea></div>
+        <div className="collapsed-chat-list mt-3 min-h-0 w-full flex-1">
+          <div className="mx-auto mb-3 h-0.5 w-6 rounded-full bg-foreground/10" />
+          <ScrollArea className="h-[calc(100%-14px)]">
+            <div className="flex flex-col items-center gap-1 px-2 pb-2">
+              {groups.flatMap(group => group.items).map(session => {
+                const title = session.name || session.preview || "Untitled chat";
+                const active = props.activeSessionPath === session.path;
+                const running = chatRunning(session.path);
+                return <Tooltip key={session.path}>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => props.onOpen(session)} aria-label={`Open chat: ${title}${running ? " (running)" : ""}`} aria-current={active ? "page" : undefined}
+                      className={`relative grid size-10 shrink-0 place-items-center rounded-lg transition-colors hover:bg-sidebar-accent ${active ? "bg-sidebar-accent text-primary" : "text-muted-foreground"}`}>
+                      {getSessionMeta(session.path).pinned ? <Pin className="size-4" /> : <MessageSquare className="size-4" />}
+                      {running && <span className="sidebar-chat-running absolute right-1.5 top-1.5" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-64">{title}{running && " · Running"}</TooltipContent>
+                </Tooltip>;
+              })}
+            </div>
+          </ScrollArea>
+        </div>
         <div className="mt-auto flex flex-col items-center gap-2">
           <Button variant="ghost" size="icon" aria-label="Settings" onClick={props.onOpenSettings}><Settings2 className="size-4" /></Button>
         </div>
@@ -295,13 +399,72 @@ export function Sidebar(props: SidebarProps) {
 
 
 
-      <div className="px-3 pt-2"><Button variant="ghost" onClick={props.onNewProject} className="h-9 w-full justify-start gap-2 text-[13px] font-normal text-muted-foreground"><FolderPlus className="size-3.5"/>New project</Button></div>
-      <ScrollArea className="session-scroll min-h-0 min-w-0 flex-1"><div className="px-3 pb-3">
-       {projectGroups.map(({project,sessions})=><Collapsible key={project.id} open={q?true:!closedProjects[project.id]} onOpenChange={open=>setClosedProjects(v=>({...v,[project.id]:!open}))} className="project-sidebar-group mb-3 mt-2"><div className="project-folder-row group/project flex h-8 items-center rounded-lg"><CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-xs text-muted-foreground" title={project.path}><ChevronsRight className={'size-3 shrink-0 transition-transform '+(!closedProjects[project.id]||q?'rotate-90':'')}/><FolderOpen className="size-3.5 shrink-0"/><span className="truncate">{project.name}</span></CollapsibleTrigger><Button variant="ghost" size="icon-sm" aria-label={'New chat in '+project.name} onClick={()=>props.onNewProjectChat?.(project.path)} className="project-new-chat mr-1 size-6 shrink-0 text-muted-foreground"><Plus className="size-3.5"/></Button></div><CollapsibleContent><div className="project-chat-branch ml-[19px] mt-1 pl-3">{sessions.map(renderSession)}{!sessions.length&&<p className="px-2 py-2 text-[11px] text-muted-foreground">No chats yet</p>}</div></CollapsibleContent></Collapsible>)}
-       <div className="sidebar-section-divider"/><div className="flex items-center gap-2 px-3 pb-2 pt-1"><h2 className="text-[13px] font-semibold">Chats</h2><span className="text-[10px] tabular-nums text-muted-foreground">{ordinaryGroups.reduce((n,g)=>n+g.items.length,0)}</span>{archived>0&&<button onClick={()=>transitionUpdate(()=>setShowArchived(v=>!v))} className="ml-auto text-[10px] text-muted-foreground">{showArchived?"Hide archived":"Show archived"}</button>}</div>
-       {props.loading?<div aria-busy="true" className="pt-3"><ListSkeleton rows={5} logo={false}/></div>:!ordinaryGroups.length&&<p className="px-3 py-5 text-xs text-muted-foreground">{q?"No chats match":"No chats yet"}</p>}
-       {!props.loading&&ordinaryGroups.map(group=><LayoutMotion key={group.label}><div><p className="px-3 pb-1 pt-3 text-[11px] text-muted-foreground">{group.label}</p>{group.items.map(renderSession)}</div></LayoutMotion>)}
-      </div></ScrollArea>
+      <ScrollArea className="session-scroll min-h-0 min-w-0 flex-1">
+        <nav className="workspace-sidebar-sections" aria-label="Chats and projects">
+          {pinned.length > 0 && <section aria-labelledby={headingId + "-pinned"}>
+            <header className="workspace-sidebar-heading"><h2 id={headingId + "-pinned"}>Pinned</h2></header>
+            <div className="workspace-sidebar-rows">{pinned.map(renderSession)}</div>
+          </section>}
+          <section aria-labelledby={headingId + "-projects"}>
+            <header className="workspace-sidebar-heading">
+              <h2 id={headingId + "-projects"}>Projects</h2>
+              {props.onNewProject && <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon-xs" aria-label="New project" onClick={props.onNewProject}><Plus className="size-3.5" /></Button>
+                </TooltipTrigger>
+                <TooltipContent>New project</TooltipContent>
+              </Tooltip>}
+            </header>
+            <div className="workspace-sidebar-rows">
+              {navigation.projects.map(({ project, sessions }) => {
+                const open = !!filterQuery || !closedProjects[project.id];
+                return <Collapsible key={project.id} open={open}
+                  onOpenChange={next => setClosedProjects(previous => ({ ...previous, [project.id]: !next }))}>
+                  <div className="project-folder-row flex h-8 items-center rounded-lg" data-drop-target={dropProject === project.id}
+                    onDragOver={event => handleProjectDragOver(event, project)}
+                    onDragLeave={event => {
+                      if (!(event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget))) {
+                        setDropProject(current => current === project.id ? null : current);
+                      }
+                    }}
+                    onDrop={event => {
+                      const chat = draggedChat.current;
+                      if (!chat || event.dataTransfer.getData(CHAT_DRAG_TYPE) !== chat.path) return;
+                      event.preventDefault();
+                      draggedChat.current = null;
+                      setDropProject(null);
+                      if (sidebarProjectForSession(chat, props.projects ?? [])?.id !== project.id) moveChat(chat.path, project.id);
+                    }}>
+                    <CollapsibleTrigger className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-[13px] text-muted-foreground" title={project.path}>
+                      <ChevronRight className={`size-3 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
+                      <FolderOpen className="size-3.5 shrink-0" />
+                      <span className="truncate">{project.name}</span>
+                    </CollapsibleTrigger>
+                    {props.onNewProjectChat && <Button variant="ghost" size="icon-xs" aria-label={`New chat in ${project.name}`} onClick={() => props.onNewProjectChat?.(project.path)} className="project-new-chat mr-1 size-6 shrink-0 text-muted-foreground"><Plus className="size-3.5" /></Button>}
+                  </div>
+                  <CollapsibleContent>
+                    {sessions.length > 0 && <div className="project-chat-branch workspace-sidebar-rows">{sessions.map(renderSession)}</div>}
+                  </CollapsibleContent>
+                </Collapsible>;
+              })}
+            </div>
+          </section>
+          <section aria-labelledby={headingId + "-chats"}>
+            <header className="workspace-sidebar-heading">
+              <h2 id={headingId + "-chats"}>Chats</h2>
+              {archived > 0 && <button type="button" onClick={() => transitionUpdate(() => setShowArchived(value => !value))} className="text-xs text-muted-foreground" aria-pressed={showArchived}>{showArchived ? "Hide archived" : "Show archived"}</button>}
+            </header>
+            {props.loading ? <div aria-busy="true"><ListSkeleton rows={5} logo={false} /></div> :
+              navigation.chats.length === 0 ? <p className="workspace-sidebar-empty">{filterQuery ? "No chats match" : "No chats outside projects"}</p> :
+                <div className="workspace-sidebar-chat-groups">{navigation.chats.map(group => (
+                  <div key={group.label}>
+                    <p className="workspace-sidebar-date">{group.label}</p>
+                    <div className="workspace-sidebar-rows">{group.items.map(renderSession)}</div>
+                  </div>
+                ))}</div>}
+          </section>
+        </nav>
+      </ScrollArea>
 
       <div className="mx-3 flex shrink-0 items-center gap-1 py-3"><Button variant="ghost" onClick={props.onOpenSettings} className="mr-auto h-9 justify-start gap-2 px-3 text-[13px] font-normal text-muted-foreground"><Settings2 className="size-4"/>Settings</Button>{NAV.filter(n=>n.key!=="settings").map(n=><Tooltip key={n.key}><TooltipTrigger asChild><Button variant="ghost" size="icon-sm" onClick={()=>nav(n.key)} aria-label={n.label} className="size-8 text-muted-foreground"><n.icon className="size-3.5"/></Button></TooltipTrigger><TooltipContent>{n.label}</TooltipContent></Tooltip>)}</div>
 

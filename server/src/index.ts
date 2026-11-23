@@ -437,6 +437,17 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       json(res,200,{work:await overviewWork(sessions,live)});return true;
     }
 
+    if (p === "/api/sessions/running" && req.method === "GET") {
+      const paths = new Set<string>();
+      for (const slot of slots.values()) {
+        if (slot.bridge.alive && slot.state?.isStreaming && typeof slot.state.sessionFile === "string") {
+          paths.add(slot.state.sessionFile);
+        }
+      }
+      json(res, 200, { paths: [...paths] });
+      return true;
+    }
+
     if (p === "/api/sessions") {
       const cwd = url.searchParams.get("cwd") || undefined;
       json(res, 200, { sessions: await listSessions(cwd) });
