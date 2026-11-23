@@ -1,3 +1,5 @@
+import {LoadingIndicator} from '../amicro/LoadingIndicator';
+import {MonoMeter} from '../amicro/MonoCharts';
 import { PanelSkeleton } from "@/components/ui/loading-shapes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,13 +13,13 @@ export function RuntimePanel({ chatKey, children }: { chatKey: string | null; ch
   const agents = data?.subagents?.subagents ?? (Array.isArray(data?.subagents) ? data.subagents : []);
   return <div className="settings-stack">
     <div className="flex flex-wrap items-center justify-between gap-3">{window.__OMP_DESKTOP__ && <Button variant="outline" size="sm" onClick={() => window.dispatchEvent(new Event('omp:desktop-setup'))}>Open desktop setup</Button>}
-    <Button className="ml-auto" variant="outline" size="sm" onClick={refresh} disabled={loading}><RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />Refresh runtime</Button></div>
+    <Button className="ml-auto" variant="outline" size="sm" onClick={refresh} disabled={loading}>{loading?<LoadingIndicator className="size-3.5"/>:<RefreshCw className="size-3.5"/>}Refresh runtime</Button></div>
     {children}
     <Notice error={error} />
     <SkeletonReveal loading={loading && !data} skeleton={<PanelSkeleton panel="runtime"/>} label="Inspecting OMP runtime">
       {data && <div className="settings-stack">
         <div className="grid gap-3 sm:grid-cols-3">{[{ label: "OMP runtime", value: data.version, icon: Cpu }, { label: "Live sessions", value: data.bridges.filter((b: any) => b.alive).length, icon: Layers }, { label: "Parallel task limit", value: data.maxConcurrency ?? "Not reported", icon: GitBranch }].map(s => <div key={s.label} className="settings-card"><s.icon className="mb-4 size-5 text-muted-foreground" /><div className="text-[22px] font-semibold tracking-tight">{s.value}</div><div className="mt-1 text-xs text-muted-foreground">{s.label}</div></div>)}</div>
-        <section className="settings-card settings-card-list"><dl>{[["Executable", data.executable], ["Agent directory", data.agentDir], ["Configuration", data.configPath], ["Platform", data.platform], ["Node.js", data.nodeVersion], ["Available settings", data.settingCount], ["Subagents in this session", agents.length], ["Subagent nesting limit", data.maxRecursionDepth], ["Task timeout", data.maxTaskRuntimeMs ? `${data.maxTaskRuntimeMs / 1000} seconds` : "No configured limit"], ["Session messages", data.state?.messageCount ?? "Not reported"], ["Queued messages", data.state?.queuedMessageCount ?? "Not reported"]].map(([label, value]) => <div className="setting-row" key={label}><dt className="text-[13px] text-muted-foreground">{label}</dt><dd className="break-all text-[13px]">{String(value ?? "Not reported")}</dd></div>)}</dl></section>
+        {typeof data.state?.contextUsage?.percent==='number'&&<section className="settings-card space-y-3"><h2 className="text-sm font-medium">Session context window</h2><MonoMeter value={data.state.contextUsage.percent} label="Runtime context window usage" valueText={`${data.state.contextUsage.percent.toFixed(1)}%`}/></section>}<section className="settings-card settings-card-list"><dl>{[["Executable", data.executable], ["Agent directory", data.agentDir], ["Configuration", data.configPath], ["Platform", data.platform], ["Node.js", data.nodeVersion], ["Available settings", data.settingCount], ["Subagents in this session", agents.length], ["Subagent nesting limit", data.maxRecursionDepth], ["Task timeout", data.maxTaskRuntimeMs ? `${data.maxTaskRuntimeMs / 1000} seconds` : "No configured limit"], ["Session messages", data.state?.messageCount ?? "Not reported"], ["Queued messages", data.state?.queuedMessageCount ?? "Not reported"]].map(([label, value]) => <div className="setting-row" key={label}><dt className="text-[13px] text-muted-foreground">{label}</dt><dd className="break-all text-[13px]">{String(value ?? "Not reported")}</dd></div>)}</dl></section>
         <Notice text="The parallel task limit is an OMP setting, not a provider quota. Queued messages and task activity are reported by the selected live session." />
       </div>}
     </SkeletonReveal>

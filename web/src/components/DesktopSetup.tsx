@@ -1,3 +1,4 @@
+import {LoadingIndicator} from './amicro/LoadingIndicator';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, Check, Download, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
@@ -75,7 +76,7 @@ export function DesktopSetup({ children }: { children: ReactNode }) {
         <h1 id="setup-title">Connect your agent.</h1>
         <p>OMP runs locally and powers your conversations and tools.</p>
         <div className="desktop-setup-inset">
-          <div className="flex items-center gap-3">{status?.available ? <Check className="size-5 text-primary" /> : <Download className="size-5 text-muted-foreground" />}<h2>{status?.available ? 'OMP is ready' : busy ? 'Checking your runtime…' : 'Install or connect OMP'}</h2></div>
+          <div className="flex items-center gap-3">{busy?<LoadingIndicator className="size-5 text-muted-foreground"/>:status?.available ? <Check className="size-5 text-primary" /> : <Download className="size-5 text-muted-foreground" />}<h2>{status?.available ? 'OMP is ready' : busy ? 'Checking your runtime…' : 'Install or connect OMP'}</h2></div>
           {status?.available ? <><p>{status.version}</p><code className="block break-all text-xs text-muted-foreground">{status.executable}</code></> : <p>Install the official stable binary for this device. The download is verified before it is used. Your system installation and PATH stay unchanged.</p>}
           <div className="mt-5 flex flex-wrap gap-2">
             {!status?.available && <Button onClick={install} disabled={busy || !status?.installSupported}><Download className="size-4" />{busy ? 'Working…' : 'Install OMP'}</Button>}

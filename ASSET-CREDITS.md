@@ -32,3 +32,7 @@
 - Tauri dialog plugin (Apache-2.0 OR MIT): https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/dialog . Native project-folder selection is called only by the host, with no filesystem/dialog IPC permissions granted to the webview.
 
 - smol-toml (BSD-3-Clause): https://github.com/squirrelchat/smol-toml . The server uses it to read Codex configuration. Desktop bundles include its license.
+
+- Amicro by SYED SUBHAN UDDIN (MIT): https://github.com/Subhan-code/Amicro--Micro-transitions- . Pinned revision `fa5f8ffbe39537a8db191806066b8773c47c82e9`. Adapted ApplePulseDots, FadeDots, BouncingDots and ConcentricPulse sequences from `registry/ui/loading`, spring/easing treatments from `registry/lib/presets.ts` and `registry/ui/entrance/fade-up.tsx`, plus MonoRoundedSparklineChart/Meter/RadialGauge/Kpi chart treatments from `src/components/mono-charts`. Colors, sizing, real data, accessibility, reduced motion and loading-episode selection are local adaptations. No upstream demonstration data is included. License ships at `web/public/licenses/amicro.txt` and is copied into desktop web resources.
+
+- The user-supplied Amicro LiquidToggle SVG path and spring settings are adapted in `lib/liquid-toggle.ts` and the shared Radix Switch. Demo labels/theme hooks are omitted, accessibility stays with Radix, and idle interval polling is removed. Amicro GlowButton cursor glow is adapted into the shared Button background without moving its hitbox. Same MIT license above.

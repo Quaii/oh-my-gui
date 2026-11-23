@@ -1,3 +1,4 @@
+import {LoadingIndicator} from '../amicro/LoadingIndicator';
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -106,7 +107,7 @@ export function ProviderAccounts({
         {provider.id === 'zai-coding-plan' ? 'Use a Z.AI API key in the OMP terminal' : 'Sign in in the OMP terminal'}
       </Button>}
       <CollapsibleContent className="space-y-2 pt-3">
-          {busy && !accounts && <p className="text-xs text-muted-foreground" role="status">Loading accounts…</p>}
+          {busy && !accounts && <p className="flex items-center gap-2 text-xs text-muted-foreground" role="status"><LoadingIndicator aria-hidden="true" className="size-4"/>Loading accounts…</p>}
           {accounts?.length === 0 && (
             <p className="text-xs text-muted-foreground">
               No stored accounts. Environment credentials are managed outside

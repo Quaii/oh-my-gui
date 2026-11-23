@@ -1,7 +1,8 @@
+import {LoadingIndicator as LoaderCircle} from './amicro/LoadingIndicator';
 import { useEffect, useState } from "react";
 import { get } from "../lib/api";
 import { Button } from "./ui/button";
-import { Folder, ArrowUp, House, LoaderCircle } from "./NavigationIcons";
+import { Folder, ArrowUp, House, } from "./NavigationIcons";
 
 type FolderListing = {
   path: string;

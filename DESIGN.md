@@ -370,7 +370,7 @@ draft and never sends a prompt automatically. Native completion appears as a mut
 Tab; it does not animate the surrounding input. Queue edits append recovered content without discarding
 an existing draft. Goal/task status and subagent activity always come from native results/events.
 
-Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
+Desktop workspace cards enter with Amicro's snappy spring and a 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
 
 The file split opens and closes through one clipped width/opacity transition. Its editor stays at
 natural width during the reveal; dirty-close guards run before exit. Resize dragging remains immediate.
@@ -389,3 +389,13 @@ Workspace toolbar card/window-control slots stay mounted and tween width, spacin
 The sidebar brand has no subtitle. New chat uses borderless tonal hover/press feedback with a keyboard focus outline. Main chat and Files outer panes have no border or embossing; the explorer section label has no horizontal rule.
 
 Standalone chats use `~/` in the workspace breadcrumb and no label beside the welcome brand. Registered projects retain their project name.
+
+Amicro adaptations add dot/pulse/bounce/ripple loading indicators, choosing one variant per loading
+mount so it never changes mid-request. Skeleton reveals retain actual fetch timing and gain a compact
+status caption. Buttons, switches, progress, inputs, home cards, editor tabs and desktop disclosures
+use restrained press/hover/reveal feedback; text streaming and resize dragging remain immediate.
+Usage uses monochrome model series, rounded animated charts, recorded-history sparklines, segmented
+cost meters and a real token-composition bar. Context usage has a radial gauge. Data is never synthesized.
+Reduced motion makes loaders static, removes travel/press scaling and disables chart animations.
+
+Settings switches use the supplied liquid SVG thumb without internal On/Off text. Existing row labels, Radix keyboard/form semantics, controlled values and disabled behavior remain authoritative. The blob settles without idle polling; reduced motion snaps to the checked state.

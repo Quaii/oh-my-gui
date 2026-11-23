@@ -1,5 +1,6 @@
+import {LoadingIndicator as LoaderCircle} from './amicro/LoadingIndicator';
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Download, LoaderCircle } from "lucide-react";
+import { ArrowRight, Check, Download, } from "lucide-react";
 import { DesktopSetupFrame } from "./DesktopSetupFrame";
 import { Button } from "./ui/button";
 import {

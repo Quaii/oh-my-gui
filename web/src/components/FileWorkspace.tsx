@@ -1,3 +1,4 @@
+import {LoadingIndicator as LoaderCircle} from './amicro/LoadingIndicator';
 import {DesktopWindowControls,dragDesktopWindow} from "./DesktopWindowControls";
 import {motion,useReducedMotion} from 'motion/react';
 import {transitionUpdate} from '../lib/motion';
@@ -14,7 +15,7 @@ import {Button} from './ui/button';
 import {Skeleton} from './ui/skeleton';
 import {Tooltip,TooltipContent,TooltipTrigger} from './ui/tooltip';
 import {shortcutLabel} from '../lib/platform';
-import {FolderOpen,FileCode2,Save,X,RotateCcw,LoaderCircle,ChevronRight,PanelLeftClose,PanelLeftOpen} from 'lucide-react';
+import {FolderOpen,FileCode2,Save,X,RotateCcw,ChevronRight,PanelLeftClose,PanelLeftOpen} from 'lucide-react';
 type FileResponse={path:string;content:string;version:string;roots:string[]};
 type Pending={kind:'tab'|'reload';path:string}|{kind:'panel'};
 export default function FileWorkspace({chatKey,cwd,request,onClose,focused=false,onToggleFocus,hidden=false}:{chatKey:string;cwd:string;request:{path?:string;n:number};onClose:()=>void;focused?:boolean;onToggleFocus:()=>void;hidden?:boolean}){

@@ -1,3 +1,4 @@
+import {LoadingIndicator} from '../amicro/LoadingIndicator';
 import type { ReactNode, CSSProperties } from "react";
 import "./skeleton-reveal.css";
 import { Skeleton } from "./skeleton";
@@ -7,7 +8,7 @@ export function SkeletonReveal({ loading, skeleton, children, className = "", la
   loading: boolean; skeleton: ReactNode; children: ReactNode; className?: string; label?: string;
 }) {
   return <div className={`t-skel omp-skeleton-reveal ${loading ? "" : "is-revealed"} ${className}`} aria-busy={loading} style={{ "--pulse-dur": "1000ms", "--pulse-count": "infinite", "--pulse-min": .5, "--reveal-dur": "180ms", "--reveal-blur": "0px", "--reveal-ease": "cubic-bezier(0.22, 1, 0.36, 1)" } as CSSProperties}>
-    <div className={`t-skel-skeleton ${loading ? "is-pulsing" : ""}`} aria-hidden="true">{skeleton}</div>
+    <div className={`t-skel-skeleton ${loading ? "is-pulsing" : ""}`} aria-hidden="true">{loading&&<div className="amicro-loading-caption"><LoadingIndicator aria-hidden="true" className="size-4"/><span>{label}</span></div>}{skeleton}</div>
     <div className="t-skel-content" aria-hidden={loading || undefined} inert={loading}>{children}</div>
     {loading && <span role="status" className="sr-only">{label}</span>}
   </div>;

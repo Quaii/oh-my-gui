@@ -1,0 +1,66 @@
+/* Amicro MIT adaptations. Semantic colors and reduced-motion guards are local additions. */
+.amicro-loader{position:relative;display:inline-flex;width:1.25rem;height:1.25rem;flex-shrink:0;align-items:center;justify-content:center;gap:12%;vertical-align:middle;color:inherit}
+.amicro-loader>span{width:18%;aspect-ratio:1;border-radius:50%;background:currentColor;animation:amicro-pulse 1.2s ease-in-out infinite;animation-delay:calc(var(--dot-index)*150ms)}
+.amicro-loader[data-variant=fade]>span{animation-name:amicro-fade;animation-duration:1.5s}
+.amicro-loader[data-variant=bounce]>span{animation-name:amicro-bounce;animation-duration:.8s}
+.amicro-loader[data-variant=ripple]>span{position:absolute;width:80%;background:none;border:1px solid currentColor;animation:amicro-ripple 1.8s ease-out infinite;animation-delay:calc(var(--dot-index)*.6s)}
+@keyframes amicro-pulse{0%,100%{scale:.5;opacity:.3}50%{scale:1;opacity:1}}
+@keyframes amicro-fade{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes amicro-bounce{0%,100%{translate:0 0;scale:1 .8}50%{translate:0 -35%;scale:1 1.1}}
+@keyframes amicro-ripple{from{scale:.15;opacity:1}to{scale:1;opacity:0}}
+.amicro-loading-caption{position:absolute;right:4px;top:0;z-index:2;display:flex;align-items:center;gap:6px;max-width:85%;padding:4px 8px;border-radius:8px;background:var(--sidebar);color:var(--muted-foreground);font-size:11px;pointer-events:none}
+.amicro-meter{display:flex;gap:3px;height:14px;width:100%;color:var(--foreground)}
+.amicro-meter>span{flex:1;min-width:0;border-radius:3px;background:currentColor;transition:opacity 240ms ease-out}
+.amicro-gauge{display:block;width:104px;height:104px;color:var(--foreground)}
+.amicro-sparkline{display:block;width:100%;height:34px;color:var(--foreground);overflow:visible}
+.amicro-mono-chart{border-radius:14px;background:color-mix(in srgb,var(--foreground) 3%,transparent);padding:16px}
+.amicro-token-stack{display:flex;gap:3px;height:20px;overflow:hidden;border-radius:7px}
+.amicro-token-stack>span{min-width:0;background:var(--foreground);transition:width 350ms cubic-bezier(.16,1,.3,1)}
+.amicro-stat-value{animation:amicro-fade-up 250ms cubic-bezier(.16,1,.3,1) both}
+@keyframes amicro-fade-up{from{opacity:0;translate:0 6px}to{opacity:1;translate:0 0}}
+/* Micro-feedback shared by actual controls, without moving their hit areas. */
+[data-slot=button]{transition:background-color 160ms ease-out,color 160ms ease-out,box-shadow 180ms ease-out,scale 180ms cubic-bezier(.16,1,.3,1)}
+[data-slot=button]:not([disabled]):not([aria-disabled=true]):active{scale:.97}
+[data-slot=button]>svg{transition:scale 180ms cubic-bezier(.16,1,.3,1)}
+[data-slot=switch-thumb]{transition:transform 240ms cubic-bezier(.34,1.4,.64,1),background-color 180ms ease-out}
+[data-slot=progress-indicator]{transition:transform 350ms cubic-bezier(.16,1,.3,1)}
+[data-slot=input],[data-slot=textarea]{transition:box-shadow 180ms ease-out,border-color 180ms ease-out,background-color 180ms ease-out}
+
+.home-project-card,.home-chat-card,.home-work-card{transition:background-color 180ms ease-out,translate 220ms cubic-bezier(.16,1,.3,1)}
+.file-editor-tab,.file-browser-entry,.provider-account-card{transition:background-color 160ms ease-out,color 160ms ease-out}
+.usage-dashboard .settings-card{animation:amicro-fade-up 250ms cubic-bezier(.16,1,.3,1) both}
+.usage-dashboard .settings-card:nth-child(2){animation-delay:40ms}
+.usage-dashboard .settings-card:nth-child(3){animation-delay:80ms}
+.usage-dashboard tbody tr{transition:background-color 160ms ease-out}
+.usage-dashboard tbody tr:hover{background:color-mix(in srgb,var(--foreground) 4%,transparent)}
+@media(hover:hover) and (pointer:fine){
+ [data-slot=button]:not([disabled]):hover>svg{scale:1.06}
+ .home-project-card:hover,.home-chat-card:hover,.home-work-card:hover{translate:0 -2px}
+}
+@media(prefers-reduced-motion:reduce){
+ .amicro-loader>span{animation:none!important;scale:1;translate:none;opacity:.65}
+ .amicro-loader[data-variant=ripple]>span{scale:1;opacity:.5}
+ .amicro-loader[data-variant=ripple]>span:not(:first-child){display:none}
+ .amicro-meter>span,.amicro-token-stack>span,[data-slot=button],[data-slot=button]>svg,[data-slot=switch-thumb],[data-slot=progress-indicator],[data-slot=input],[data-slot=textarea],[data-slot=collapsible-trigger] svg,.home-project-card,.home-chat-card,.home-work-card,.file-editor-tab,.file-browser-entry,.provider-account-card,.usage-dashboard tbody tr{transition:none!important;translate:none!important;scale:1!important}
+ .amicro-stat-value,.usage-dashboard .settings-card{animation:none!important}
+}
+
+.amicro-skeleton{position:relative;overflow:hidden}
+.amicro-skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 15%,color-mix(in srgb,var(--foreground) 7%,transparent) 50%,transparent 85%);translate:-100% 0;animation:amicro-shimmer 1.6s ease-in-out infinite}
+@keyframes amicro-shimmer{to{translate:100% 0}}
+.is-revealed>.t-skel-skeleton .amicro-skeleton::after{animation:none}
+[data-desktop=true] [data-slot=collapsible-content]{overflow:hidden}
+[data-desktop=true] [data-slot=collapsible-content][data-state=open]{animation:amicro-expand 220ms cubic-bezier(.16,1,.3,1)}
+[data-desktop=true] [data-slot=collapsible-content][data-state=closed]{animation:amicro-collapse 160ms cubic-bezier(.16,1,.3,1)}
+@keyframes amicro-expand{from{height:0;opacity:0}to{height:var(--radix-collapsible-content-height);opacity:1}}
+@keyframes amicro-collapse{from{height:var(--radix-collapsible-content-height);opacity:1}to{height:0;opacity:0}}
+@media(prefers-reduced-motion:reduce){.amicro-skeleton::after,[data-desktop=true] [data-slot=collapsible-content]{animation:none!important}}
+
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .amicro-glow:not([disabled]):hover{background-image:radial-gradient(100px circle at var(--pointer-x,50%) var(--pointer-y,50%),color-mix(in srgb,currentColor 7%,transparent),transparent 80%)}
+}
+.amicro-loading-caption{animation:none!important}
+
+.amicro-gauge{flex-shrink:0}
+.usage-dashboard{container-type:inline-size}
+@container (max-width:760px){.usage-dashboard .usage-chart-grid{grid-template-columns:minmax(0,1fr)}}

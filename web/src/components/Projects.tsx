@@ -1,3 +1,4 @@
+import {LoadingIndicator as LoaderCircle} from './amicro/LoadingIndicator';
 import {projectForSession} from "../../../shared/workspace";
 import {getSessionMeta} from "@/lib/sessionmeta";
 import {Skeleton} from "@/components/ui/skeleton";
@@ -9,7 +10,7 @@ import {HorizontalCarousel} from "./HorizontalCarousel";
 
 import { GithubLogo as Github } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
-import { FolderPlus, FolderOpen, LoaderCircle, GitPullRequest, ArrowUpRight } from "lucide-react";
+import { FolderPlus, FolderOpen,  GitPullRequest, ArrowUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

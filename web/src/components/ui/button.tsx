@@ -42,6 +42,7 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  onPointerMove,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -54,8 +55,15 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn("amicro-glow",buttonVariants({ variant, size, className }))}
       {...props}
+      onPointerMove={(event: React.PointerEvent<HTMLButtonElement>)=>{
+        onPointerMove?.(event);
+        if(event.defaultPrevented||event.pointerType!=='mouse'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+        const rect=event.currentTarget.getBoundingClientRect();
+        event.currentTarget.style.setProperty('--pointer-x',`${event.clientX-rect.left}px`);
+        event.currentTarget.style.setProperty('--pointer-y',`${event.clientY-rect.top}px`);
+      }}
     />
   )
 }

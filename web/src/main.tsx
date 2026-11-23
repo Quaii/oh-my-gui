@@ -1,3 +1,4 @@
+import './components/amicro/amicro.css';
 import {ErrorBoundary} from "./components/ErrorBoundary";
 import {DesktopLifecycle} from "./components/DesktopLifecycle";
 import {DesktopTray} from './components/DesktopTray';
