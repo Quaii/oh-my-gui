@@ -1005,6 +1005,9 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .project-new-chat {opacity:0;pointer-events:none;transition:opacity 120ms;}
 .project-folder-row:hover .project-new-chat,.project-folder-row:focus-within .project-new-chat {opacity:1;pointer-events:auto;}
 @media(hover:none){.project-new-chat{opacity:1;pointer-events:auto}}
+.sidebar-new-chat{border:0;box-shadow:none;background:transparent;transition:background-color 160ms ease-out}
+.sidebar-new-chat:hover,.sidebar-new-chat:active{background:color-mix(in srgb,var(--foreground) 7%,transparent)}
+.sidebar-new-chat:focus-visible{outline:2px solid var(--primary);outline-offset:2px;box-shadow:none}
 .prompt-suggestions [data-slot=button] {background:color-mix(in srgb,var(--background) 42%,transparent);backdrop-filter:blur(18px) saturate(1.1);border:0;border-radius:10px;box-shadow:0 4px 14px #0002;}
 :root {--success-foreground:var(--ok);--warning-foreground:#b99055;--info-foreground:var(--primary);}
 .inline-citation {display:inline-flex;align-items:center;max-width:100%;padding:0 5px;border-radius:5px;background:color-mix(in srgb,var(--foreground) 7%,transparent);color:inherit;text-decoration:none;font-size:.9em;vertical-align:baseline;}
