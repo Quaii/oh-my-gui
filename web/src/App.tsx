@@ -37,7 +37,6 @@ import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-revea
 import { SlidingTabs } from "@/components/ui/sliding-tabs";
 import AiStatus from "@/components/ui/ai-status";
 import ProximitySidebar from "@/components/ui/proximity-sidebar";
-import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { Toaster } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -683,15 +682,6 @@ export default function App() {
                   <span className="truncate font-mono text-[10.5px] text-muted-foreground">
                     {runningTools.map((t: any) => t.name).join(", ")}
                   </span>
-                )}
-                {turnSections.length > 1 && (
-                  <ScrollProgress
-                    placement="inline"
-                    containerRef={scrollRef}
-                    sections={turnSections.map((t) => ({ id: t.id, label: t.label }))}
-                    offset={60}
-                    className="ml-auto hidden md:block"
-                  />
                 )}
               </div>
             )}
