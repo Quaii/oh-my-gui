@@ -296,12 +296,12 @@ export function SettingsPage(props: SettingsPageProps) {
 
         {/* content */}
         <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef} viewportClassName="settings-content min-h-0 min-w-0">
-          <div className={`settings-page-content mx-auto w-full px-5 pb-10 sm:px-9 ${panel==="usage"&&!searching?"is-wide":"max-w-[920px]"}`}>
-            <div className="mb-7">
+          <div className={`settings-page-content mx-auto w-full ${panel==="usage"&&!searching?"is-wide":"max-w-[920px]"}`}>
+            <div className="settings-page-header">
               <h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1>
               {pageDescription && <p className="mt-2 text-[13px] text-muted-foreground">{pageDescription}</p>}
             </div>
-            <div className="mb-4 md:hidden">
+            <div className="settings-page-header md:hidden">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -319,7 +319,7 @@ export function SettingsPage(props: SettingsPageProps) {
             <ErrorBoundary key={panel}><Suspense fallback={<PanelSkeleton panel={panel}/>}>
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
-            ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null}><details className="mb-5"><summary className="cursor-pointer py-3 text-sm">Launch configuration</summary><FlagsPanel flagDraft={flagDraft} setFlagDraft={setFlagDraft} onSave={() => { try { setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft))); onRestart(); } catch (error:any) { setErr(error.message); } }} /></details></RuntimePanel>
+            ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null}><details className="settings-card"><summary className="cursor-pointer py-3 text-sm">Launch configuration</summary><FlagsPanel flagDraft={flagDraft} setFlagDraft={setFlagDraft} onSave={() => { try { setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft))); onRestart(); } catch (error:any) { setErr(error.message); } }} /></details></RuntimePanel>
             ) : panel === "updates" ? (<UpdatesPanel/>
             ) : panel === "native" ? (<NativeManager cwd={info?.cwd || ''}/>
             ) : panel === "usage" ? (<UsagePanel />
@@ -343,7 +343,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 }}
               />
             ) : panel === "providers" ? (
-              <><RuntimeOutput outputs={[]} links={chat.authLinks} /><CustomProvidersPanel onRestart={onRestart} /><ProvidersPanel
+              <div className="settings-stack"><RuntimeOutput outputs={[]} links={chat.authLinks} /><CustomProvidersPanel onRestart={onRestart} /><ProvidersPanel
                 key={chat.key}
               providers={providers}
               cwd={info?.cwd || ""}
@@ -356,7 +356,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 settings={settings.filter((s) => s.ui?.tab === "providers")}
                 onSave={save}
                 onReset={reset}
-              /></>
+              /></div>
             ) : panel === "tools" ? (
               <ToolsPanel settingsLoading={loading && !payload} settings={settings} chatKey={chat.loaded ? chat.key : null} onSave={save} onReset={reset} />
             ) : panel === "skills" ? (
@@ -390,7 +390,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : panel === "about" ? (
               <AboutPanel info={info} chat={chat} />
             ) : tab ? (
-              <div className="space-y-4">
+              <div className="settings-stack">
                 {panel === "appearance" && <><ThemeBlock /><AppearanceEditor /></>}
                 {panel === "appearance" ? <details className="harness-display-settings"><summary className="cursor-pointer py-3 text-[13px] text-muted-foreground">Harness display settings</summary><ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced /></details> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}
               </div>
@@ -578,7 +578,7 @@ function FlagsPanel({
       <Btn tone="primary" onClick={onSave}>
         save &amp; restart session
       </Btn>
-      <div className="space-y-1 rounded-xl border border-border bg-card/50 p-3 font-mono text-[11.5px] text-muted-foreground">
+      <div className="space-y-1 settings-card font-mono text-[11.5px] text-muted-foreground">
         {[
           "--approval-mode always-ask|always-ask-cached|write|yolo",
           "--auto-approve",
@@ -625,8 +625,8 @@ function ProvidersPanel({
 }) {
   const [filter,setFilter]=useState("");
   return (
-    <div className="space-y-4"><div className="flex items-center justify-between gap-4"><h2 className="text-sm font-semibold">Provider accounts</h2><Input value={filter} onChange={e=>setFilter(e.target.value)} aria-label="Filter providers" placeholder="Find a provider…" className="h-9 max-w-64 rounded-xl"/></div>
-      <SkeletonReveal loading={loading} skeleton={<ProviderSkeleton/>} label="Loading provider accounts"><div className="space-y-1.5">
+    <div className="settings-card-stack"><div className="flex items-center justify-between gap-4"><h2 className="text-sm font-semibold">Provider accounts</h2><Input value={filter} onChange={e=>setFilter(e.target.value)} aria-label="Filter providers" placeholder="Find a provider…" className="h-9 max-w-64 rounded-xl"/></div>
+      <SkeletonReveal loading={loading} skeleton={<ProviderSkeleton/>} label="Loading provider accounts"><div className="settings-card-stack">
         {providers.filter(p=>`${p.name} ${p.id}`.toLowerCase().includes(filter.toLowerCase())).map((p) => (
           <ProviderAccounts key={p.id} provider={p} cwd={cwd} cmd={cmd} loginBusy={loginBusy} onSignIn={onSignIn} onCredentialsChanged={onCredentialsChanged} />
         ))}
@@ -731,7 +731,7 @@ function AboutPanel({ info, chat }: { info: any; chat: any }) {
   return (
     <div className="space-y-2 font-mono text-[12px] text-fog-300">
       <AppVersion/>
-      <section className="mb-8 font-sans"><h2 className="mb-2 text-base font-semibold text-foreground">Credits</h2><p className="mb-4 text-sm text-muted-foreground">The libraries and creators behind this workspace.</p><div className="divide-y divide-border rounded-xl border bg-card/40 px-4">{[["shadcn/ui","Accessible interface primitives","https://ui.shadcn.com/"],["Rare UI","Chat, themes, tasks, code, and project components","https://www.rareui.com/"],["23rd","Interactive shader backgrounds","https://www.23rd.dev/"],["React Bits · David Haz","63 ambient background renderers · locally captured previews","https://reactbits.dev/"],["Transitions.dev","Loading and reveal motion","https://transitions.dev/library.html"],["Lucide","Workspace icon set","https://lucide.dev/"],["Phosphor","Workspace icon set","https://phosphoricons.com/"],["Tabler","Workspace icon set · MIT","https://tabler.io/icons"],["Heroicons","Workspace icon set · MIT","https://heroicons.com/"],["Remix Icon","Workspace icon set · Apache 2.0","https://remixicon.com/"],["Bootstrap Icons","Workspace icon set · MIT","https://icons.getbootstrap.com/"],["Lobe Icons","AI provider marks","https://github.com/lobehub/lobe-icons"],["Material Icon Theme","File type icons","https://github.com/material-extensions/vscode-material-icon-theme"],["Unslop · Damir Sokolovsky","Interface review workflow · CC BY 4.0","https://github.com/heydamir/unslop"]].map(([name,description,url])=><a key={name} href={url} target="_blank" rel="noreferrer" className="flex flex-wrap items-center justify-between gap-2 py-4 text-[13px] hover:text-foreground"><span className="font-medium text-foreground">{name}</span><span className="text-xs text-muted-foreground">{description}</span></a>)}</div></section><h2 className="mb-4 font-sans text-base font-semibold text-foreground">Installation details</h2><div>omp binary: {info?.omp}</div>
+      <section className="mb-8 font-sans"><h2 className="mb-2 text-base font-semibold text-foreground">Credits</h2><p className="mb-4 text-sm text-muted-foreground">The libraries and creators behind this workspace.</p><div className="settings-card settings-card-list divide-y divide-border">{[["shadcn/ui","Accessible interface primitives","https://ui.shadcn.com/"],["Rare UI","Chat, themes, tasks, code, and project components","https://www.rareui.com/"],["23rd","Interactive shader backgrounds","https://www.23rd.dev/"],["React Bits · David Haz","63 ambient background renderers · locally captured previews","https://reactbits.dev/"],["Transitions.dev","Loading and reveal motion","https://transitions.dev/library.html"],["Lucide","Workspace icon set","https://lucide.dev/"],["Phosphor","Workspace icon set","https://phosphoricons.com/"],["Tabler","Workspace icon set · MIT","https://tabler.io/icons"],["Heroicons","Workspace icon set · MIT","https://heroicons.com/"],["Remix Icon","Workspace icon set · Apache 2.0","https://remixicon.com/"],["Bootstrap Icons","Workspace icon set · MIT","https://icons.getbootstrap.com/"],["Lobe Icons","AI provider marks","https://github.com/lobehub/lobe-icons"],["Material Icon Theme","File type icons","https://github.com/material-extensions/vscode-material-icon-theme"],["Unslop · Damir Sokolovsky","Interface review workflow · CC BY 4.0","https://github.com/heydamir/unslop"]].map(([name,description,url])=><a key={name} href={url} target="_blank" rel="noreferrer" className="flex flex-wrap items-center justify-between gap-2 py-4 text-[13px] hover:text-foreground"><span className="font-medium text-foreground">{name}</span><span className="text-xs text-muted-foreground">{description}</span></a>)}</div></section><h2 className="mb-4 font-sans text-base font-semibold text-foreground">Installation details</h2><div>omp binary: {info?.omp}</div>
       <div>agent dir: {info?.agentDir}</div>
       <div>session dir: {info?.sessionsDir}</div>
       <div>cwd: {info?.cwd}</div>
@@ -753,7 +753,7 @@ function ConfigTree({ value, onChange, path = "" }: { value: any; onChange: (v: 
   return (
     <div className={`space-y-1.5 ${path ? "border-l border-border pl-3" : ""}`}>
       {Object.entries(value).map(([k, v]) => (
-        <div key={k} className="rounded-xl border border-border bg-card/50 px-3 py-2">
+        <div key={k} className="settings-card">
           <div className="flex items-center gap-2">
             <span className="font-mono text-[12px] text-fog-300">{k}</span>
             <span className="text-[10.5px] text-muted-foreground">
@@ -843,8 +843,9 @@ function PrimitiveInput({ value, onChange }: { value: any; onChange: (v: any) =>
 
 function ThemeBlock() {
   return (
-    <Group title="Workspace theme">
-      <div className="p-2 py-5"><AppearanceControls expanded/></div>
-    </Group>
+    <section className="settings-group">
+      <header><h2 className="text-base font-semibold">Workspace theme</h2></header>
+      <div className="settings-card"><AppearanceControls expanded /></div>
+    </section>
   );
 }

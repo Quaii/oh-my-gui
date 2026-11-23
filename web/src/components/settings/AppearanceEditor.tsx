@@ -14,7 +14,7 @@ import { getTheme, applyTheme, APP_THEMES } from "@/lib/theme";
 import { BACKGROUND_OPTIONS } from "../Appearance";
 import { Notice } from "./ManagementShared";
 
-function Section({title,icon,children}:{title:string;icon:ReactNode;children:ReactNode}) {return <section className="appearance-section"><h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">{icon}{title}</h3><div className="appearance-options">{children}</div></section>;}
+function Section({title,icon,children}:{title:string;icon:ReactNode;children:ReactNode}) {return <section className="settings-group"><header><h3 className="flex items-center gap-2 text-sm font-semibold">{icon}{title}</h3></header><div className="appearance-options settings-card settings-card-list">{children}</div></section>;}
 function Row({label,hint,children}:{label:string;hint?:string;children:ReactNode}) {return <div className="appearance-option"><div className="min-w-0"><p className="text-[13px] font-medium">{label}</p>{hint&&<p className="mt-1 text-xs leading-relaxed text-muted-foreground">{hint}</p>}</div><div className="appearance-option-control">{children}</div></div>;}
 function Choice({label,value,options,onChange}:{label:string;value:string|number;options:[string|number,string][];onChange:(v:string)=>void}) {return <Select value={String(value)} onValueChange={onChange}><SelectTrigger aria-label={label} className="h-9 w-full rounded-lg"><SelectValue/></SelectTrigger><SelectContent>{options.map(([v,l])=><SelectItem key={v} value={String(v)}>{l}</SelectItem>)}</SelectContent></Select>;}
 
@@ -44,7 +44,7 @@ export function AppearanceEditor() {
   if(typeof data.animated==="boolean")localStorage.setItem("ompfe.ambience.motion",data.animated?"1":"0");
   saveAppearance(valid);applyTheme(data.theme);setError("");
  }
- return <div className="mt-8 space-y-8 border-t pt-7">
+ return <div className="settings-stack">
   <div className="flex items-center justify-between"><div><h2 className="text-base font-semibold">Customize this theme</h2><p className="mt-1 text-xs text-muted-foreground">Changes apply across this workspace and are saved on this device.</p></div><Button variant="ghost" size="sm" onClick={()=>saveAppearance(DEFAULT_APPEARANCE)}>Reset</Button></div>
   <Notice error={error}/>
   <Section title="Colors" icon={<Palette className="size-4 text-muted-foreground"/>}>
@@ -63,7 +63,7 @@ export function AppearanceEditor() {
    <Row label="Corner radius"><Choice label="Corner radius" value={a.radius} options={[[8,"Subtle · 8 px"],[12,"Soft · 12 px"],[18,"Rounded · 18 px"],[24,"Generous · 24 px"]]} onChange={v=>update({radius:Number(v)})}/></Row>
    <Row label="Shadow"><Choice label="Shadow" value={a.shadow} options={[["none","None"],["soft","Soft"],["deep","Deep"]]} onChange={v=>update({shadow:v as CustomAppearance["shadow"]})}/></Row>
    <Row label="Frosted menus" hint="Blur behind menus and pop-outs. The main panel stays opaque."><Switch checked={a.glass} onCheckedChange={glass=>update({glass})} aria-label="Frosted glass"/></Row>
-   <Row label="Translucent cards" hint="Optional glass treatment for cards. Off by default."><Switch checked={a.glassCards} onCheckedChange={glassCards=>update({glassCards})} aria-label="Translucent cards"/></Row>
+   <Row label="Translucent cards" hint="Let the workspace background show through Home cards."><Switch checked={a.glassCards} onCheckedChange={glassCards=>update({glassCards})} aria-label="Translucent cards"/></Row>
    <Row label="Translucent sidebar" hint="Let your workspace background show through navigation"><Switch checked={a.translucentSidebar} onCheckedChange={translucentSidebar=>update({translucentSidebar})} aria-label="Translucent sidebar"/></Row>
   </Section>
   <section><h3 className="mb-3 flex items-center gap-2 text-sm font-semibold"><Shapes className="size-4 text-muted-foreground"/>Workspace icons</h3><div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Workspace icon theme">

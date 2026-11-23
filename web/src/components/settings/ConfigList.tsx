@@ -43,8 +43,8 @@ export function ConfigList({ settings, query = "", onSave, onReset, hideAdvanced
   if (grouped.length === 0) return <Empty>No settings match.</Empty>;
 
   return (
-    <div>
-      <p className="mb-4 text-xs leading-relaxed text-muted-foreground">Global OMP settings. Launch overrides take priority. Startup changes need a restart. Terminal appearance and keybindings apply to the terminal.</p>
+    <div className="settings-stack">
+      <p className="text-xs leading-relaxed text-muted-foreground">Global OMP settings. Launch overrides take priority. Startup changes need a restart. Terminal appearance and keybindings apply to the terminal.</p>
       {grouped.map(([group, list]) => (
         <Group key={group} title={group} hint={`${list.length}`}>
           {list.map((s) => (

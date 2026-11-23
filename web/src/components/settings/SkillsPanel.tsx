@@ -80,7 +80,7 @@ export function SkillsPanel({
   const discoveryKeys = settings.filter((s) => s.key.startsWith("skills.") && s.key !== "skills.ignoredSkills");
 
   return (
-    <div className="space-y-4">
+    <div className="settings-stack">
       <div className="settings-toolbar flex flex-wrap items-center gap-3"><div className="relative min-w-[200px] flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/><Input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search skills" aria-label="Search skills" className="pl-9"/></div><Select value={source} onValueChange={setSource}><SelectTrigger aria-label="Skill source" className="w-40"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(skills.map(s=>s.source || "unknown"))].map(v=><SelectItem value={v} key={v}>{v}</SelectItem>)}</SelectContent></Select><Select value={visibility} onValueChange={setVisibility}><SelectTrigger aria-label="Skill visibility" className="w-36"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="all">All skills</SelectItem><SelectItem value="visible">Enabled</SelectItem><SelectItem value="hidden">Hidden</SelectItem></SelectContent></Select><Btn onClick={()=>load(true)} disabled={busy}><RefreshCw className={`size-4 ${busy?"animate-spin":""}`}/>{busy?"Scanning":"Rescan"}</Btn></div><p className="text-xs text-muted-foreground">{busy?"Discovering skills":`${skills.length} skills · ${ignored.length} hidden`}</p>
       {err && <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11.5px] text-rose-200">{err}</div>}
 
@@ -90,7 +90,7 @@ export function SkillsPanel({
       ) : (
         <div className="space-y-1.5">
           {filtered.map((s) => (
-            <div key={s.name + (s.filePath ?? "")} className="skill-row flex items-start gap-4 rounded-xl border border-border/60 bg-card/50 p-4">
+            <div key={s.name + (s.filePath ?? "")} className="skill-row settings-card flex items-start gap-4">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className={`setting-label ${disabled.has(s.name) ? "text-muted-foreground" : "text-foreground"}`}>{s.name}</span>

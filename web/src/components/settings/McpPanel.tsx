@@ -147,7 +147,7 @@ export function McpPanel({ cwd, projectPath, onRestart }: { cwd: string; project
   }
 
   return (
-    <fieldset className="min-w-0 space-y-4" disabled={busy}>
+    <fieldset className="settings-stack" disabled={busy}>
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex gap-1 rounded-lg bg-ink-850 p-0.5">
           {(["user", "project"] as const).map((s) => (
@@ -218,7 +218,7 @@ export function McpPanel({ cwd, projectPath, onRestart }: { cwd: string; project
             const pr = probes[name];
             const isHttp = !!s.url;
             return (
-              <div key={name} className="rounded-lg border border-ink-800 bg-ink-850/40">
+              <div key={name} className="settings-card settings-card-flush">
                 <div className="flex items-center gap-3 px-3 py-2">
                   <button onClick={() => setOpenName(openName === name ? null : name)} className="min-w-0 flex-1 text-left">
                     <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export function McpPanel({ cwd, projectPath, onRestart }: { cwd: string; project
       {!!current?.extra?.length && (
         <Group title="Also loaded from project root" hint="read-only here">
           {current.extra.map((f) => (
-            <div key={f.path} className="rounded-lg border border-ink-800 bg-ink-850/40 px-3 py-2">
+            <div key={f.path} className="settings-card">
               <div className="font-mono text-[11px] text-fog-400">{f.path}</div>
               <div className="text-[11.5px] text-fog-500">{Object.keys(f.servers).join(", ") || "no servers"}{f.error ? " · " + f.error : ""}</div>
             </div>

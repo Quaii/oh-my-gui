@@ -133,7 +133,7 @@ export default function NativeManager({ cwd }: { cwd: string }) {
       args[descriptor?.arguments[0]?.name ?? ""] ?? "",
     ]);
   return (
-    <div className="space-y-5">
+    <div className="settings-stack">
       <p className="text-sm text-muted-foreground">
         Manage the installed OMP runtime. Commands and options come from this
         installation’s help. Operations run only when you choose Run; native
@@ -202,7 +202,7 @@ export default function NativeManager({ cwd }: { cwd: string }) {
                   .map((command) => (
                     <button
                       key={command.name}
-                      className="rounded-xl border bg-sidebar p-4 text-left hover:bg-secondary"
+                      className="settings-card settings-card-action text-left"
                       onClick={() => {
                         setPath([...path, command.name.split(/[: ]/).at(-1)!]);
                         setSearch("");
@@ -218,7 +218,7 @@ export default function NativeManager({ cwd }: { cwd: string }) {
             </>
           )}
           {descriptor && (
-            <section className="space-y-4 rounded-xl border bg-sidebar p-4">
+            <section className="settings-card settings-card-stack">
               <pre className="overflow-auto whitespace-pre-wrap text-xs text-muted-foreground">
                 {descriptor.usage}
               </pre>

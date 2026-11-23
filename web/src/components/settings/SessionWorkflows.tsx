@@ -51,7 +51,7 @@ export function SessionWorkflows({
     }
   }
   return (
-    <div className="space-y-5">
+    <div className="settings-stack">
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

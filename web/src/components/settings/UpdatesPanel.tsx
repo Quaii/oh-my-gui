@@ -33,8 +33,8 @@ export default function UpdatesPanel() {
       updates.status.phase,
     );
   return (
-    <div className="space-y-6">
-      <section className="workspace-floating-surface rounded-xl border p-5">
+    <div className="settings-stack">
+      <section className="settings-card">
         <AppVersion />
         {window.__OMP_DESKTOP__ ? (
           <>
@@ -97,7 +97,7 @@ export default function UpdatesPanel() {
           {data?.releases?.map((release: any) => (
             <article
               key={release.version}
-              className="workspace-floating-surface rounded-xl border p-5"
+              className="settings-card"
             >
               <h3 className="font-medium">
                 {release.version} · {release.title}

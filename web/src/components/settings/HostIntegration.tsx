@@ -27,7 +27,7 @@ export function HostIntegration({ chatKey }: { chatKey: string | null }) {
     };
   }, [chatKey]);
   return (
-    <section className="my-5 rounded-xl border bg-sidebar p-4">
+    <section className="settings-card">
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <p className="text-sm font-medium">GUI host integration</p>

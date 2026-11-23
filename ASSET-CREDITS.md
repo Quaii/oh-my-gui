@@ -7,7 +7,7 @@
 - Transitions.dev free library patterns P14 (Skeleton Reveal) and P16 (Sliding Tabs): https://transitions.dev/library.html . Source attribution also appears in component comments.
 - Shader Gradient: https://www.23rd.dev/ . Source is vendored in `web/src/components/ui/shader-gradient.tsx`.
 - Material Icon Theme: https://github.com/material-extensions/vscode-material-icon-theme/tree/main/icons . Distributed license is in `web/public/file-icons/LICENSE`.
-- Lobe Icons: https://github.com/lobehub/lobe-icons (MIT). Cached provider marks and verified company favicons are recorded in `web/public/provider-icons/sources.json`; the license is in `web/public/provider-icons/LOBE-LICENSE`. Unknown providers use their configured endpoint favicon, then an accessible globe fallback.
+- Lobe Icons: https://github.com/lobehub/lobe-icons (MIT). Cached provider marks and verified company favicons are recorded in `web/public/provider-icons/sources.json`; the license is in `web/public/provider-icons/LOBE-LICENSE`. Custom providers use the favicon declared by their public website where available, with a built-in mark or generic icon as a fallback.
 - Lucide: https://lucide.dev/ . Phosphor: https://phosphoricons.com/ . Company marks remain the property of their owners.
 - Unslop by Damir Sokolovsky: https://github.com/heydamir/unslop (CC BY 4.0). Used for the spacing, color, icons, copy, typography, layout, details, visuals, and motion review. The skill is installed at `~/.codex/skills/unslop`.
 

@@ -26,6 +26,8 @@ import { runSlash } from "./slash.ts";
 import { openSessionFile, readChatSnapshot } from "./snapshot.ts";
 import { readControl, writeControl, selectedPersona, PERSONA_EXTENSION, validateControl } from "./control.ts";
 import { readModelConfig, saveProvider } from "./model-config.ts";
+import { providerFavicon } from "./provider-favicon.ts";
+import { isProviderWebsiteHost, providerWebsiteHost } from "../../shared/provider-website.ts";
 import { runtimeInfo, runtimeUsage, rpcCatalog } from "./runtime.ts";
 import { classifyRequest } from "./classifier.ts";
 import { pluginAction, contextFiles, contextFile, projectActivity } from "./workspace-features.ts";
@@ -315,6 +317,24 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
     }
     if (p === "/api/model-config") {
       json(res, 200, req.method === "PUT" ? await saveProvider(await readBody(req)) : await readModelConfig());
+      return true;
+    }
+    if (p === "/api/provider-favicon" && req.method === "GET") {
+      const host = url.searchParams.get("host") ?? "";
+      const configured = isProviderWebsiteHost(host) &&
+        (await readModelConfig()).providers.some(provider => providerWebsiteHost(provider.baseUrl) === host);
+      const icon = configured ? await providerFavicon(host) : undefined;
+      if (!icon) {
+        res.writeHead(404, { "cache-control": "private, max-age=300" }).end();
+      } else {
+        res.writeHead(200, {
+          "content-type": icon.type,
+          "content-length": icon.bytes.length,
+          "cache-control": "private, max-age=43200",
+          "content-security-policy": "default-src 'none'; sandbox",
+          "x-content-type-options": "nosniff",
+        }).end(icon.bytes);
+      }
       return true;
     }
     if (p === "/api/models") {

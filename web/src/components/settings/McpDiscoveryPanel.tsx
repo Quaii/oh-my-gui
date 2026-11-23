@@ -66,7 +66,7 @@ export function McpDiscoveryPanel({
     </div>
     {!data && !error && <p role="status" className="text-sm text-muted-foreground">Looking for MCP servers…</p>}
     {data?.servers.length === 0 && <Empty>No servers found in the supported apps.</Empty>}
-    {!!data?.servers.length && <div className="settings-group-body rounded-xl border border-border/60 bg-card/50 px-4">
+    {!!data?.servers.length && <div className="settings-group-body settings-card settings-card-list">
       {data.servers.map(server => {
         const reason = unavailable(server);
         const checked = choices.some(choice => choice.id === server.id);

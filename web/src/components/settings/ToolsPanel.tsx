@@ -66,7 +66,7 @@ export function ToolsPanel({
   const other = settings.filter((s) => s.key.startsWith("tools.") && !["tools.approvalMode", "tools.approval"].includes(s.key));
 
   return (
-    <div className="space-y-4">
+    <div className="settings-stack">
       <div className="settings-toolbar flex flex-wrap items-center gap-3">
         <Input
           value={q}

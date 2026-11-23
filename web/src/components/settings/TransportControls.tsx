@@ -20,7 +20,7 @@ export function TransportControls({ chatKey }: { chatKey: string | null }) {
     }
   }
   return (
-    <details className="rounded-xl border bg-sidebar p-4">
+    <details className="settings-card">
       <summary className="cursor-pointer text-sm font-medium">
         Advanced event transport
       </summary>

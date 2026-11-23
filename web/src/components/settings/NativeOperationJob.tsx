@@ -53,7 +53,7 @@ export function NativeOperationJob({
     <details
       open={open}
       onToggle={(event) => setOpen(event.currentTarget.open)}
-      className="rounded-xl border bg-sidebar p-4"
+      className="settings-card"
     >
       <summary className="cursor-pointer text-sm">
         {job.path.join(" ")}{" "}

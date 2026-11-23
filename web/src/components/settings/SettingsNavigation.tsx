@@ -14,12 +14,11 @@ import {
 import { Cpu, ChartNoAxesCombined, MessagesSquare, Workflow, Terminal, Boxes, KeyRound, MousePointer2, Wrench, ListTodo, Sparkles, Puzzle, FileText, Network, Command, Library, Brain, FolderOpen, Palette, SlidersHorizontal, FileCode2, ShieldCheck, Info, ChevronsLeft, ChevronsRight, ChevronRight } from "../NavigationIcons";
 
 export const SETTINGS_GROUPS = [
-  {section:"Runtime",items:[{id:"runtime",label:"Installation",icon:Cpu},{id:"usage",label:"Usage",icon:ChartNoAxesCombined},{id:"session",label:"Session",icon:MessagesSquare},{id:"routing",label:"Routing",icon:Workflow},{id:"models",label:"Models",icon:Boxes},{id:"providers",label:"Providers",icon:KeyRound},{id:"updates",label:"Updates & changelog",icon:RotateCcw},{id:"about",label:"About & credits",icon:Info}]},
-  {section:"Appearance",items:[{id:"appearance",label:"Appearance",icon:Palette}]},
+  {section:"Runtime",items:[{id:"runtime",label:"Installation",icon:Cpu},{id:"appearance",label:"Appearance",icon:Palette},{id:"usage",label:"Usage",icon:ChartNoAxesCombined},{id:"session",label:"Session",icon:MessagesSquare},{id:"routing",label:"Routing",icon:Workflow},{id:"models",label:"Models",icon:Boxes},{id:"providers",label:"Providers",icon:KeyRound},{id:"updates",label:"Updates & changelog",icon:RotateCcw},{id:"about",label:"About & credits",icon:Info}]},
   {section:"Agent",items:[{id:"interaction",label:"Interaction",icon:MousePointer2},{id:"tools",label:"Tools",icon:Wrench},{id:"tasks",label:"Tasks",icon:ListTodo},{id:"skills",label:"Skills",icon:Library},{id:"personas",label:"Personas",icon:Sparkles},{id:"extensions",label:"Extensions",icon:Puzzle},{id:"context-files",label:"Prompts & rules",icon:FileText},{id:"mcp",label:"MCP servers",icon:Network},{id:"commands",label:"Commands",icon:Command},{id:"context",label:"Context",icon:Library},{id:"memory",label:"Memory",icon:Brain},{id:"files",label:"Files",icon:FolderOpen},{id:"shell",label:"Shell",icon:Terminal}]},
   {section:"Advanced",items:[{id:"native",label:"Runtime maintenance",icon:Command},{id:"all",label:"All settings",icon:SlidersHorizontal},{id:"config",label:"config.yml",icon:FileCode2},{id:"capabilities",label:"Runtime capabilities",icon:ShieldCheck}]},
 ] as const;
-const advanced = SETTINGS_GROUPS[3];
+const advanced = SETTINGS_GROUPS[2];
 type PanelItem = (typeof SETTINGS_GROUPS)[number]["items"][number];
 export type SettingsPanelId = PanelItem["id"] | "flags";
 export const SETTINGS_ITEMS=SETTINGS_GROUPS.flatMap(g=>[...g.items]);
@@ -50,7 +49,7 @@ export function SettingsMobileNavigation({ panel, onSelect }: SettingsSelection)
           <DropdownMenuPortal><DropdownMenuSubContent>{group.items.map(item)}</DropdownMenuSubContent></DropdownMenuPortal>
         </DropdownMenuSub>
         : <DropdownMenuGroup key={group.section}>
-          {group.section !== "Appearance" && <DropdownMenuLabel>{group.section}</DropdownMenuLabel>}
+          <DropdownMenuLabel>{group.section}</DropdownMenuLabel>
           {group.items.map(item)}
         </DropdownMenuGroup>)}
     </DropdownMenuContent>
@@ -92,7 +91,7 @@ export function SettingsNavigation({panel,onSelect,collapsed,onToggle}: Settings
               <CollapsibleContent>{group.items.map(renderItem)}</CollapsibleContent>
             </Collapsible>
           ) : <>
-            {!collapsed && group.section !== "Appearance" && <div className="settings-section-title">{group.section}</div>}
+            {!collapsed && <div className="settings-section-title">{group.section}</div>}
             {group.items.map(renderItem)}
           </>}
         </div>)}

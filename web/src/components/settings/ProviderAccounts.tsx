@@ -68,7 +68,7 @@ export function ProviderAccounts({
     }
   }
   return (
-    <Collapsible className="provider-account-card rounded-xl bg-card/50 px-4 py-3" open={open} onOpenChange={next => {
+    <Collapsible className="provider-account-card settings-card" open={open} onOpenChange={next => {
       setOpen(next);
       setSelected(null);
       if (next) void refresh();
@@ -79,18 +79,23 @@ export function ProviderAccounts({
           <div className="setting-label truncate">{provider.name}</div>
           <div className="font-mono text-[11px] text-muted-foreground">{provider.id}</div>
         </div>
-        <Badge variant={provider.authenticated ? "default" : "secondary"}>
-          {signingIn ? "Signing in…" : provider.authenticated ? "Signed in" : "Not signed in"}
-        </Badge>
-        {(provider.authenticated || open) ? (
-          <CollapsibleTrigger asChild>
-            <Button size="xs" variant="ghost" className="provider-manage-trigger shrink-0">
-              {open ? "Hide accounts" : "Manage accounts"}
-            </Button>
-          </CollapsibleTrigger>
-        ) : provider.available && (
-          <Button size="xs" variant="outline" onClick={() => void signIn()} disabled={loginBusy || signingIn}>Sign in</Button>
-        )}
+        {(provider.authenticated || open || provider.available) && <div className="flex shrink-0 items-center gap-2">
+          {(provider.authenticated || open) && (
+            <CollapsibleTrigger asChild>
+              <Button size="xs" variant="ghost" className="provider-manage-trigger">
+                {open ? "Hide accounts" : "Manage accounts"}
+              </Button>
+            </CollapsibleTrigger>
+          )}
+          <div className="flex min-w-17 justify-end">
+            {provider.authenticated ? <Badge>{signingIn ? "Signing in…" : "Signed in"}</Badge>
+              : provider.available && (
+                <Button size="xs" variant="outline" onClick={() => void signIn()} disabled={loginBusy || signingIn}>
+                  {signingIn ? "Signing in…" : "Sign in"}
+                </Button>
+              )}
+          </div>
+        </div>}
       </div>
       {error && (
         <p className="mt-2 text-xs text-destructive" role="alert">
@@ -169,8 +174,8 @@ export function ProviderAccounts({
               )}
             </div>
           ))}
-          {provider.available && <Button size="xs" variant="ghost" onClick={() => void signIn()} disabled={loginBusy || signingIn || busy}>
-            {provider.authenticated ? 'Add another account' : 'Sign in'}
+          {provider.available && provider.authenticated && <Button size="xs" variant="ghost" onClick={() => void signIn()} disabled={loginBusy || signingIn || busy}>
+            Add another account
           </Button>}
       </CollapsibleContent>
     </Collapsible>

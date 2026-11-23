@@ -221,19 +221,19 @@ function summaryOf(value: unknown): string {
 
 export function Group({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <section className="settings-group mb-7">
-      <div className="mb-3 flex items-baseline gap-2">
+    <section className="settings-group">
+      <header className="flex items-baseline gap-2">
         <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
         {hint && <span className="font-mono text-[10px] text-muted-foreground/70">{hint}</span>}
-      </div>
-      <div className="settings-group-body rounded-xl border border-border/60 bg-card/50 px-4">{children}</div>
+      </header>
+      <div className="settings-group-body settings-card settings-card-list">{children}</div>
     </section>
   );
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-border px-3 py-8 text-center text-[12px] text-muted-foreground">
+    <div className="settings-card border-dashed text-center text-[12px] text-muted-foreground">
       {children}
     </div>
   );
