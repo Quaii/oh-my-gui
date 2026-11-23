@@ -255,7 +255,6 @@ export function Sidebar(props: SidebarProps) {
           <div className="flex items-center gap-1.5">
             <span className="text-[16px] font-semibold tracking-[-0.04em]">omp<span className="text-primary">.</span></span>
           </div>
-          <div className="truncate text-[11px] text-muted-foreground">Your agent workspace</div>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
