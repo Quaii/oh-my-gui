@@ -988,9 +988,10 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 /* Header geometry is measured from the floating panel, equally on every edge. */
 .workspace-header {height:60px;padding:12px;align-items:flex-start;}
 .workspace-header>.workspace-breadcrumb {height:36px;padding:0 10px;}
-.workspace-header>.workspace-header-actions {height:36px;padding:0;background:transparent;backdrop-filter:none;box-shadow:none;gap:8px;}
+.workspace-header>.workspace-header-actions {height:36px;padding:0;background:transparent;backdrop-filter:none;box-shadow:none;gap:0;}
 .workspace-header-actions [data-slot=button] {height:36px;min-width:36px;}
 .workspace-header-actions [data-slot=button][data-size=icon] {width:36px;}
+.workspace-toolbar-slot{display:flex;flex:0 0 auto;align-items:center;height:36px;overflow:clip}
 .background-choice-label {height:32px;line-height:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;}
 .appearance-controls [data-slot=theme-selector-item]>span {border-radius:10px;}
 .appearance-controls [data-slot=theme-selector-item] {border-radius:10px;}
