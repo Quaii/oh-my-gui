@@ -11,3 +11,17 @@ test("overflow models aggregate into an honest Other series",()=>{
  const {models:keys,points}=buildModelTrend(models.map(m=>({...m,timestamp:0,tokens:10})),models,"tokens");
  assert.equal(keys.length,6);assert.equal(points[0].m5,20);assert.equal(Object.values(points[0]).reduce((n,v)=>n+v,0),70);
 });
+
+test("multi-day trends sum by local date and retain idle dates across daylight saving time", () => {
+ const model = {provider:"a",model:"same",totalInputTokens:23};
+ const {daily,points} = buildModelTrend([
+  {...model,timestamp:Date.parse("2026-10-23T22:15Z"),tokens:10},
+  {...model,timestamp:Date.parse("2026-10-24T14:00Z"),tokens:8},
+  {...model,timestamp:Date.parse("2026-10-27T09:30Z"),tokens:5},
+ ],[model],"tokens","Europe/Berlin");
+ assert.equal(daily,true);
+ assert.deepEqual(points.map(point=>new Date(point.timestamp).toISOString().slice(0,10)),[
+  "2026-10-24","2026-10-25","2026-10-26","2026-10-27",
+ ]);
+ assert.deepEqual(points.map(point=>point.m0),[18,0,0,5]);
+});

@@ -26,9 +26,11 @@ import { runSlash } from "./slash.ts";
 import { openSessionFile, readChatSnapshot } from "./snapshot.ts";
 import { readControl, writeControl, selectedPersona, PERSONA_EXTENSION, validateControl } from "./control.ts";
 import { readModelConfig, removeProvider, saveProvider } from "./model-config.ts";
+import { usagePricing } from "./usage-pricing.ts";
 import { providerFavicon } from "./provider-favicon.ts";
 import { isProviderWebsiteHost, providerWebsiteHost } from "../../shared/provider-website.ts";
 import { runtimeInfo, runtimeUsage, rpcCatalog } from "./runtime.ts";
+import { includeConnectedPlanAccounts, invalidatePlanUsage, listConnectedPlanAccounts, planUsage } from "./plan-usage.ts";
 import { classifyRequest } from "./classifier.ts";
 import { pluginAction, contextFiles, contextFile, projectActivity } from "./workspace-features.ts";
 import { createProject } from "./projects.ts";
@@ -364,6 +366,22 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       json(res, 200, await runtimeUsage(url.searchParams.get("tz") || "UTC"));
       return true;
     }
+    if (p === "/api/usage/pricing" && req.method === "GET") {
+      const usage = await runtimeUsage(url.searchParams.get("tz") || "UTC");
+      res.setHeader("cache-control", "no-store");
+      json(res, 200, await usagePricing(usage.byModel ?? []));
+      return true;
+    }
+    if (p === "/api/plan-usage" && req.method === "GET") {
+      const bridge = slots.get(url.searchParams.get("key") || "")?.bridge;
+      const [snapshot, inventory] = await Promise.all([
+        planUsage(),
+        bridge ? listConnectedPlanAccounts(bridge) : [],
+      ]);
+      res.setHeader("cache-control", "no-store");
+      json(res, 200, includeConnectedPlanAccounts(snapshot, inventory));
+      return true;
+    }
     if (p === "/api/routing/preview" && req.method === "POST") {
       const body = await readBody(req);
       const config = validateControl({ ...(await readControl()), routing: body.routing }).routing;
@@ -515,6 +533,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
           let connected = false;
           try {
             const data = await slot.bridge.send({ type: 'login', providerId }, 660_000);
+            invalidatePlanUsage();
             connected = true;
             json(res, 200, { ok: true, data });
           } finally {
@@ -546,6 +565,7 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
           }
         }
         const data = await slot.bridge.send(body.cmd, body.timeoutMs ?? 120_000);
+        if (body.cmd?.type === "logout") invalidatePlanUsage();
         if (body.cmd?.type === 'export_html' && data.path) {
           const id = crypto.randomUUID();
           (slot.exports ??= new Map()).set(id, data.path);
