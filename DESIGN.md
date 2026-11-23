@@ -26,10 +26,10 @@ intentional product treatments with their own selectors; they are not all govern
 Do not make ordinary cards brighter to contrast with the background, or enable glass globally as a fix.
 
 The shared `.workspace-floating-surface` treatment is background mixed at 58% with transparent,
-28px backdrop blur, saturation 1.1 and a subtle foreground-derived border. It normally has a 12px
+28px backdrop blur and saturation 1.1. It normally has a 12px
 radius; the editor card explicitly uses 14px. General menu glass uses its own 24px blur treatment;
-tooltips, project dialogs and some controls have explicit overrides. Reuse the owning class instead
-of approximating these treatments on each new element.
+tooltips, project dialogs and some controls have explicit overrides. Shared tooltips use a rounded
+bubble with a curved tail in the same material. Reuse the owning class for these treatments.
 
 ## Color is semantic
 
@@ -50,11 +50,13 @@ and validated overrides feed semantic CSS variables through [appearance.ts](web/
 These are preset inputs, not colors to paste into components. Use `--background`, `--sidebar`,
 `--card`, `--border`, `--foreground`, `--muted-foreground` and `--primary`. Ordinary cards explicitly
 use `--sidebar` despite the separate `--card` token. User overrides cover accent, background,
-foreground, sidebar, chat area, user messages, replies, code blocks and borders.
+foreground, sidebar, chat area, user messages, replies, code blocks and divider color.
 
-Selection usually changes the surface by one step, with accent text or a small check. Avoid large
+Surfaces and controls have no resting one-pixel outlines. Use a surface fill to make boundaries
+clear, and reserve lines for meaningful separators and chart guides. Keyboard focus uses a visible
+outline or ring. Selection usually changes the surface by one step, with accent text or a small check. Avoid large
 accent-colored panels. Task completion and progress follow the active accent, never a fixed orange.
-Reserve destructive styling for destructive actions. Verify muted text, borders, provider marks and
+Reserve destructive styling for destructive actions. Verify muted text, dividers, provider marks and
 tooltips in light themes as well as dark. The favicon uses the sidebar brand shape and current accent;
 the browser title is `omp.`.
 Desktop icon tiles center the visible brand bounds on both axes and scale the mark uniformly to
@@ -68,23 +70,40 @@ messages sideways. Return-to-message actions live beside Copy beneath saved mess
 turn-number or restore-chat dividers between turns. Routine device mount notices stay out of the chat;
 warnings, failures and actionable runtime output remain visible.
 
-Use a 4px spacing rhythm, with 6px/10px optical adjustments where the existing component requires it.
-Measure inset controls from their **own panel**, not the browser edge or full screen.
+Geometry starts in [index.css](web/src/index.css). Tailwind spacing utilities and product CSS use
+the same 4px unit. Use 2px for tightly joined details and 6px or 10px for compact control spacing.
+Measure inner controls from their own panel edge. Screen insets belong to the app frame.
+
+| Spacing role | Default |
+| --- | --- |
+| Outer app frame and split panes | 8px, with edge-to-edge panes below 768px |
+| Toolbar inset and button gap | 12px inset and 8px between buttons |
+| Page gutters | 20–36px, based on available viewport width |
+| Related controls and cards | 12px |
+| Setting rows and compact context cards | 16px |
+| Ordinary card padding | 20px, reduced to 16px at narrow widths |
+| Major sections and dialog padding | 24px, reduced to 20px at narrow widths |
+
+Let the parent stack own gaps between siblings. Use a padding token inside each surface and a
+gap token between surfaces. Tighten responsive density by changing the scoped tokens where the
+layout actually needs it.
 
 | Element | Current geometry |
 | --- | --- |
 | Desktop sidebar | 264px expanded, 64px collapsed; full-height, no floating outer border |
-| Main floating panel | 8px outer inset at desktop; radius follows `--workspace-radius`, default 18px |
-| Chat/editor toolbar | 12px panel padding; 36px controls; 8px between separate action buttons |
-| Breadcrumb | 36px high, 10px horizontal padding, compact icon/text gaps |
+| Main floating panel | Radius follows the shared panel token, default 18px |
+| Chat, editor and Settings toolbars | Shared toolbar height, inset and control size |
+| Breadcrumb | 36px high with the shared toolbar inset on each side |
 | Context cards | Equal 16px padding on every side; 12px stack gap; no shared background behind cards |
 | Conversation/composer | Composer frame max-width 752px; maintain the same left and right alignment |
-| Settings content | Normal max-width 920px; usage has a wider 1480px cap and responsive layout |
+| Settings content | Shared max-width 72rem across pages and search results, with responsive gutters |
 | General controls | Shared button/input base height 36px; small controls typically 32px |
-| Common radii | 8px small items/tabs, 10px floating action buttons, 12px floating surfaces, 14px ordinary card groups |
+| Component radii | 6px compact details, 8px items and tabs, 10px controls, 12px floating surfaces, 14px cards, 18px dialogs, 24px composer |
 
-These are component roles, not a rule to force every radius to the same number. The user-adjustable
-panel radius offers 8, 12, 18 and 24px. Radius must not change shape on hover.
+Use the closest existing radius role for each surface. The user-adjustable panel radius offers
+8, 12, 18 and 24px and applies to inset panels and the user message surface. Native window clipping
+follows the platform. Pills and dots use full rounding. Keep the same radius through hover, focus,
+and inline message editing.
 
 Geist is the default interface font; Geist Mono is the default code/metrics font. Headings inherit
 the interface font unless customized. Chat defaults to 14px at line-height 1.7. Toolbar/row text is
@@ -122,19 +141,31 @@ work from saved state. Keep it compact instead of adding a long feed. Home never
 GitHub, Session or Agents floating cards. New project uses the same restrained sidebar-colored surface
 as other ordinary actions; no decorative multicolor folder illustration.
 
-Settings uses the same sidebar and floating-panel language as chat. Back, search and restart share
-type weight and material. Restart is a 36px icon control that expands its label on hover/focus. Reset
+Settings uses the same sidebar and floating-panel language as chat. Back sits directly below the
+sidebar brand, search sits on the left of the floating toolbar, and restart stays on the right.
+Restart is a 36px icon control that expands its label on hover/focus. Reset
 actions sit immediately **before** the right-aligned control and reveal on row hover/focus. Preserve
 discoverable keyboard and touch alternatives. Existing mobile navigation switches to a sheet/compact
-section picker; do not force desktop widths into narrow windows. Settings navigation follows
-Runtime, Agent, then Advanced. Appearance sits directly below Installation in Runtime. Advanced opens on demand and contains runtime
+section picker; do not force desktop widths into narrow windows. Settings groups are Application,
+Models & providers, Agent, Customize the agent, System, and Advanced. System includes installation,
+updates, and credits. Advanced opens on demand and contains runtime
 maintenance, all settings, raw config and capabilities. Opening an Advanced page directly reveals
 its selection in the desktop sidebar. The compact picker exposes Advanced as a submenu.
 
-Settings section headers show their names without numeric item-count labels.
+The workspace sidebar groups chats under Pinned, Projects, and Chats. Its single-line chat rows
+show a status dot during a running turn and reveal pin and menu actions on hover or focus.
+Drag a chat onto a project or use Move chat from its menu. Project moves organize the sidebar
+without changing the runtime's working folder. Pinned chats stay above Projects until unpinned.
+
+Settings section headers show their names without numeric item-count labels. Space adjacent
+sidebar rows with the 4px token and separate groups with the 12px content gap.
 Keep navigation icons in the Settings sidebar. Settings rows start with a 15px semibold label
 and a short, left-aligned description beneath it. Use icons in cards for actions and status.
-Use the shared spacing tokens for page gutters, section gaps, card padding and rows. Settings cards
+Use the shared spacing tokens for page gutters, card padding and rows. Use the section gap between
+major groups and the content gap between related cards or a heading and its group. Let the parent
+stack own the gap around its notices and cards. Use the shared Settings heading for page and
+section titles, with the description directly underneath and actions on the trailing edge.
+Settings cards
 use the solid sidebar surface in every theme. The workspace card-glass preference applies to Home,
 and menus keep their own material. Full-bleed canvas and table cards share the surface and section
 spacing while their content defines its own insets.
@@ -147,17 +178,27 @@ an entry is unavailable before the user tries to import it.
 
 The composer's trailing controls run left to right: context usage, microphone, then Send/Stop.
 
-User messages are compact right-aligned surfaces; assistant replies remain text on the canvas. Native
-tool iterations group under one Agent activity disclosure, with the final answer outside it. Thinking
-blocks coalesce rather than presenting every streaming fragment as a separate step. Automatic task
-reminders stay inside the ongoing turn when followed by its continuation. Do not delete native history
-to simplify the presentation.
+User messages are compact right-aligned surfaces; assistant replies remain text on the canvas.
+Progress updates, tool calls, reasoning, and system notes share one activity disclosure per turn.
+Thinking appears below the sent message and expands to show the available reasoning. It becomes
+Agent activity when work starts. Completed turns collapse it and leave the final reply and
+changed-file summary visible. Tool rows use short labels and keep commands, sources,
+and outputs in their details. Adjacent notes and thinking fragments stay grouped. Preserve the
+native message indices for restore, branches, and file summaries.
+The conversation timeline uses short ticks that extend near the pointer. Hover or keyboard
+focus opens a theme-aware preview of the user message and the available reply excerpt.
+Selecting a tick goes to the original user message. Long timelines scroll within the rail.
 
 Normal transcript siblings have 24px separation; continuation rows use 8px and note boundaries 12px.
 Avoid combining these margins with another wrapper's vertical padding. Assistant response actions
 reserve a row inside the message: the current row has a 36px minimum height and 8px top gap. It must
 never overlap the next reminder. User actions remain separate from the inline edit surface. Editing
 happens **in the original user bubble**, with clear cancel/save controls, not silently in the composer.
+
+Queued follow-ups sit above the composer in dispatch order. A grip appears on hover or keyboard
+focus for reordering. The pencil edits the selected follow-up in the composer while retaining the
+ordinary draft. Steer interrupts the current turn and sends the selected message. Stop pauses
+automatic delivery until Resume. The Full access permission indicator uses the warning color.
 
 The composer stays at the bottom, including new-session screens. Welcome content aligns to the same
 column. Build/Explore/Review use the existing restrained floating tab treatment. Do not restore the
@@ -191,7 +232,7 @@ The editor shares the workspace background, breadcrumb styling and separate 36px
 buttons. The explorer sits directly on the canvas without a vertical divider or another opaque
 sidebar slab. Its root picker and search use the shared floating blur treatment.
 
-The code/Markdown viewer lives in a 14px rounded, bordered glass rectangle. File-name tabs sit
+The code/Markdown viewer lives in a 14px rounded glass rectangle. File-name tabs sit
 **above** that rectangle with their own blurred surfaces. Source/Visual is right-aligned in the same
 top row for Markdown. Tabs must not disappear into the viewer's header or become a second large bar.
 The footer is compact document/save/position status, not an exposed full absolute path.
@@ -217,7 +258,8 @@ Editor icons are independently selectable: Material, Monochrome, Minimal. The sh
 [FileIcon](web/src/components/FileIcon.tsx) is used in the explorer, tabs and changed files. Preview
 choices accurately; do not recolor provider/company logos as if they were interface glyphs.
 
-Backgrounds are ambient, lazy-loaded and independent of the mouse cursor. None is a valid default.
+Backgrounds are ambient, lazy-loaded and independent of the mouse cursor. None is a valid default
+and the fallback for saved selections or theme imports that reference a retired background.
 Use local rendered previews, consistent thumbnail geometry and fixed two-line label slots so long
 names do not offset neighboring tiles. Background fade, blur and tint opacity are different controls.
 Chat and Files share a full-size background clipped to the visible panes.
@@ -271,6 +313,17 @@ for minimize, maximize/restore and close. The three 36px buttons sit flush on on
 surface. Each button has its own hover and focus state, with a red hover on Close. The group lives
 on the rightmost visible workspace/editor panel and in the Settings toolbar.
 Workspace toolbar slots animate width, spacing and opacity during the Files handoff.
+Standalone chats show only the session title. Project chats show their folder breadcrumb and a
+Leave project action.
+Plan usage sits beside the project breadcrumb or session title. The toolbar shows the five-hour
+allowance when the selected provider has one connected account and reports that window. The popover
+lists connected accounts across providers, with five-hour windows first and other reported windows
+below. Accounts without limits show an explicit empty state. Keep subscription limits independent
+of the Settings usage history and label an unavailable refresh.
+Settings → Models controls which models the chat picker lists. Visibility is saved on the device
+and leaves the active model, native availability and role assignments intact.
+Custom provider editing can remove individual manual model registrations. Removing a provider
+requires confirmation and also removes its registrations from the OMP catalog.
 
 Free header space supports native dragging and double-click maximize/restore; buttons, fields,
 menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
@@ -302,7 +355,7 @@ left rail, the active step uses the sidebar selection surface, and future steps 
 Runtime checks, installation errors and retry controls remain visible; no download percentages are fabricated.
 Theme previews use a three-column grid inside a bounded scroll area; the page must never grow wider
 than its window. Appearance choices update immediately. Provider connection remains an explicit action
-in the existing Settings screen. Reopening setup hides the workspace without unmounting it.
+in the existing Settings screen.
 
 ## Native workflow surfaces
 
@@ -315,11 +368,11 @@ opaque fills or translucent black as a workaround for a rendering defect. Keep s
 after the standard declaration cause the current optimizer to drop the standard property. Verify
 production CSS and rendered text behind the surface, not just the source declaration.
 
-On Windows and macOS the tray opens a compact, themed React panel anchored near its icon. The panel
-uses the current appearance, Open workspace, Settings, running sessions, five recent chats and Quit.
-It dismisses on Escape or focus loss. Quit opens the existing main-window confirmation. It has no
-title bar and never mounts a second workspace or agent bridge. Linux retains its native indicator
-menu because its tray protocol does not deliver the click events needed for a custom popup.
+On Windows and macOS the tray opens a 272 × 288 logical-pixel themed React panel anchored near its
+icon. It starts with running sessions and up to three recent chats. Settings sits directly above Quit
+in the footer. Escape or focus loss dismisses the panel, and Quit opens the main-window confirmation.
+The panel has no header and never mounts a second workspace or agent bridge. Linux retains its native
+indicator menu because its tray protocol does not deliver the click events needed for a custom popup.
 
 Settings → Updates & changelog shows the application version separately from the OMP runtime,
 with bundled release notes and explicit loading/error states. About also shows the app version.
@@ -329,23 +382,30 @@ readable release notes, actual download progress and a separate Install and rest
 signature verification. Unsaved/saving editor documents and active work block installation. An
 unconfigured release channel is visibly unavailable, never presented as “up to date.”
 
-The custom Windows installer shows System checks, Verify package, OMP runtime, Windows dependencies,
-App and runtime, Verify installation, and Open setup in its sidebar. Its overall bar counts completed stages;
+The custom Windows installer marks single-line steps on a dot rail. System checks, Verify package,
+OMP runtime, Windows checks, Install files and Final checks lead to Open setup on a fresh install
+or Open omp. when replacing an existing copy. The installer labels updates and reinstalls separately.
+For equal version strings, the installed build fingerprint distinguishes an update from a reinstall.
+Its overall bar counts completed stages;
 package-check progress uses bytes actually read. Native dependency and copy operations remain active
 without fabricated byte percentages. Keep the stage detail and bar visible in the compact window.
 Successful installation requires installed-file, Node runtime and uninstall-registration checks.
 
 Native desktop close requests, including taskbar close actions, open a quit confirmation. Show the
 reported running-session count and warn about unsaved editor changes. Cancel preserves the window;
-Keep in tray hides it without stopping runtimes. The tray offers Open, Settings, up to five recent
-chats, running sessions and Quit. Selecting a live chat reuses its runtime identity. The tray mark
+Keep in tray hides it without stopping runtimes. Selecting a live chat reuses its runtime identity. The tray mark
 follows the accent. Installers keep their separate abort-installation confirmation and have no tray.
 
 Settings pages have independent error recovery so a failed panel does not remove navigation. The
-app-level fallback offers Retry and Reload. Skill discovery has a bounded wait and visible errors;
-loading skeletons derive IDs from metadata keys and tolerate supplemental entries.
+app-level fallback offers Retry and Reload. Skill discovery has a bounded wait and visible errors.
+Skill rows show their source badge and reveal an Open folder action beside it on hover or focus.
+The skill count sits above the filters, aligned to their right edge. Card actions and switches
+are vertically centered beside their text, including when the description wraps.
+On touch screens the action stays visible. Loading skeletons derive IDs from metadata keys and
+tolerate supplemental entries.
 
-Installation owns launch configuration; provider authentication belongs only to Providers. Routine
+Installation owns launch configuration. Desktop setup opens on first launch. About & credits
+places the app version on the right of the Credits heading. Provider authentication belongs only to Providers. Routine
 Session settings describe the current conversation. Expert diagnostics and runtime maintenance are
 secondary Advanced surfaces. Task completion is agent-owned; settings do not offer manual phase
 removal or completion toggles. Models show the default first, with workload overrides in a closed
@@ -374,6 +434,22 @@ draft and never sends a prompt automatically. Native completion appears as a mut
 Tab; it does not animate the surrounding input. While a turn is active, the composer keeps the draft
 editable and offers Stop. Sending resumes when the turn ends. Goal/task status and subagent activity
 always come from native results/events.
+Personas are opt-in at new-chat launch. Import Markdown into the persona library, then choose a
+saved persona for one conversation. OMP stores its prompt snapshot with that conversation and
+continues to discover user and project rules independently.
+Web search results use the site's favicon when available and keep the letter badge when a site
+has no usable icon.
+In Usage, multi-day trends group activity by local calendar day. Trend lines share the donut's
+model palette, with fills that fade to transparent beneath each line. Cost by model and the donut
+breakdown show up to four rows before scrolling, using the same scrollbar as Settings navigation.
+Chart headings and tabs start at the card inset. Cards in a two-column row share a height.
+The donut omits zero-usage models and keeps very small slices proportional without adding gaps around them.
+The usage note has its own card. Published-price checks compare OMP's estimate with current
+public token rates and identify models without a comparable rate.
+
+Extensions show suggested marketplaces, configured sources, browsable plugins and installed
+extensions. Adding a catalog and installing a plugin are explicit actions. Show install scope
+when the native marketplace install can target a registered project.
 
 Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
 

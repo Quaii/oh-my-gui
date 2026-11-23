@@ -221,16 +221,29 @@
         "follow_up",
         "remove_queued_message",
         "promote_queued_message",
-        "abort_and_prompt",
         "abort_and_restore_queue"
       ],
       "status": "console",
       "surface": "Advanced runtime diagnostics",
-      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
+      "note": "These commands manage OMP's native queues. The composer holds editable drafts until delivery.",
       "evidence": [
         {
           "file": "web/src/components/settings/CapabilitiesPanel.tsx",
           "needle": "export default"
+        }
+      ]
+    },
+    {
+      "names": [
+        "abort_and_prompt"
+      ],
+      "status": "direct",
+      "surface": "Composer → queued message → Steer",
+      "note": "Interrupts the current turn and submits the chosen draft with its attachments.",
+      "evidence": [
+        {
+          "file": "web/src/lib/composer-queue.ts",
+          "needle": "abort_and_prompt"
         }
       ]
     },
@@ -1411,12 +1424,12 @@
     {
       "priority": "P1",
       "name": "Queue management",
-      "status": "Deferred",
-      "note": "Main-chat queue controls are deferred. Native commands remain available through expert RPC diagnostics.",
+      "status": "Implemented",
+      "note": "Pending composer drafts can be edited, deleted, reordered or sent by interrupting the current turn. Automatic delivery waits for the owning chat to become idle.",
       "evidence": [
         {
-          "file": "web/src/components/settings/CapabilitiesPanel.tsx",
-          "needle": "export default"
+          "file": "web/src/components/QueuedMessages.tsx",
+          "needle": "export function QueuedMessages"
         }
       ]
     },
