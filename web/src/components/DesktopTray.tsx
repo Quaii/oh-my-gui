@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Brand } from "./Brand";
 import { Button } from "./ui/button";
 import { get, post } from "../lib/api";
 import { applyThemeImmediately, getTheme } from "../lib/theme";
@@ -9,7 +8,6 @@ import {
   MessagesSquare,
   Activity,
   LogOut,
-  X,
   RefreshCw,
 } from "./NavigationIcons";
 
@@ -78,40 +76,6 @@ export function DesktopTray() {
   }
   return (
     <main className="desktop-tray" aria-label="omp. tray menu">
-      <header>
-        <Brand className="size-6" />
-        <span className="flex-1 font-semibold">
-          omp<span className="text-primary">.</span>
-        </span>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Close tray menu"
-          onClick={() => void action("dismiss")}
-        >
-          <X className="size-4" />
-        </Button>
-      </header>
-      <div className="desktop-tray-shortcuts">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          onClick={() => void action("show")}
-        >
-          <ArrowUpRight className="size-4" />
-          Open workspace
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={busy}
-          onClick={() => void action("settings")}
-        >
-          <Settings className="size-4" />
-          Settings
-        </Button>
-      </div>
       {error && (
         <div
           role="alert"
@@ -155,8 +119,7 @@ export function DesktopTray() {
                   : "No recent chats"}
               </p>
             ) : (
-              data[group]
-                .slice(0, group === "recent" ? 5 : 20)
+              (group === "recent" ? data.recent : data.running.slice(0, 20))
                 .map((chat, index) => (
                   <button
                     key={chat.key || chat.path || index}
@@ -180,6 +143,15 @@ export function DesktopTray() {
         ))}
       </div>
       <footer>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={() => void action("settings")}
+        >
+          <Settings className="size-4" />
+          Settings
+        </Button>
         <Button
           variant="ghost"
           size="sm"

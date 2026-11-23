@@ -6,7 +6,7 @@ export function desktopTrayData(
 ) {
   const title = (value: string) =>
     value.replace(/[\r\n\t]/g, " ").slice(0, 100);
-  const recent = sessions.slice(0, 5).map((session) => ({
+  const recent = sessions.slice(0, 3).map((session) => ({
     key: [...bridges].find(
       ([, bridge]) => bridge.state?.sessionFile === session.path,
     )?.[0],

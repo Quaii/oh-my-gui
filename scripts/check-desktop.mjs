@@ -58,7 +58,7 @@ try{
   assert.equal(folder.status,200,'The folder route remains available after installer handoff');
   assert.equal((await folder.json()).path,root);
   assert.equal((await fetch(base+'/api/desktop/tray-action',{method:'POST',headers:requestHeaders,body:JSON.stringify({action:'dismiss'})})).status,200);
-  assert.ok(Array.isArray(tray.recent)&&tray.recent.length<=5);
+  assert.ok(Array.isArray(tray.recent)&&tray.recent.length<=3);
   assert.ok(Array.isArray(tray.running));
   const html=await (await fetch(base+'/',{headers})).text();
   assert.match(html,/<title>omp\.<\/title>/);

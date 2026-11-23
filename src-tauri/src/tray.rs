@@ -18,7 +18,7 @@ fn native_update(app: &tauri::AppHandle, data: &serde_json::Value) -> tauri::Res
             None::<&str>,
         )?)?;
         if let Some(rows) = data[key].as_array() {
-            for row in rows.iter().take(if key == "recent" { 5 } else { 20 }) {
+            for row in rows.iter().take(20) {
                 let id = format!("chat:{}", row);
                 let label = row["name"]
                     .as_str()
@@ -73,6 +73,9 @@ use std::sync::{
 };
 use tauri::{PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
 
+const POPUP_WIDTH: f64 = 272.0;
+const POPUP_HEIGHT: f64 = 288.0;
+
 #[derive(Default)]
 struct PopupState {
     ready: AtomicBool,
@@ -95,7 +98,7 @@ pub fn prepare(app: &tauri::AppHandle, url: &str) -> tauri::Result<()> {
         .always_on_top(true)
         .skip_taskbar(true)
         .resizable(false)
-        .inner_size(340.0, 480.0)
+        .inner_size(POPUP_WIDTH, POPUP_HEIGHT)
         .initialization_script("window.__OMP_DESKTOP__=true;window.__OMP_TRAY__=true;")
         .on_navigation(move |url| url.origin() == origin.origin())
         .on_new_window(|_, _| tauri::webview::NewWindowResponse::Deny)
@@ -153,8 +156,8 @@ fn show_popup(app: &tauri::AppHandle) {
     if let Ok(Some(monitor)) = app.monitor_from_point(point.x, point.y) {
         let area = monitor.work_area();
         let scale = monitor.scale_factor();
-        let width = (340.0 * scale).min(area.size.width as f64);
-        let height = (480.0 * scale).min(area.size.height as f64);
+        let width = (POPUP_WIDTH * scale).min(area.size.width as f64);
+        let height = (POPUP_HEIGHT * scale).min(area.size.height as f64);
         let _ = window.set_size(tauri::PhysicalSize::new(width as u32, height as u32));
         let (x, y) = popup_position(
             point.x,
@@ -260,11 +263,23 @@ mod tests {
     #[test]
     fn popup_stays_inside_negative_and_scaled_monitor_work_areas() {
         assert_eq!(
-            popup_position(1910.0, 1070.0, 340.0, 480.0, (0.0, 0.0, 1920.0, 1040.0)),
-            (1580, 560)
+            popup_position(
+                1910.0,
+                1070.0,
+                POPUP_WIDTH,
+                POPUP_HEIGHT,
+                (0.0, 0.0, 1920.0, 1040.0),
+            ),
+            (1648, 752)
         );
         assert_eq!(
-            popup_position(-1900.0, 20.0, 680.0, 960.0, (-1920.0, 0.0, 0.0, 1080.0)),
+            popup_position(
+                -1900.0,
+                20.0,
+                POPUP_WIDTH * 2.0,
+                POPUP_HEIGHT * 2.0,
+                (-1920.0, 0.0, 0.0, 1080.0),
+            ),
             (-1920, 30)
         );
     }

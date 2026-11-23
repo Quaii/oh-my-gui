@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { desktopTrayData } from "../src/desktop-tray.ts";
-test("tray keeps five recent chats and reuses live bridge identity", () => {
+test("tray keeps three recent chats and reuses live bridge identity", () => {
   const sessions = Array.from({ length: 8 }, (_, i) => ({
     path: `/chat/${i}`,
     cwd: "/work",
@@ -22,7 +22,7 @@ test("tray keeps five recent chats and reuses live bridge identity", () => {
     ["idle", { cwd: "/work", state: { isStreaming: false } }],
   ]);
   const tray = desktopTrayData(sessions, bridges);
-  assert.equal(tray.recent.length, 5);
+  assert.deepEqual(tray.recent.map(chat => chat.path), sessions.slice(0, 3).map(session => session.path));
   assert.equal(tray.recent[0].key, "new:original");
   assert.equal(tray.running.length, 1);
   assert.equal(tray.running[0].key, "new:original");
