@@ -53,7 +53,13 @@ export default function App() {
   const [chat, dispatch] = useState<ChatState>(initialChat);
   const [boot, setBoot] = useState<any>(null);
   const [models, setModels] = useState<any[]>([]);
-  const [thinkingLevels, setThinkingLevels] = useState<string[]>(["off", "low", "medium", "high", "xhigh", "max"]);
+  const [modelThinking, setModelThinking] = useState<{ key: string; levels: string[] } | null>(null);
+  const modelProvider = chat.state?.model?.provider;
+  const modelId = chat.state?.model?.id;
+  const thinkingKey = JSON.stringify([chat.key, modelProvider, modelId]);
+  const thinkingLevels = modelThinking?.key === thinkingKey
+    ? modelThinking.levels
+    : [chat.state?.thinkingLevel ?? "off"];
   const [stats, setStats] = useState<any>(null);
   const [activePath, setActivePath] = useState<string | null>(null);
   const route = useRoutePath();
@@ -144,6 +150,23 @@ export default function App() {
     if (result?.ok && version === attachVersion.current) setModels(result.data?.models ?? []);
   }, []);
 
+  useEffect(() => {
+    const key = chat.key;
+    if (!key || key !== keyRef.current || !modelProvider || !modelId) return;
+    const version = attachVersion.current;
+    let cancelled = false;
+    void post("/api/cmd", { key, cmd: { type: "get_available_thinking_levels" } })
+      .then((result) => {
+        if (cancelled || version !== attachVersion.current || !result?.ok) return;
+        const levels = result.data?.levels;
+        if (Array.isArray(levels) && levels.length && levels.every((level) => typeof level === "string")) {
+          setModelThinking({ key: thinkingKey, levels });
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [chat.key, modelProvider, modelId, thinkingKey]);
+
   const attach = useCallback(
     async (key: string, sessionPath?: string, sessionCwd?:string) => {
       if (!cwd) return;
@@ -152,6 +175,7 @@ export default function App() {
       unsubRef.current = null;
       setConnected(false);
       setModels([]);
+      setModelThinking(null);
       setStats(null);
       keyRef.current = key;
       dispatch({ ...initialChat, key, loaded: false });
@@ -168,15 +192,13 @@ export default function App() {
           },
           (s) => version === attachVersion.current && setConnected(s === "open")
         );
-        const [m, lv, cmds, st] = await Promise.all([
+        const [m, cmds, st] = await Promise.all([
           post("/api/cmd", { key, cmd: { type: "get_available_models" } }).catch(() => null),
-          post("/api/cmd", { key, cmd: { type: "get_available_thinking_levels" } }).catch(() => null),
           post("/api/cmd", { key, cmd: { type: "get_available_commands" } }).catch(() => null),
           post("/api/cmd", { key, cmd: { type: "get_session_stats" } }).catch(() => null),
         ]);
         if (version !== attachVersion.current) return;
         if (m?.ok) setModels(m.data?.models ?? []);
-        if (lv?.ok) setThinkingLevels(lv.data?.levels ?? []);
         if (cmds?.ok) dispatch((s) => ({ ...s, commands: cmds.data?.commands ?? [] }));
         if (st?.ok) setStats(st.data);
       } catch (e: any) {
@@ -481,6 +503,7 @@ export default function App() {
           sidebarCollapsed={sidebarCollapsed}
           onToggleSidebar={()=>transitionUpdate(()=>setSidebarCollapsed(v=>!v))}
           chat={chat}
+          thinkingLevels={thinkingLevels}
           config={boot?.config}
           onConfigSaved={(c) => setBoot((b: any) => ({ ...b, config: c }))}
           onSend={(t) => onSend(t, [])}
