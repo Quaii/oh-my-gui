@@ -371,3 +371,9 @@ Tab; it does not animate the surrounding input. Queue edits append recovered con
 an existing draft. Goal/task status and subagent activity always come from native results/events.
 
 Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
+
+The file split opens and closes through one clipped width/opacity transition. Its editor stays at
+natural width during the reveal; dirty-close guards run before exit. Resize dragging remains immediate.
+Opening/closing uses 240ms, shortened to 160ms while loading or when mounted documents exceed 500KB;
+reduced motion is immediate. Toolbar appearance shortcuts are removed; use Settings → Appearance.
+Command palette hints use Ctrl on Windows/Linux and Command on macOS.

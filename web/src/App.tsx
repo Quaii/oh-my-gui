@@ -723,7 +723,7 @@ export default function App() {
       )}
 
       </PageTransition>
-      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={<aside hidden={home||inSettings||key!==chat.key} className="file-workspace p-6"><Skeleton className="h-full w-full"/></aside>}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
+      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={null}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
       <CommandPalette
         open={paletteOpen}
