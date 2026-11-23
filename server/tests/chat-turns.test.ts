@@ -3,8 +3,11 @@ test('automatic task reminders stay inside one answer without crossing a user tu
  const user={role:'user',content:'Create ten tasks'},first={role:'assistant',content:[{type:'text',text:'Seven done'}]},reminder={role:'custom',content:'There are unfinished todo items'},final={role:'assistant',content:[{type:'text',text:'Three remain open'}]};
  const history=[user,first,reminder,final],before=JSON.stringify(history),items=groupedTranscript(history);
  assert.equal(items.length,2);assert.equal(items[1].index,3);assert.deepEqual(items[1].message.turnMessages,[first,reminder,final]);assert.equal(JSON.stringify(history),before);
- assert.equal(groupedTranscript([user,first,reminder,{role:'user',content:'Another request'},final]).length,5);
- assert.equal(groupedTranscript([user,first,{role:'custom',content:'Unrelated system note'},final]).length,4);
+ const nextTurn=groupedTranscript([user,first,reminder,{role:'user',content:'Another request'},final]);
+ assert.equal(nextTurn.length,4);assert.deepEqual(nextTurn[1].message.turnMessages,[first,reminder]);
+ assert.deepEqual(nextTurn[3].message.turnMessages,[final]);
+ const note={role:'custom',content:'Unrelated system note'};
+ assert.deepEqual(groupedTranscript([user,first,note,final])[1].message.turnMessages,[first,note,final]);
 });
 test('one request groups tool iterations into one assistant activity while retaining final native index',()=>{const user={role:'user',content:'Plan'},first={role:'assistant',content:[{type:'toolCall',name:'todo',id:'t'}]},final={role:'assistant',content:[{type:'text',text:'Done'}]};const entries=groupedTranscript([user,first,{role:'toolResult',toolCallId:'t'},final]);assert.equal(entries.length,2);assert.equal(entries[1].firstIndex,1);assert.equal(entries[1].index,3);assert.equal(entries[1].message.turnMessages.length,2);assert.equal(groupedTranscript([user,first],final)[1].streaming,true);});
 test('native partial snapshots preserve tool identity and canonical todo results update the plan',()=>{const partial={role:'assistant',content:[{type:'toolCall',name:'todo',id:'t',arguments:{op:'done'}}]};const streamed=chatReducer({...initialChat,live:{role:'assistant',content:[]}}, {type:'message_update',assistantMessageEvent:{type:'toolcall_delta',partial}});assert.equal(streamed.live?.content[0].name,'todo');const phases=[{name:'Test',tasks:[{content:'One',status:'completed'}]}];const state=chatReducer({...streamed,tools:{t:{id:'t',name:'todo',args:{},startedAt:1}}},{type:'tool_execution_end',toolCallId:'t',result:{details:{phases}}});assert.deepEqual(state.todos,phases);});

@@ -9,6 +9,7 @@ import { WebSearch, type WebSource } from "@/components/ui/web-search";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FileText, FilePenLine, FilePlus2, Terminal, Search, FolderSearch, Network, ListTodo, Globe, Code2, Wrench, Timer, MessageCircle } from "lucide-react";
 import { GridReveal } from "@/components/ui/grid-reveal";
+import { activityToolKind } from "../lib/transcript";
 
 export interface ToolRunView {
   id: string;
@@ -98,8 +99,23 @@ function DiffView({ oldText, newText }: { oldText: string; newText: string }) {
   );
 }
 
-export function ToolCard({run}:{run:ToolRunView}){
-  const running=run.endedAt===undefined&&!run.result;
+function activityToolTitle(run: ToolRunView, running: boolean) {
+  const kind = activityToolKind(run.name);
+  if (run.isError) return kind === "command" ? "Command failed" : `${run.name.replaceAll("_", " ")} failed`;
+  const completed = run.endedAt !== undefined || !!run.result;
+  const path = run.args?.path ?? run.args?.file_path ?? run.args?.file;
+  const file = typeof path === "string" ? path.split(/[/\\]/).filter(Boolean).at(-1) : undefined;
+  if (kind === "command") return running ? "Running command" : completed ? "Ran command" : "Command";
+  if (kind === "search") return running ? "Searching the web" : completed ? "Searched the web" : "Web search";
+  if (kind === "change") return `${running ? "Editing" : completed ? "Edited" : "Edit"} ${file ?? "files"}`;
+  if (run.name === "read") return `${running ? "Reading" : "Read"} ${file ?? "file"}`;
+  if (kind === "inspect") return running ? "Searching workspace" : completed ? "Searched workspace" : "Workspace search";
+  if (run.name === "todo") return running ? "Updating task plan" : completed ? "Updated task plan" : "Task plan";
+  return run.name.replaceAll("_", " ");
+}
+
+export function ToolCard({run, compact, pending}:{run:ToolRunView;compact?:boolean;pending?:boolean}){
+  const running=(pending ?? true)&&run.endedAt===undefined&&!run.result&&!run.isError;
   const text=useMemo(()=>resultText(run.result??run.partial),[run.result,run.partial]);
   const args=run.args || {};
   const isShell=run.name==="bash"||run.name==="powershell";
@@ -107,6 +123,24 @@ export function ToolCard({run}:{run:ToolRunView}){
   const isSearch=/(^|_)web_search$/.test(run.name);
   const sources=useMemo(()=>isSearch?webSources(run.result??run.partial):[],[isSearch,run.result,run.partial]);
   const packages=!running&&!run.isError?packageChanges(String(args.path??args.file_path??""),args):[];
+  if (compact) {
+    const images = (run.result?.content || []).filter((block: any) => block.type === "image" && block.data);
+    const output = isShell && !running && !run.isError && testSummary(text);
+    return <TraceRow title={activityToolTitle(run, running)} running={running} error={run.isError} icon={<ToolIcon name={run.name} />} compact>
+      <div className="space-y-2">
+        {isShell && <CodeBlock code={String(args.command || "Shell command")} language="bash" showLineNumbers={false} />}
+        {isShell && !running && !run.isError && <CommitResult command={String(args.command || "")} output={text} />}
+        {isShell && <LocalWebPreview text={text} />}
+        {isSearch && !run.isError && <WebSearch sources={sources} label={running ? undefined : searchSiteLabel(sources)} status={running ? "searching" : "done"} query={String(args.query ?? args.search_query ?? "")} />}
+        {packages.map(item => <PackageInfo key={item.group + "/" + item.name} {...item} />)}
+        {isEdit && (args.oldText || args.newText || args.old_string || args.new_string) && <DiffView oldText={args.oldText ?? args.old_string ?? ""} newText={args.newText ?? args.new_string ?? ""} />}
+        {!isShell && <details><summary className="cursor-pointer py-1 text-xs text-muted-foreground">Tool input</summary><CodeBlock code={JSON.stringify(args, null, 2)} language="json" className="mt-2 max-h-64 overflow-auto" /></details>}
+        {output ? <TestResult output={text} /> : text ? <CodeBlock code={text} language="text" className="max-h-[420px] overflow-auto" /> :
+          <p className="text-xs text-muted-foreground">{running ? "Waiting for output…" : run.isError ? "Tool execution failed." : run.result ? "Completed without text output." : "No output was recorded."}</p>}
+        {images.map((image: any, index: number) => <GridReveal key={index} src={`data:${image.mimeType || "image/png"};base64,${image.data}`} alt="Generated image" aspect={16 / 10} />)}
+      </div>
+    </TraceRow>;
+  }
   if(isShell)return <div className="space-y-3">{!running&&!run.isError&&<CommitResult command={String(args.command||"")} output={text}/>}<LocalWebPreview text={text}/>{!running&&testSummary(text)?<TestResult output={text}/>:<TerminalCommand command={String(args.command || "Shell command")} output={text} running={running} isError={run.isError} exitCode={run.result?.details?.exitCode ?? run.result?.exitCode}/>}</div>;
   if(run.isError)return <StackTrace output={text||"Tool execution failed"}/>;
   const title=`${run.name} · ${argsSummary(run.name,args)}${run.isError?" · failed":""}`;

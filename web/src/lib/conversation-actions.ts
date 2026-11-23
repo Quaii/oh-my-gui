@@ -4,6 +4,11 @@ export function isDeviceMountNotice(text: string, kind = "info"): boolean {
   return /^xd:\/\/:\s+(?:mounted|unmounted)\s+[\w./:-]+(?:\s*,\s*[\w./:-]+)*\s*$/i.test(text.trim());
 }
 
+/** Match the advisor pause notice without discarding adjacent runtime diagnostics. */
+export function pausedAdvisor(text: string): string | undefined {
+  return /^Advisor "([^"\r\n]+)" quota exhausted\s*[—–-]\s*pausing until reset\.?$/i.exec(text.trim())?.[1];
+}
+
 /** Match native entries without changing transcript indices or guessing a branch. */
 export function conversationRestoreTargets(messages: any[], entries: any[]): Map<number, string> {
   const targets = new Map<number, string>();

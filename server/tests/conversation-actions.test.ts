@@ -1,7 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { conversationRestoreTargets, isDeviceMountNotice } from "../../web/src/lib/conversation-actions.ts";
+import { conversationRestoreTargets, isDeviceMountNotice, pausedAdvisor } from "../../web/src/lib/conversation-actions.ts";
 import { groupedTranscript } from "../../web/src/lib/transcript.ts";
+
+test("advisor quota pauses get a status label without swallowing other errors", () => {
+  const notice = 'Advisor "default" quota exhausted — pausing until reset.';
+  assert.equal(pausedAdvisor(notice), "default");
+  assert.equal(pausedAdvisor('Advisor "review" quota exhausted - pausing until reset'), "review");
+  assert.equal(pausedAdvisor(notice + "\nRuntime error"), undefined);
+  assert.equal(pausedAdvisor("Provider quota exhausted"), undefined);
+});
 
 test("routine device mount notices are hidden without suppressing errors or other output", () => {
   const notice = "xd://: mounted mcp__node_repl_js, mcp__node_repl_js_reset";
@@ -17,7 +25,9 @@ test("routine device mount notices are hidden without suppressing errors or othe
     { role: "assistant", content: "Done", timestamp: 3 },
     { role: "custom", content: notice, level: "error" },
   ];
-  assert.deepEqual(groupedTranscript(messages).map(item => item.index), [0, 2, 3]);
+  const grouped = groupedTranscript(messages);
+  assert.deepEqual(grouped.map(item => item.index), [0, 2]);
+  assert.deepEqual(grouped[1].message.turnMessages, [messages[2], messages[3]]);
   assert.equal(messages.length, 4);
 });
 

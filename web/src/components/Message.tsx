@@ -2,13 +2,14 @@ import {Button} from "./ui/button";
 import {Textarea} from "./ui/textarea";
 import {Attachment,AttachmentGroup,AttachmentMedia,AttachmentContent,AttachmentTitle,AttachmentDescription} from "./ui/attachment";
 import { TerminalCommand } from "@/components/ui/ai-trace";
-import { coalesceAssistantBlocks } from "../lib/transcript";
+import { activityToolKind, coalesceAssistantBlocks, isThinkingTurn, splitAssistantTurn } from "../lib/transcript";
 import { Reasoning, TraceRow } from "@/components/ui/ai-trace";
 import { useEffect, useRef, useState } from "react";
 import { Markdown } from "./Markdown";
 import { ToolCard, type ToolRunView } from "./ToolCard";
 import { StreamingResponse } from "@/components/ui/streaming-response";
 import { GridReveal } from "@/components/ui/grid-reveal";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Check, ChevronRight, Copy, Pencil, RefreshCw, Sparkles, ListChecks, Undo2 } from "lucide-react";
 
@@ -63,7 +64,7 @@ function ActionButton({
           {done ? <Check className="size-3" /> : children}
         </button>
       </TooltipTrigger>
-      <TooltipContent side="bottom" hideArrow sideOffset={6}>{label}</TooltipContent>
+      <TooltipContent side="bottom" sideOffset={6}>{label}</TooltipContent>
     </Tooltip>
   );
 }
@@ -97,15 +98,37 @@ export function UserMessage({ message, actions }: { message: any; actions?: Mess
   const imgs = imagesOf(message.content);
   const [editing,setEditing]=useState(false),[draft,setDraft]=useState(text),[saving,setSaving]=useState(false),[editError,setEditError]=useState("");
   const editField=useRef<HTMLTextAreaElement>(null);
+  const bubble = useRef<HTMLDivElement>(null);
+  const [editWidth, setEditWidth] = useState(0);
   useEffect(()=>{if(editing){editField.current?.focus();editField.current?.setSelectionRange(draft.length,draft.length);}},[editing]);
   async function resend(){if(saving||!draft.trim()||!actions?.onEdit)return;setSaving(true);setEditError("");try{if(await actions.onEdit(draft))setEditing(false);else setEditError("Message could not be sent. Your edit is still here.");}catch{setEditError("Message could not be sent. Try again.");}finally{setSaving(false);}}
   return (
     <div className="user-message group/msg relative fade-up flex flex-col items-end">
-      <div className={"user-message-surface max-w-[min(720px,92%)] rounded-xl border border-border bg-ink-800 px-4 py-2.5 "+(editing?"is-editing":"")}>
+      <div ref={bubble} style={editing ? { width: Math.max(224, editWidth) } : undefined} className={"user-message-surface max-w-[min(720px,92%)] rounded-xl border border-border bg-ink-800 px-4 py-2.5 "+(editing?"is-editing":"")}>
         {imgs.length > 0 && (
           <AttachmentGroup className="mb-2">{imgs.map((img,i)=><Attachment key={i} size="sm"><AttachmentMedia variant="image"><img alt={img.name||'Attached image'} src={'data:'+(img.mimeType||'image/png')+';base64,'+img.data}/></AttachmentMedia><AttachmentContent><AttachmentTitle>{img.name||'Attached image'}</AttachmentTitle><AttachmentDescription>{(img.mimeType||'image/png').split('/')[1].toUpperCase()} · {Math.max(1,Math.round((img.data?.length||0)*.75/1024))} KB</AttachmentDescription></AttachmentContent></Attachment>)}</AttachmentGroup>
         )}
-        {editing?<><p className="mb-2 text-xs font-medium text-muted-foreground">Editing message</p><Textarea ref={editField} aria-label="Edit message" value={draft} disabled={saving} onChange={event=>setDraft(event.target.value)} onKeyDown={event=>{if(event.key==="Escape"){event.preventDefault();setEditing(false);}if(event.key==="Enter"&&(event.ctrlKey||event.metaKey)){event.preventDefault();void resend();}}} className="inline-message-edit"/>{editError&&<p role="alert" className="mt-2 text-xs text-destructive">{editError}</p>}<div className="mt-3 flex justify-end gap-2"><Button size="sm" variant="ghost" disabled={saving} onClick={()=>setEditing(false)}>Cancel</Button><Button size="sm" disabled={saving||!draft.trim()} onClick={()=>void resend()}>{saving?"Sending…":"Send"}</Button></div></>:text&&<div className="chat-text whitespace-pre-wrap break-words text-[15px] leading-[1.65] text-fog-100">{text}</div>}
+        {editing ? <>
+          <Textarea ref={editField} aria-label="Edit message" value={draft} rows={1} disabled={saving}
+            onChange={event => setDraft(event.target.value)}
+            onKeyDown={event => {
+              if (event.nativeEvent.isComposing) return;
+              if (event.key === "Escape") {
+                event.preventDefault();
+                event.stopPropagation();
+                setEditing(false);
+              }
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                void resend();
+              }
+            }} className="inline-message-edit chat-text" />
+          {editError && <p role="alert" className="mt-2 text-xs text-destructive">{editError}</p>}
+          <div className="message-edit-actions">
+            <Button size="sm" variant="ghost" disabled={saving} onClick={() => setEditing(false)}>Cancel</Button>
+            <Button size="sm" disabled={saving || !draft.trim()} onClick={() => void resend()}>{saving ? "Sending…" : "Send"}</Button>
+          </div>
+        </> : text && <div className="chat-text whitespace-pre-wrap break-words text-[15px] leading-[1.65] text-fog-100">{text}</div>}
       </div>
       {text && !editing && (
         <ActionBar>
@@ -114,7 +137,7 @@ export function UserMessage({ message, actions }: { message: any; actions?: Mess
           </ActionButton>
           <RestoreAction actions={actions} />
           {actions?.onEdit && (
-            <ActionButton label="Edit message" onClick={() => {setDraft(text);setEditError("");setEditing(true);}}>
+            <ActionButton label="Edit message" onClick={() => {setEditWidth(bubble.current?.getBoundingClientRect().width ?? 0);setDraft(text);setEditError("");setEditing(true);}}>
               <Pencil className="size-3" />
             </ActionButton>
           )}
@@ -129,11 +152,12 @@ export interface AssistantViewProps {
   tools: Record<string, ToolRunView>;
   results: Record<string, any>;
   streaming?: boolean;
+  running?: boolean;
   compact?: boolean;
   actions?: MessageActions;
 }
 
-export function AssistantMessage({ message, tools, results, streaming, actions, compact }: AssistantViewProps) {
+export function AssistantMessage({ message, tools, results, streaming, running, actions, compact }: AssistantViewProps) {
   const content=coalesceAssistantBlocks(message.content);
   const usage = message.usage;
   const plain = content
@@ -142,10 +166,10 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
     .join("\n\n");
 
   return (
-    <div className="assistant-message group/msg relative fade-up space-y-2">
+    <div className={`assistant-message group/msg relative ${compact ? "turn-activity-message" : "fade-up space-y-2"}`}>
       {content.map((block, i) => {
         if (!block) return null;
-        if (block.type === "thinking") return <Reasoning key={i} text={typeof block.thinking==="string"?block.thinking:typeof block.text==="string"?block.text:Array.isArray(block.thinking)?block.thinking.map((b:any)=>b.text || "").join(""):""} running={!!streaming && i===content.length-1} />;
+        if (block.type === "thinking") return <Reasoning key={i} text={block.thinking} running={!!streaming && i===content.length-1} compact={compact} />;
         if (block.type === "redactedThinking")
           return (
             <div key={i} className="text-[12px] text-muted-foreground">
@@ -178,7 +202,7 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
               isError: results[id]?.isError,
               endedAt: results[id] ? 1 : undefined,
             } as ToolRunView);
-          return <ToolCard key={i} run={run} />;
+          return <ToolCard key={id ?? i} run={run} compact={compact} pending={compact ? running : undefined} />;
         }
         if (block.type === "image") {
           return (
@@ -226,14 +250,77 @@ export function AssistantMessage({ message, tools, results, streaming, actions, 
   );
 }
 
-export function AssistantTurn({message,...props}:AssistantViewProps){
-  const messages=message.turnMessages||[message],last=messages.at(-1);
-  const hasTools=messages.some((m:any)=>coalesceAssistantBlocks(m.content).some(b=>b.type==='toolCall'));
-  if(!hasTools&&!messages.some((m:any)=>m.role!=="assistant"))return <AssistantMessage message={{...last,content:coalesceAssistantBlocks(messages.flatMap((m:any)=>coalesceAssistantBlocks(m.content)))}} {...props}/>;
-  const thoughts=messages.flatMap((m:any)=>coalesceAssistantBlocks(m.content).filter(b=>b.type==='thinking').map(b=>b.thinking)).filter(Boolean).join('\n\n');
-  const activity=messages.map((m:any,i:number)=>({...m,content:coalesceAssistantBlocks(m.content).filter(b=>b.type!=='thinking'&&(i<messages.length-1||b.type==='toolCall'))})).filter((m:any)=>m.content.length);
-  const reply={...last,content:coalesceAssistantBlocks(last.content).filter(b=>b.type!=='thinking'&&b.type!=='toolCall')};
-  return <div className="assistant-turn space-y-3"><TraceRow title="Agent activity" icon={<ListChecks className="size-3.5"/>}><Reasoning text={thoughts} running={false}/><div className="space-y-2">{activity.map((m:any,i:number)=>m.role==="assistant"?<AssistantMessage key={i} message={m} tools={props.tools} results={props.results} compact/>:<NoteLine key={i} message={m}/>)}</div></TraceRow>{reply.content.length>0&&<AssistantMessage message={reply} {...props}/>}</div>;
+function activitySummary(activity: any[], tools: AssistantViewProps["tools"], results: AssistantViewProps["results"]) {
+  const calls = new Map<string, any>();
+  let notes = 0;
+  for (const message of activity) {
+    if (message.role !== "assistant") {
+      notes++;
+      continue;
+    }
+    for (const block of message.content) {
+      if (block.type === "toolCall") calls.set(block.id ?? `call-${calls.size}`, block);
+    }
+  }
+  const counts = { change: 0, command: 0, search: 0, inspect: 0, other: 0 };
+  let failures = 0;
+  for (const call of calls.values()) {
+    if (tools[call.id]?.isError || results[call.id]?.isError) failures++;
+    counts[activityToolKind(call.name)]++;
+  }
+  const countLabel = (count: number, word: string, plural = word + "s") =>
+    count ? `${count} ${count === 1 ? word : plural}` : "";
+  const details = [
+    countLabel(counts.change, "edit"), countLabel(counts.command, "command"),
+    countLabel(counts.search, "web search", "web searches"), countLabel(counts.inspect, "workspace check"),
+    countLabel(counts.other, "tool call"), countLabel(notes, "note"), countLabel(failures, "failed call"),
+  ].filter(Boolean).join(" · ");
+  return { details, failures };
+}
+
+export function AssistantTurn({ message, ...props }: AssistantViewProps) {
+  const messages = message.turnMessages ?? [message];
+  const active = !!(props.running || props.streaming);
+  const thinking = active && isThinkingTurn(messages);
+  const { activity, reply } = splitAssistantTurn(messages);
+  const [choice, setChoice] = useState<{ active: boolean; open: boolean }>();
+  const open = choice?.active === active ? choice.open : active && !thinking;
+  const { details, failures } = activitySummary(activity, props.tools, props.results);
+  const rows: { start: number; messages: any[] }[] = [];
+  activity.forEach((entry, index) => {
+    const previous = rows.at(-1);
+    if (entry.role !== "assistant" && previous && previous.messages[0].role !== "assistant") previous.messages.push(entry);
+    else rows.push({ start: index, messages: [entry] });
+  });
+
+  return (
+    <div className="assistant-turn">
+      {(rows.length > 0 || thinking) && (
+        <Collapsible open={open} onOpenChange={expanded => setChoice({ active, open: expanded })} className="turn-activity">
+          <CollapsibleTrigger className="turn-activity-trigger">
+            {thinking ? <Sparkles className="size-3.5 shrink-0" /> : <ListChecks className="size-3.5 shrink-0" />}
+            <span className={thinking ? "shimmer motion-reduce:shimmer-none" : undefined} aria-live="polite">{thinking ? "Thinking" : "Agent activity"}</span>
+            {details && <span className={`turn-activity-summary ${failures ? "text-destructive" : ""}`}>{details}</span>}
+            <ChevronRight className="turn-activity-chevron size-3.5 shrink-0" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="turn-activity-content">
+            <div className="turn-activity-list">
+              {rows.length === 0 && <p className="text-xs text-muted-foreground">Waiting for activity from OMP.</p>}
+              {rows.map(({ start, messages: items }) => items[0].role === "assistant" ? (
+                <AssistantMessage key={start} message={items[0]} tools={props.tools} results={props.results} compact
+                  running={active} streaming={!!props.streaming && !reply && start === activity.length - 1} />
+              ) : (
+                <TraceRow key={start} title={items.length > 1 ? `${items.length} notes` : /incomplete todo|unfinished/i.test(noteText(items[0])) ? "Task reminder" : "Note"} icon={<Sparkles className="size-3.5" />} compact>
+                  <div className="space-y-2">{items.map((note, index) => <Markdown key={index} text={noteText(note)} />)}</div>
+                </TraceRow>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      {reply && <AssistantMessage message={reply} {...props} />}
+    </div>
+  );
 }
 
 export function parseArgs(args: any): any {
@@ -270,8 +357,12 @@ export function SummaryCard({ kind, text }: { kind: string; text: string }) {
 
 export function ShellCard({message}:{message:any}){return <TerminalCommand command={message.command || "Shell command"} output={message.output ?? message.stdout ?? ""} running={false} exitCode={message.exitCode} isError={!!message.exitCode}/>;}
 
+function noteText(message: any) {
+  return (blockText(message.content) || message.text || "").replace(/<\/?system-reminder>/gi, "").trim();
+}
+
 export function NoteLine({ message }: { message: any }) {
-  const text = (blockText(message.content) || message.text || "").replace(/<\/?system-reminder>/gi,"").trim();
+  const text = noteText(message);
   if (!text) return null;
   if(["developer","custom","hookMessage"].includes(message.role))return <TraceRow title={/incomplete todo|unfinished/i.test(text)?"Task reminder":"System note"} icon={<Sparkles className="size-3.5"/>}><Markdown text={text}/></TraceRow>;
   return (
@@ -298,9 +389,11 @@ export function MessageRow({
   results,
   actions,
   streaming,
+  running,
 }: {
   message: any;
   streaming?: boolean;
+  running?: boolean;
   tools: Record<string, ToolRunView>;
   results: Record<string, any>;
   actions?: MessageActions;
@@ -310,7 +403,8 @@ export function MessageRow({
     case "user":
       return <UserMessage message={message} actions={actions} />;
     case "assistant":
-      return <AssistantTurn message={message} tools={tools} results={results} actions={actions} streaming={streaming}/>;
+    case "turnActivity":
+      return <AssistantTurn message={message} tools={tools} results={results} actions={actions} streaming={streaming} running={running}/>;
     case "toolResult":
       return null;
     case "bashExecution":

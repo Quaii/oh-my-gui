@@ -13,6 +13,7 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
 
 type Side = "left" | "right"
 type SectionKind = "title" | "subtitle" | "section" | "body"
@@ -21,6 +22,7 @@ type SectionLevel = 1 | 2 | 3 | 4 | 5 | 6
 export type ProximitySection = {
   id: string
   label: string
+  preview?: string
   kind?: SectionKind
   level?: SectionLevel
 }
@@ -49,33 +51,33 @@ type ProximitySidebarProps = {
   side?: Side
 }
 
-const RADIUS = 40
-const MAX_DASH_WIDTH = 110
+const RADIUS = 38
+const MAX_DASH_WIDTH = 38
 const SCROLL_IDLE_RESET_DELAY = 80
 
 const DASH_PRESETS: Record<SectionKind, DashPreset> = {
   title: {
-    base: 40,
-    bump: 70,
-    thickness: 1,
+    base: 12,
+    bump: 24,
+    thickness: 2,
     className: "bg-foreground",
   },
   subtitle: {
-    base: 36,
-    bump: 64,
-    thickness: 1,
+    base: 11,
+    bump: 24,
+    thickness: 2,
     className: "bg-foreground",
   },
   section: {
-    base: 30,
-    bump: 56,
-    thickness: 1,
+    base: 10,
+    bump: 24,
+    thickness: 2,
     className: "bg-muted-foreground/40",
   },
   body: {
-    base: 24,
-    bump: 50,
-    thickness: 1,
+    base: 8,
+    bump: 24,
+    thickness: 2,
     className: "bg-muted-foreground/40",
   },
 }
@@ -127,6 +129,7 @@ const Dash = ({
   side,
 }: DashProps) => {
   const ref = useRef<HTMLButtonElement>(null)
+  const reducedMotion = useReducedMotion()
   const preset = DASH_PRESETS[sectionKind]
   const activeWidth = preset.base + preset.bump
 
@@ -137,7 +140,7 @@ const Dash = ({
 
   const distance = useTransform(mouseY, (y) => {
     const rect = ref.current?.getBoundingClientRect()
-    if (!rect) return RADIUS
+    if (!rect || !Number.isFinite(y)) return RADIUS
     return y - (rect.top + rect.height / 2)
   })
 
@@ -159,25 +162,32 @@ const Dash = ({
   })
 
   return (
-    <button
+    <Tooltip delayDuration={130}>
+      <TooltipTrigger asChild>
+      <button
       ref={ref}
       type="button"
       aria-current={active ? "location" : undefined}
       aria-label={`Go to ${section.label}`}
-      title={section.label}
-      className="group flex h-px w-[110px] items-center border-0 bg-transparent p-0 outline-none"
+      className="conversation-timeline-tick group"
       onClick={() => onSelect(section.id)}
     >
       <motion.span
-        className={`block transition-colors duration-150 ease-out group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 ${preset.className}`}
+        className={`conversation-timeline-dash ${preset.className}`}
         style={{
           height: preset.thickness,
-          scaleX,
+          scaleX: reducedMotion ? targetScaleX : scaleX,
           transformOrigin: side === "left" ? "left center" : "right center",
           width: MAX_DASH_WIDTH,
         }}
       />
-    </button>
+      </button>
+      </TooltipTrigger>
+      <TooltipContent side={side === "left" ? "right" : "left"} className="conversation-timeline-preview" collisionPadding={12}>
+        <p className="conversation-timeline-preview-title">{section.label}</p>
+        {section.preview && <p className="conversation-timeline-preview-reply">{section.preview}</p>}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -190,6 +200,7 @@ const ProximitySidebar = ({
   const mouseY = useMotionValue(Infinity)
   const shouldReduceMotion = useReducedMotion()
   const dashRefs = useRef(new Map<string, HTMLButtonElement>())
+  const listRef = useRef<HTMLDivElement>(null)
   const pointerInside = useRef(false)
   const resetTimer = useRef<number | null>(null)
   const [activeId, setActiveId] = useState(sections[0]?.id)
@@ -262,7 +273,7 @@ const ProximitySidebar = ({
         block: "start",
       })
 
-      window.history.replaceState(null, "", `#${id}`)
+      window.history.replaceState(window.history.state, "", `#${id}`)
       setActiveId(id)
       pulseDash(id)
     },
@@ -291,33 +302,34 @@ const ProximitySidebar = ({
     if (!sections.length) return
 
     let frame = 0
+    const targets = sections.flatMap(section => {
+      const element = getSectionElement(section.id)
+      return element ? [{ id: section.id, element }] : []
+    })
 
     const updateActiveSection = () => {
       frame = 0
 
       const anchorY = window.innerHeight * activeOffset
-      let nextActiveId = sections[0]?.id
-      let shortestDistance = Number.POSITIVE_INFINITY
-
-      for (const section of sections) {
-        const element = getSectionElement(section.id)
-        if (!element) continue
-
-        const rect = element.getBoundingClientRect()
-        const containsAnchor = rect.top <= anchorY && rect.bottom >= anchorY
-        const distance = containsAnchor
-          ? 0
-          : Math.min(Math.abs(rect.top - anchorY), Math.abs(rect.bottom - anchorY))
-
-        if (distance < shortestDistance) {
-          shortestDistance = distance
-          nextActiveId = section.id
-        }
+      let low = 0
+      let high = targets.length
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2)
+        if (targets[middle].element.getBoundingClientRect().top <= anchorY) low = middle + 1
+        else high = middle
       }
-
+      const nextActiveId = targets[Math.max(0, low - 1)]?.id ?? sections[0]?.id
       setActiveId(nextActiveId)
 
       if (!pointerInside.current) {
+        const list = listRef.current
+        const tick = dashRefs.current.get(nextActiveId)
+        if (list && tick) {
+          const viewport = list.getBoundingClientRect()
+          const bounds = tick.getBoundingClientRect()
+          if (bounds.top < viewport.top) list.scrollTop += bounds.top - viewport.top
+          else if (bounds.bottom > viewport.bottom) list.scrollTop += bounds.bottom - viewport.bottom
+        }
         pulseDash(nextActiveId)
       }
     }
@@ -355,16 +367,16 @@ const ProximitySidebar = ({
 
   return (
     <nav
-      aria-label="Page sections"
+      aria-label="Conversation timeline"
       className={`flex h-full min-h-0 items-center ${
         side === "left" ? "justify-start" : "justify-end"
       } ${className}`}
     >
       <div
-        className={`new-home_minimap__dDggR mx-8 flex flex-col ${
+        ref={listRef}
+        className={`conversation-timeline-list flex flex-col ${
           side === "right" ? "items-end" : "items-start"
         }`}
-        style={{ gap: 8 }}
         onPointerMove={(event) => {
           clearPendingReset()
           pointerInside.current = true

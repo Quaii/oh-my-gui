@@ -1,6 +1,7 @@
 import type { ChatState } from "../lib/store";
 import { Button } from "./ui/button";
-import { isDeviceMountNotice } from "../lib/conversation-actions";
+import { isDeviceMountNotice, pausedAdvisor } from "../lib/conversation-actions";
+import { Info } from "lucide-react";
 
 export function AuthLinkActions({ link }: { link: ChatState['authLinks'][number] }) {
   return <div className="flex flex-wrap items-center gap-2">
@@ -18,10 +19,18 @@ export function RuntimeOutput({
   outputs: ChatState["outputs"];
   links?: ChatState["authLinks"];
 }) {
-  const visibleOutputs = outputs.filter(output => !isDeviceMountNotice(output.text, output.kind));
-  if (!visibleOutputs.length && !links.length) return null;
+  const advisors = new Set<string>();
+  const visibleOutputs = outputs.filter(output => {
+    const advisor = pausedAdvisor(output.text);
+    if (advisor) {
+      advisors.add(advisor);
+      return false;
+    }
+    return !isDeviceMountNotice(output.text, output.kind);
+  });
+  if (!visibleOutputs.length && !advisors.size && !links.length) return null;
   return (
-    <div className="space-y-3" aria-live="polite">
+    <div className="runtime-output space-y-3" aria-live="polite">
       {links.map((link) => (
         <div
           key={link.id}
@@ -32,6 +41,12 @@ export function RuntimeOutput({
           </p>
           <AuthLinkActions link={link} />
         </div>
+      ))}
+      {[...advisors].map(advisor => (
+        <p className="runtime-advisor-notice workspace-floating-surface" key={advisor}>
+          <Info aria-hidden="true" className="size-4 shrink-0" />
+          <span>{advisor === "default" ? "Advisor paused" : `Advisor “${advisor}” paused`} until its quota resets.</span>
+        </p>
       ))}
       {visibleOutputs.map((output) => (
         <details

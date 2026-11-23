@@ -1,7 +1,7 @@
 import { isDeviceMountNotice } from "./conversation-actions.ts";
 function text(content:any):string {return typeof content==="string"?content:Array.isArray(content)?content.filter(b=>b?.type==="text").map(b=>b.text||"").join(""):"";}
 export function hasVisibleMessage(message:any):boolean {
- if(["developer","custom","hookMessage"].includes(message.role)&&isDeviceMountNotice(text(message.content)||message.text||"",message.level||message.severity||"info"))return false;
+ if(isTurnNote(message.role)&&isDeviceMountNotice(text(message.content)||message.text||"",message.level||message.severity||"info"))return false;
  if(message.role==="toolResult")return false;
  if(message.role==="assistant")return !!message.errorMessage||(Array.isArray(message.content)?message.content.some((b:any)=>b&&(b.type==="toolCall"||b.type==="image"||b.type==="redactedThinking"||b.type==="text"&&String(b.text||"").trim()||b.type==="thinking"&&String(b.thinking||b.text||"").trim())):!!text(message.content).trim());
  if(["bashExecution","pythonExecution","compactionSummary","branchSummary"].includes(message.role))return true;
@@ -21,24 +21,123 @@ export function coalesceAssistantBlocks(content:any):any[] {
   }else if(block.type==='text'&&result.at(-1)?.type==='text'){result.at(-1).text+=block.text||'';}else result.push({...block});
  }return result;
 }
-export function responsePhase(live:any,tools:any[]):'thinking'|'researching'|'analyzing'|'writing'{
- if(tools.some(t=>/web|fetch|search/.test(t.name)))return 'researching';if(tools.length)return 'analyzing';
- const blocks=coalesceAssistantBlocks(live?.content);const tail=blocks.at(-1);
- return tail?.type==='text'&&tail.text?.trim()?'writing':tail?.type==='toolCall'?'analyzing':'thinking';
+export function isTurnNote(role: string) {
+  return ["developer", "custom", "hookMessage", "system"].includes(role);
 }
-/** One visible assistant turn per user request, retaining the native end index for file/checkpoint actions. */
-export function groupedTranscript(messages:any[],live?:any){
- const input=transcriptItems(live?[...messages,live]:messages),output:any[]=[];
- for(const [position,item] of input.entries()){const previous=output.at(-1);const streaming=!!live&&item.index===messages.length;
-  const taskReminder=(message:any)=>['developer','custom','hookMessage'].includes(message.role)&&/incomplete todo|unfinished/i.test(text(message.content)||message.text||'');
-  // Automatic todo reminders belong to the ongoing turn, rather than creating
-  // another top-level answer/thought pair. Keep the original messages intact.
-  if(taskReminder(item.message)&&previous?.message.role==='assistant'&&input.slice(position+1).find(next=>!taskReminder(next.message))?.message.role==='assistant'){
-   previous.message={...previous.message,turnMessages:[...(previous.message.turnMessages||[previous.message]),item.message]};continue;
+
+export function activityToolKind(name: string) {
+  if (["edit", "write", "ast_edit", "apply_patch"].includes(name)) return "change";
+  if (["bash", "powershell", "terminal", "exec_command"].includes(name)) return "command";
+  if (/(^|_)web_search$/.test(name)) return "search";
+  if (["read", "glob", "grep", "ls", "find"].includes(name)) return "inspect";
+  return "other";
+}
+
+type TranscriptRow = ReturnType<typeof transcriptItems>[number] & { firstIndex: number; streaming: boolean };
+
+/** A stable row for contiguous work; native indices still own restore and file actions. */
+export function groupedTranscript(messages: any[], live?: any, running = false): TranscriptRow[] {
+  const rows: TranscriptRow[] = [];
+  let activity: ReturnType<typeof transcriptItems> = [];
+  const flush = () => {
+    if (!activity.length) return;
+    const first = activity[0];
+    const lastAssistant = activity.findLast(item => item.message.role === "assistant");
+    const anchor = lastAssistant ?? first;
+    rows.push({
+      ...anchor,
+      firstIndex: first.index,
+      continuation: false,
+      streaming: !!live && anchor.index === messages.length,
+      message: { ...anchor.message, role: lastAssistant ? "assistant" : "turnActivity", turnMessages: activity.map(item => item.message) },
+    });
+    activity = [];
+  };
+
+  for (const item of transcriptItems(live ? [...messages, live] : messages)) {
+    if (item.message.role === "assistant" || isTurnNote(item.message.role)) {
+      activity.push(item);
+    } else {
+      flush();
+      rows.push({ ...item, firstIndex: item.index, streaming: false });
+    }
   }
-  if(item.message.role==='assistant'&&previous?.message.role==='assistant'){
-   const turnMessages=[...(previous.message.turnMessages||[previous.message]),item.message];
-   previous.message={...item.message,turnMessages};previous.index=item.index;previous.streaming=streaming;
-  }else output.push({...item,firstIndex:item.index,streaming});
- }return output;
+  flush();
+  if (running && rows.at(-1)?.message.role === "user") {
+    rows.push({
+      message: { role: "turnActivity", turnMessages: [] },
+      index: messages.length,
+      firstIndex: messages.length,
+      continuation: false,
+      streaming: false,
+    });
+  }
+  return rows;
+}
+
+export function isThinkingTurn(messages: any[]) {
+  return messages.every(message => message.role !== "assistant" ||
+    (!message.errorMessage && coalesceAssistantBlocks(message.content).every(block =>
+      block.type === "thinking" || block.type === "redactedThinking" ||
+      (block.type === "text" && !block.text?.trim()))));
+}
+
+/** Keep narrated progress in order and only promote the final response after the last tool call. */
+export function splitAssistantTurn(messages: any[]) {
+  const assistant = messages.findLastIndex(message => message.role === "assistant");
+  const activity: any[] = [];
+  let reply: any;
+  const simpleReply = assistant >= 0 && messages.every(message =>
+    message.role === "assistant" && !message.errorMessage &&
+    coalesceAssistantBlocks(message.content).every(block => block.type === "text" || block.type === "image"));
+  if (simpleReply) {
+    reply = { ...messages[assistant], content: coalesceAssistantBlocks(messages.flatMap(message => coalesceAssistantBlocks(message.content))) };
+    return { activity, reply };
+  }
+
+  messages.forEach((message, index) => {
+    if (message.role !== "assistant") {
+      activity.push(message);
+      return;
+    }
+    const blocks = coalesceAssistantBlocks(message.content);
+    const lastTool = blocks.findLastIndex(block => block.type === "toolCall");
+    if (index !== assistant) {
+      activity.push({ ...message, content: blocks });
+      return;
+    }
+    const replyBlocks = blocks.slice(lastTool + 1).filter(block => block.type === "text" || block.type === "image");
+    const activityBlocks = blocks.filter((block, i) => i <= lastTool || (block.type !== "text" && block.type !== "image"));
+    if (activityBlocks.length) activity.push({ ...message, content: activityBlocks, errorMessage: undefined });
+    if (replyBlocks.length || message.errorMessage) reply = { ...message, content: replyBlocks };
+  });
+  return { activity, reply };
+}
+
+export function conversationSections(messages: any[]) {
+  const sections: { id: string; label: string; preview?: string }[] = [];
+  let section: (typeof sections)[number] | undefined;
+  let turn: any[] = [];
+  const excerpt = (value: string, limit: number) => {
+    const flat = value.replace(/\s+/g, " ").trim();
+    return flat.length > limit ? flat.slice(0, limit - 1).trimEnd() + "…" : flat;
+  };
+  const finish = () => {
+    if (!section) return;
+    const { reply } = splitAssistantTurn(turn);
+    const preview = excerpt(text(reply?.content), 280);
+    sections.push(preview ? { ...section, preview } : section);
+  };
+
+  messages.forEach((message, index) => {
+    if (message.role === "user") {
+      finish();
+      section = { id: `msg-${index}`, label: excerpt(text(message.content), 140) || "Image request" };
+      turn = [];
+    } else if (section && (message.role === "assistant" || isTurnNote(message.role)) && hasVisibleMessage(message)) {
+      turn.push(message);
+    }
+  });
+  finish();
+  return sections;
 }

@@ -8,7 +8,8 @@ import {replyVersions} from "./lib/message-versions";
 import {MessageVersions} from "./components/MessageVersions";
 import {PromptSuggestions} from "./components/PromptSuggestions";
 import {projectForSession} from "../../shared/workspace";
-import {groupedTranscript,responsePhase} from "./lib/transcript";
+import type { Persona, WebControlConfig } from "../../shared/control";
+import {conversationSections,groupedTranscript} from "./lib/transcript";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ChatSkeleton, HomeSkeleton, PanelSkeleton } from "@/components/ui/loading-shapes";
 import { conversationRestoreTargets } from "./lib/conversation-actions";
@@ -37,7 +38,6 @@ import {SharedWorkspaceBackground} from "./components/SharedWorkspaceBackground"
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
 import { SlidingTabs } from "@/components/ui/sliding-tabs";
-import AiStatus from "@/components/ui/ai-status";
 import ProximitySidebar from "@/components/ui/proximity-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -378,7 +378,7 @@ export default function App() {
 
   useEffect(() => {
     if (stickRef.current) scrollToLatest(false);
-  }, [chat.messages, chat.live, chat.tools, chat.outputs, scrollToLatest]);
+  }, [chat.messages, chat.live, chat.tools, chat.outputs, chat.running, chat.state?.isStreaming, scrollToLatest]);
 
   /* ---------- keyboard ---------- */
   useEffect(() => {
@@ -491,7 +491,7 @@ export default function App() {
   const results = useMemo(() => buildResultMap(chat.messages), [chat.messages]);
   const changes = useMemo(()=>fileChangeSummaries(chat.messages,results),[chat.messages,results]);
   const visibleMessages = chat.messages;
-  const renderedMessages=useMemo(()=>groupedTranscript(visibleMessages,chat.live),[visibleMessages,chat.live]);
+  const renderedMessages=useMemo(()=>groupedTranscript(visibleMessages,chat.live,running),[visibleMessages,chat.live,running]);
   const [entries,setEntries] = useState<any[]>([]);
   useEffect(()=>{let active=true;if(!chat.loaded || running || !chat.key)return;post("/api/cmd",{key:chat.key,cmd:{type:"get_entries"}}).then(r=>{if(active)setEntries(r.ok?r.data?.entries || []:[])}).catch(()=>{if(active)setEntries([])});return()=>{active=false}},[chat.key,chat.loaded,running,chat.messages.length]);
   const restoreTargets = useMemo(() => conversationRestoreTargets(chat.messages, entries), [entries, chat.messages]);
@@ -503,10 +503,8 @@ export default function App() {
   }
   const empty = chat.loaded && visibleMessages.length === 0 && !chat.live;
 
-  const turnSections=useMemo(()=>visibleMessages.flatMap((m,i)=>{if(m.role!=="user")return [];const text=typeof m.content==="string"?m.content:(m.content || []).filter((b:any)=>b.type==="text").map((b:any)=>b.text).join(" ");return [{id:`msg-${i}`,label:String(text).replace(/\s+/g," ").slice(0,80)||"Image request"}]}).slice(-12),[visibleMessages]);
+  const turnSections = useMemo(() => conversationSections(visibleMessages), [visibleMessages]);
 
-  const runningTools = Object.values(chat.tools ?? {}).filter((t: any) => !t.endedAt);
-  const aiState=responsePhase(chat.live,runningTools);
   const composerRef=useRef<HTMLDivElement>(null);
   useEffect(()=>{const node=composerRef.current;if(!node)return;const observer=new ResizeObserver(()=>node.closest<HTMLElement>(".workspace-main")?.style.setProperty("--composer-height",`${node.offsetHeight}px`));observer.observe(node);return()=>observer.disconnect();},[home,empty]);
 
@@ -630,7 +628,7 @@ export default function App() {
         <div className="transcript-region relative min-h-0 flex-1">
           <div ref={scrollRef} className="h-full overflow-y-auto">
           {home ? <SkeletonReveal loading={!boot} skeleton={<HomeSkeleton/>} label="Loading workspace"><HomeOverview projects={boot?.control?.projects || []} sessions={boot?.allSessions || boot?.sessions || []} onCreate={()=>setProjectDialog(true)} onProject={changeCwd} onSession={openSession}/></SkeletonReveal> : <>
-            <div className="transcript-content mx-auto w-full max-w-[800px] px-6 py-8">
+            <div className="transcript-content mx-auto w-full max-w-[800px] py-8">
               {false && chat.error && (
                 <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-[12.5px] text-destructive">
                   {chat.error}
@@ -641,43 +639,38 @@ export default function App() {
               )}
               <SkeletonReveal loading={!chat.loaded} skeleton={<ChatSkeleton/>} label="Loading conversation history">
               <div className="transcript-list">
-                {renderedMessages.map(({message:m,index:i,firstIndex,streaming,continuation}) => (
-                  <div key={`msg-${firstIndex}`} id={`msg-${i}`} className={`transcript-message scroll-mt-24 ${continuation?"is-continuation":""} ${["developer","custom","hookMessage"].includes(m.role)?"is-note":""}`}>
-                    {m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1?(<MessageVersions
-                      versions={replyVersions(entries,m.timestamp)} currentTimestamp={m.timestamp} files={changes.get(i)} cwd={changedFilesCwd} projectRoot={changedFilesRoot}
-                      onContinue={async id=>{const r=await sendCmd({type:"navigate_tree",entryId:id,summarize:false});if(r?.ok&&!r.data?.cancelled)await attach(keyRef.current!,activePath||undefined);}}
-                      streaming={streaming}
-                      tools={chat.tools}
-                      results={results}
-                      actions={{
-                        onCopy: copy,
-                        onRestore: !streaming && restoreTargets.has(i) ? () => void restoreMessage(i) : undefined,
-                        restoreDisabled: running,
-                        onRegenerate: m.role === "assistant" ? () => regenerate(i) : undefined,
-                        onEdit:
-                          m.role === "user" && !running
-                            ? (text) => editMessage(i,text)
-                            : undefined,
-                      }}
-                    />):(<MessageRow
-                      message={m}
-                      streaming={streaming}
-                      tools={chat.tools}
-                      results={results}
-                      actions={{
-                        onCopy: copy,
-                        onRestore: !streaming && restoreTargets.has(i) ? () => void restoreMessage(i) : undefined,
-                        restoreDisabled: running,
-                        onRegenerate: m.role === "assistant" ? () => regenerate(i) : undefined,
-                        onEdit:
-                          m.role === "user" && !running
-                            ? (text) => editMessage(i,text)
-                            : undefined,
-                      }}
-                    />)}
-                    {changes.has(i) && !(m.role==="assistant"&&!streaming&&replyVersions(entries,m.timestamp).length>1) && <FilesChanged files={changes.get(i)!} cwd={changedFilesCwd} projectRoot={changedFilesRoot} />}
-                  </div>
-                ))}
+                {renderedMessages.map(({ message, index, firstIndex, streaming, continuation }, position) => {
+                  const working = running && position === renderedMessages.length - 1;
+                  const assistant = message.role === "assistant";
+                  const versions = assistant && !streaming && !working ? replyVersions(entries, message.timestamp) : [];
+                  const files = changes.get(index);
+                  const actions = {
+                    onCopy: copy,
+                    onRestore: !streaming && restoreTargets.has(index) ? () => void restoreMessage(index) : undefined,
+                    restoreDisabled: running,
+                    onRegenerate: assistant && !working ? () => regenerate(index) : undefined,
+                    onEdit: message.role === "user" && !running ? (text: string) => editMessage(index, text) : undefined,
+                  };
+                  return (
+                    <div key={`msg-${firstIndex}`} id={`msg-${index}`} className={`transcript-message scroll-mt-24 ${continuation ? "is-continuation" : ""} ${message.role === "turnActivity" && !working ? "is-note" : ""}`}>
+                      {versions.length > 1 ? (
+                        <MessageVersions versions={versions} currentTimestamp={message.timestamp} currentMessage={message}
+                          files={files} cwd={changedFilesCwd} projectRoot={changedFilesRoot}
+                          onContinue={async id => {
+                            const response = await sendCmd({ type: "navigate_tree", entryId: id, summarize: false });
+                            if (response?.ok && !response.data?.cancelled) await attach(keyRef.current!, activePath || undefined);
+                          }}
+                          tools={chat.tools} results={results} actions={actions}
+                        />
+                      ) : (
+                        <>
+                          <MessageRow message={message} streaming={streaming} running={working} tools={chat.tools} results={results} actions={actions} />
+                          {files && !working && <FilesChanged files={files} cwd={changedFilesCwd} projectRoot={changedFilesRoot} />}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
 
                 <RuntimeOutput outputs={chat.outputs} links={chat.authLinks} />
               </div>
@@ -706,19 +699,13 @@ export default function App() {
             <ProximitySidebar
               sections={turnSections}
               side="left"
-              className="absolute inset-y-0 left-0 z-10 hidden xl:flex"
+              className="conversation-timeline absolute inset-y-0 left-0 z-10 hidden xl:flex"
             />
           )}
         </div>
 
-        {!home && <div ref={composerRef} className="composer-region relative z-10 shrink-0 px-6 pt-3 pb-5">
+        {!home && <div ref={composerRef} className="composer-region relative z-10 shrink-0 pt-3 pb-5">
           <div className="composer-frame relative mx-auto w-full max-w-[752px]"><div className="composer-blur-gradient" aria-hidden="true"/>
-            {running && (
-              <div className="mb-2 flex items-center gap-2">
-                <AiStatus state={aiState as any} className="text-[11.5px] text-muted-foreground" />
-                {runningTools.length > 0 && (
-                  <span className="truncate font-mono text-[10.5px] text-muted-foreground">
-                    {runningTools.map((t: any) => t.name).join(", ")}
                   </span>
                 )}
               </div>
