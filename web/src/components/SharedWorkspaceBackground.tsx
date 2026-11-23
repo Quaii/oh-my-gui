@@ -15,10 +15,12 @@ export function SharedWorkspaceBackground() {
       const regions=panes.flatMap(pane=>{
         const rect=pane.getBoundingClientRect(),slot=pane.closest<HTMLElement>('.file-panel-motion');
         if(!rect.width||!rect.height||pane.closest('[hidden]'))return [];
+        const style=getComputedStyle(pane);
+        if(style.visibility==='hidden')return [];
         const visible=slot?.getBoundingClientRect()||rect;
         const left=Math.max(rect.left,visible.left),right=Math.min(rect.right,visible.right);
         if(right<=left)return [];
-        return [{x:(left-bounds.left)/scale,y:(rect.top-bounds.top)/scale,width:(right-left)/scale,height:rect.height/scale,radius:parseFloat(getComputedStyle(pane).borderTopLeftRadius)||0}];
+        return [{x:(left-bounds.left)/scale,y:(rect.top-bounds.top)/scale,width:(right-left)/scale,height:rect.height/scale,radius:parseFloat(style.borderTopLeftRadius)||0}];
       });
       const signature=JSON.stringify(regions);
       if(signature===previous)return;

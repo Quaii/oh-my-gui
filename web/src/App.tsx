@@ -600,7 +600,7 @@ export default function App() {
                 </div>
               )}
               {chat.loaded && visibleMessages.length === 0 && !chat.live && (
-                <EmptyState cwd={projectForSession<{path:string;name:string}>({cwd},boot?.control?.projects||[])?.name||"Workspace"} onPick={(text) => void onSend(text,[])} />
+                <EmptyState cwd={projectForSession<{path:string;name:string}>({cwd},boot?.control?.projects||[])?.name||""} onPick={(text) => void onSend(text,[])} />
               )}
               <SkeletonReveal loading={!chat.loaded} skeleton={<ChatSkeleton/>} label="Loading conversation history">
               <div className="transcript-list">
@@ -724,7 +724,7 @@ export default function App() {
       )}
 
       </PageTransition>
-      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={null}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
+      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={null}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
       <CommandPalette
         open={paletteOpen}
@@ -765,7 +765,7 @@ function EmptyState({
   ];
   return (
     <div className="welcome fade-up">
-      <div className="mb-7 flex items-center gap-2.5 text-[13px] text-muted-foreground"><Brand className="size-6" /><span>{cwd.split(/[\\/]/).filter(Boolean).pop() || "New conversation"}</span></div>
+      <div className="mb-7 flex items-center gap-2.5 text-[13px] text-muted-foreground"><Brand className="size-6" />{cwd&&<span>{cwd.split(/[\\/]/).filter(Boolean).pop()}</span>}</div>
       <div>
         <h1 className="text-[clamp(28px,3.2vw,42px)] font-medium leading-[1.15] tracking-[-0.045em]">What are we working on?</h1>
         <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">Build, explore, or review your next idea.</p>

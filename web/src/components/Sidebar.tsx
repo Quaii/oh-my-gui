@@ -255,7 +255,6 @@ export function Sidebar(props: SidebarProps) {
           <div className="flex items-center gap-1.5">
             <span className="text-[16px] font-semibold tracking-[-0.04em]">omp<span className="text-primary">.</span></span>
           </div>
-          <div className="truncate text-[11px] text-muted-foreground">Your agent workspace</div>
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -288,7 +287,7 @@ export function Sidebar(props: SidebarProps) {
         <Button
           onClick={props.onNew}
           variant="outline"
-          className="h-9 w-full justify-start gap-2 border-border/70 bg-transparent px-3 text-[13px] font-normal text-foreground shadow-none hover:bg-sidebar-accent"
+          className="sidebar-new-chat h-9 w-full justify-start gap-2 border-0 bg-transparent px-3 text-[13px] font-normal text-foreground shadow-none hover:bg-sidebar-accent"
         >
           <Plus className="size-3.5 text-muted-foreground" /> New chat
         </Button>
