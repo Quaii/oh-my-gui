@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { desktopBuildHash } from '../server/src/desktop-build.ts';
 
 if (process.platform !== 'win32') throw new Error('The custom Windows installer must be built on Windows.');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -15,7 +16,11 @@ for await (const chunk of createReadStream(payload)) hash.update(chunk);
 const staging = path.join(root, '.tmp/custom-installer');
 await fs.mkdir(staging, { recursive: true });
 const manifest = path.join(staging, 'installer-manifest.json');
-await fs.writeFile(manifest, JSON.stringify({ version, sha256: hash.digest('hex') }));
+const buildSha256 = await desktopBuildHash(
+  path.join(release, 'omp-desktop.exe'),
+  path.join(root, 'src-tauri/resources/runtime'),
+);
+await fs.writeFile(manifest, JSON.stringify({ version, sha256: hash.digest('hex'), buildSha256 }));
 const output = path.join(release, `bundle/custom/omp_${version}_x64.exe`);
 await fs.mkdir(path.dirname(output), { recursive: true });
 // NSIS is only the silent self-extraction envelope and installation engine.

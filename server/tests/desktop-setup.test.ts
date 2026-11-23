@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, installDesktopOmp, needsStableOmp } from '../src/desktop-setup.ts';
-import { desktopInstallDirectory, installerManifest, desktopApplicationEnvironment } from '../src/desktop-installer.ts';
+import { desktopInstallDirectory, installerManifest, desktopApplicationEnvironment, installerMode, prepareInstalledApp } from '../src/desktop-installer.ts';
+import { desktopBuildHash } from '../src/desktop-build.ts';
 import { OMP_BINARY, selectOmpBinary } from '../src/omp.ts';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
@@ -77,6 +78,62 @@ test('installer checks a working runtime against stable and leaves it available 
 test('the installer destination is derived from an absolute user directory, never request input', () => {
   assert.throws(() => desktopInstallDirectory('relative/path'));
   assert.ok(desktopInstallDirectory(process.cwd()).endsWith('omp'));
+});
+
+test('installer mode distinguishes fresh, newer and same-version packages', () => {
+  assert.equal(installerMode(false, undefined, '0.1.2'), 'install');
+  assert.equal(installerMode(true, '0.1.9', '0.1.10'), 'update');
+  assert.equal(installerMode(true, '0.1.2', '0.1.2', true), 'reinstall');
+  assert.equal(installerMode(true, '0.1.2', '0.1.2', false), 'update');
+  assert.equal(installerMode(true, '0.1.2', '0.1.2'), 'replace');
+  assert.equal(installerMode(true, '0.2.0', '0.1.9'), 'replace');
+  assert.equal(installerMode(true, undefined, '0.1.2'), 'replace');
+});
+
+test("the installer fingerprint changes when only the frontend build changes", async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "omp-build-fingerprint-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const runtime = path.join(root, "runtime");
+  const executable = path.join(root, "omp-desktop.exe");
+  const index = path.join(runtime, "web/dist/index.html");
+  await Promise.all([fs.mkdir(path.dirname(index), { recursive: true }), fs.mkdir(path.join(runtime, "server/src"), { recursive: true })]);
+  await Promise.all([
+    fs.writeFile(executable, "same binary"),
+    fs.writeFile(path.join(runtime, "server/src/index.mjs"), "same backend"),
+    fs.writeFile(path.join(runtime, "runtime.json"), "{}"),
+    fs.writeFile(index, "app-first.js"),
+  ]);
+  const first = await desktopBuildHash(executable, runtime);
+  assert.equal(await desktopBuildHash(executable, runtime), first);
+  await fs.writeFile(index, "app-second.js");
+  assert.notEqual(await desktopBuildHash(executable, runtime), first);
+});
+
+test('installer asks before closing a running app and resumes when the backend releases its files', async () => {
+  const checks: boolean[] = [];
+  assert.equal(await prepareInstalledApp(false, async close => {
+    checks.push(close);
+    return "running";
+  }), false);
+  assert.deepEqual(checks, [false]);
+
+  const states = ["running", "draining", "draining", "closed"] as const;
+  let count = 0;
+  assert.equal(await prepareInstalledApp(true, async close => {
+    assert.equal(close, count === 1);
+    return states[count++];
+  }, async () => {}), true);
+  assert.equal(count, 4);
+});
+
+test('installer can retry after manual close and reports a backend that is still shutting down', async () => {
+  const states = ["draining", "closed"] as const;
+  let count = 0;
+  assert.equal(await prepareInstalledApp(false, async close => {
+    assert.equal(close, false);
+    return states[count++];
+  }, async () => {}), true);
+  await assert.rejects(prepareInstalledApp(false, async () => "draining", async () => {}), /still shutting down/);
 });
 
 test('installer preflight rejects missing or damaged payloads before offering installation', async () => {

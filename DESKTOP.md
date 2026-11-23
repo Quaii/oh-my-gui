@@ -88,7 +88,9 @@ user clicks Install. The fixed per-user destination is `%LOCALAPPDATA%/Programs/
 NSIS payload manages files, shortcuts, upgrade detection and Windows uninstall registration silently.
 Its SHA-256 is checked against the packaged manifest before execution. Both layers remain unsigned;
 this integrity check is not a substitute for code signing. The native host blocks closing while the
-installation engine is active, and refuses to replace a running app. WebView2 is required to show
+installation engine is active. When the installed app is running, the installer asks before ending
+its sessions, then uses Windows Restart Manager to close the installed app and waits for the bundled
+backend to release its files. The same installer window continues the update. WebView2 is required to show
 the custom UI; clean-device bootstrap and upgrade/uninstall acceptance still need native testing.
 The underlying NSIS artifact remains in `bundle/nsis` for diagnostics and silent enterprise installs.
 

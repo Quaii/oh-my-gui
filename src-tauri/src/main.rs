@@ -2,6 +2,8 @@
 
 mod backend_path;
 mod folder_picker;
+#[cfg(windows)]
+mod installer_shutdown;
 mod native_icon;
 mod tray;
 mod updates;
@@ -424,6 +426,19 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
 }
 
 fn main() {
+    #[cfg(windows)]
+    if let Some(action @ ("--installer-check-app" | "--installer-close-app")) =
+        std::env::args().nth(1).as_deref()
+    {
+        match installer_shutdown::run(action == "--installer-close-app") {
+            Ok(state) => println!("{state}"),
+            Err(error) => {
+                eprintln!("{error}");
+                std::process::exit(1);
+            }
+        }
+        return;
+    }
     let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
     let result = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())

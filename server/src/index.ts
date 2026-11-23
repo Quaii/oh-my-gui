@@ -240,10 +240,13 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       if (req.method === 'GET') json(res, 200, await desktopInstallerStatus());
       else if (req.method === 'POST') {
         const body = await readBody(req, 1024);
-        if (body.action === 'install') await installDesktopApplication();
-        else if (body.action === 'launch') await launchInstalledDesktop();
-        else { json(res, 400, { error: 'Invalid installer action.' }); return true; }
-        json(res, 200, await desktopInstallerStatus());
+        if (body.action === 'install') {
+          const result = await installDesktopApplication(body.closeRunningApp === true);
+          json(res, 200, { ...await desktopInstallerStatus(), requiresAppClose: result === "app-close-required" });
+        } else if (body.action === 'launch') {
+          await launchInstalledDesktop();
+          json(res, 200, await desktopInstallerStatus());
+        } else { json(res, 400, { error: 'Invalid installer action.' }); }
       } else json(res, 405, { error: 'Method not allowed' });
       return true;
     }

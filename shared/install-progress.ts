@@ -2,12 +2,13 @@ export const INSTALL_STEPS = [
   { id: "checks", label: "System checks" },
   { id: "package", label: "Verify package" },
   { id: "omp", label: "OMP runtime" },
-  { id: "dependencies", label: "Windows dependencies" },
-  { id: "files", label: "App and runtime" },
-  { id: "verify", label: "Verify installation" },
+  { id: "dependencies", label: "Windows checks" },
+  { id: "files", label: "Install files" },
+  { id: "verify", label: "Final checks" },
   { id: "complete", label: "Open setup" },
 ] as const;
 export type InstallStage = (typeof INSTALL_STEPS)[number]["id"];
+export type InstallMode = "install" | "update" | "reinstall" | "replace";
 export type InstallProgress = {
   stage: InstallStage;
   detail: string;

@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react';
-import { Check, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Brand } from './Brand';
 import { Button } from './ui/button';
 import { post } from '../lib/api';
@@ -18,8 +18,10 @@ export function DesktopSetupFrame({ steps, current, busy, onCancel, children, al
     {window.__OMP_CUSTOM_CHROME__ && <div className="desktop-setup-grab-area" aria-hidden="true" onMouseDown={startDrag} />}
     <aside className="desktop-setup-sidebar" aria-label="Setup progress">
       <div className="desktop-setup-brand" onMouseDown={startDrag}><Brand /><div><strong>omp.</strong><span>Setup</span></div></div>
-      <ol>{steps.map((label, index) => <li key={label} data-state={index < current ? 'complete' : index === current ? 'current' : 'pending'} aria-current={index === current ? 'step' : undefined}>
-        <span className="desktop-setup-step-icon">{index < current ? <Check aria-label="Completed" /> : index + 1}</span><span>{label}</span>
+      <ol role="list">{steps.map((label, index) => <li key={label} data-state={index < current ? 'complete' : index === current ? 'current' : 'pending'} aria-current={index === current ? 'step' : undefined}>
+        <span className="desktop-setup-step-marker" aria-hidden="true" />
+        <span className="desktop-setup-step-label">{label}</span>
+        {index < current && <span className="sr-only">Completed</span>}
       </li>)}</ol>
     </aside>
     <main className="desktop-setup workspace-floating-surface" aria-busy={busy}>

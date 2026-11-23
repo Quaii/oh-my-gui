@@ -2,11 +2,13 @@ import { promises as fs, createReadStream } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFile, spawn } from "node:child_process";
-import { connect } from "node:net";
+import { setTimeout as wait } from "node:timers/promises";
 import os from "node:os";
 import { installDesktopOmp } from "./desktop-setup.ts";
+import { desktopBuildHash } from "./desktop-build.ts";
 import {
   nativeInstallStage,
+  type InstallMode,
   type InstallProgress,
   type InstallStage,
 } from "../../shared/install-progress.ts";
@@ -17,21 +19,48 @@ export function desktopInstallDirectory(localData = process.env.LOCALAPPDATA) {
   return path.join(localData, "Programs", "omp");
 }
 
-function isRunning() {
-  return new Promise<boolean>((resolve) => {
-    const socket = connect({ host: "127.0.0.1", port: 4319 });
-    const finish = (value: boolean) => {
-      socket.destroy();
-      resolve(value);
-    };
-    socket.once("connect", () => finish(true));
-    socket.once("error", () => finish(false));
-    socket.setTimeout(1000, () => finish(false));
+type AppState = "running" | "draining" | "closed";
+type InstallResult = "installed" | "app-close-required";
+
+function installedAppState(close: boolean): Promise<AppState> {
+  const executable = path.join(path.dirname(process.env.OMP_INSTALLER_PAYLOAD!), "omp-installer.exe");
+  return new Promise((resolve, reject) => {
+    execFile(executable, [close ? "--installer-close-app" : "--installer-check-app"],
+      { timeout: close ? 50_000 : 5000, windowsHide: true }, (error, stdout) => {
+        const state = stdout.trim();
+        if (error || (state !== "running" && state !== "draining" && state !== "closed")) {
+          reject(new Error(close ? "Could not close omp. Quit from its tray menu and retry here."
+            : "Could not check whether omp. is running. Retry here."));
+        } else {
+          resolve(state);
+        }
+      });
   });
 }
 
+export async function prepareInstalledApp(
+  close: boolean,
+  check: (close: boolean) => Promise<AppState> = installedAppState,
+  pause: () => Promise<void> = () => wait(500),
+) {
+  let state = await check(false);
+  if (state === "running") {
+    if (!close) return false;
+    state = await check(true);
+    if (state === "running") throw new Error("omp. is still running. Quit from its tray menu and retry here.");
+  }
+  for (let attempt = 0; state === "draining" && attempt < 20; attempt++) {
+    await pause();
+    state = await check(false);
+  }
+  if (state === "draining") throw new Error("omp. is still shutting down. Wait a moment and retry here.");
+  return state === "closed";
+}
+
 let installed = false;
-let installing: Promise<void> | undefined;
+let installing: Promise<InstallResult> | undefined;
+const uninstallKey = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\omp";
+let existingInstallation: Promise<{ mode: InstallMode; previousVersion?: string }> | undefined;
 let progress: InstallProgress = {
   stage: "checks",
   detail: "Ready to check this installation.",
@@ -53,30 +82,71 @@ export async function installerManifest(payload: string) {
     if (
       !file.isFile() ||
       file.size === 0 ||
-      !/^[a-f0-9]{64}$/.test(manifest.sha256)
+      typeof manifest.version !== "string" ||
+      !manifest.version.trim() ||
+      !/^[a-f0-9]{64}$/.test(manifest.sha256) ||
+      (manifest.buildSha256 !== undefined && !/^[a-f0-9]{64}$/.test(manifest.buildSha256))
     )
       throw new Error("Invalid payload");
-    return manifest as { version: string; sha256: string };
+    return manifest as { version: string; sha256: string; buildSha256?: string };
   } catch {
     throw new Error(
       "Installation files are missing or damaged. Close this copy and run the packaged omp. installer again.",
     );
   }
 }
+
+export function installerMode(existing: boolean, previousVersion: string | undefined, version: string, sameBuild?: boolean): InstallMode {
+  if (!existing) return "install";
+  const numericVersion = /^\d+\.\d+\.\d+$/;
+  const sameVersionMode = sameBuild === undefined ? "replace" : sameBuild ? "reinstall" : "update";
+  if (previousVersion === version) return sameVersionMode;
+  if (!previousVersion || !numericVersion.test(previousVersion) || !numericVersion.test(version)) return "replace";
+  const previous = previousVersion.split(".").map(Number);
+  const next = version.split(".").map(Number);
+  const firstDifference = next.findIndex((part, index) => part !== previous[index]);
+  if (firstDifference === -1) return sameVersionMode;
+  return next[firstDifference] > previous[firstDifference] ? "update" : "replace";
+}
+
+async function detectExistingInstallation(destination: string, version: string, buildSha256?: string) {
+  const executable = await fs.stat(path.join(destination, "omp-desktop.exe")).catch(error => {
+    if (error.code !== "ENOENT") throw error;
+    return undefined;
+  });
+  if (!executable?.isFile()) return { mode: "install" as const };
+  const [previousVersion, installedBuild] = await Promise.all([
+    new Promise<string | undefined>(resolve => {
+      execFile("reg.exe", ["query", uninstallKey, "/v", "DisplayVersion"], { timeout: 3000, windowsHide: true },
+        (error, stdout) => resolve(error ? undefined : /^\s*DisplayVersion[ \t]+REG_SZ[ \t]+([^\r\n]+)/mi.exec(stdout)?.[1].trim()));
+    }),
+    buildSha256 ? desktopBuildHash(path.join(destination, "omp-desktop.exe"), path.join(destination, "runtime")).catch(() => undefined) : undefined,
+  ]);
+  const sameBuild = installedBuild ? installedBuild === buildSha256 : undefined;
+  return { mode: installerMode(true, previousVersion, version, sameBuild), previousVersion };
+}
+
 export async function desktopInstallerStatus() {
   if (!process.env.OMP_INSTALLER_PAYLOAD || process.platform !== "win32")
     throw new Error("Installer mode is unavailable.");
-  await installerManifest(process.env.OMP_INSTALLER_PAYLOAD);
+  const { version, buildSha256 } = await installerManifest(process.env.OMP_INSTALLER_PAYLOAD);
+  const destination = desktopInstallDirectory();
+  const initial = await (existingInstallation ??= detectExistingInstallation(destination, version, buildSha256).catch(error => {
+    existingInstallation = undefined;
+    throw error;
+  }));
   return {
-    destination: desktopInstallDirectory(),
+    destination,
+    version,
+    ...initial,
     installed,
     installing: !!installing,
     progress: { ...progress },
   };
 }
 
-export function installDesktopApplication() {
-  return (installing ??= install().finally(() => {
+export function installDesktopApplication(closeRunningApp = false) {
+  return (installing ??= install(closeRunningApp).finally(() => {
     installing = undefined;
   }));
 }
@@ -99,21 +169,19 @@ export async function verifyInstallerPayload(
     throw Error("Installer integrity check failed. Download a fresh copy.");
 }
 
-async function install() {
+async function install(closeRunningApp: boolean): Promise<InstallResult> {
   let work: string | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
   installed = false;
   stage(
     "checks",
-    "Checking the destination, free disk space and running applications…",
+    closeRunningApp ? "Closing omp. and waiting for its session to stop…"
+      : "Checking the destination, free disk space and running applications…",
   );
   process.stdout.write("OMP_DESKTOP_INSTALLING true\n");
   try {
-    const { destination } = await desktopInstallerStatus();
-    if (await isRunning())
-      throw new Error(
-        "Close the running omp. app, then try again. Your work will be kept.",
-      );
+    const { destination, mode } = await desktopInstallerStatus();
+    if (!await prepareInstalledApp(closeRunningApp)) return "app-close-required";
     const payload = process.env.OMP_INSTALLER_PAYLOAD!;
     const manifest = await installerManifest(payload);
     const payloadSize = (await fs.stat(payload)).size;
@@ -139,6 +207,7 @@ async function install() {
     });
     if (!runtime.available || !runtime.version)
       throw Error("The OMP runtime could not be verified. Retry installation.");
+    if (!await prepareInstalledApp(false)) return "app-close-required";
     work = await fs.mkdtemp(path.join(os.tmpdir(), "omp-install-progress-"));
     const log = path.join(work, "stages.log");
     await fs.writeFile(log, "");
@@ -199,7 +268,7 @@ async function install() {
         "reg.exe",
         [
           "query",
-          "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\omp",
+          uninstallKey,
           "/v",
           "UninstallString",
         ],
@@ -230,8 +299,11 @@ async function install() {
       ),
     );
     installed = true;
-    stage("complete", "Installation verified. Continue to first-launch setup.");
+    stage("complete", mode === "install"
+      ? "Installation verified. Continue to first-launch setup."
+      : "Installation verified. omp. is ready to open.");
     progress.runtimeVersion = runtime.version;
+    return "installed";
   } catch (error: any) {
     progress.error = error.message;
     throw error;

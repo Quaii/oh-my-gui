@@ -12,21 +12,35 @@ import {
 import { get, post } from "../lib/api";
 import {
   INSTALL_STEPS,
+  type InstallMode,
   type InstallProgress,
 } from "../../../shared/install-progress";
 import { revealDesktop } from "../lib/desktop";
 
 type InstallerStatus = {
   destination: string;
+  mode: InstallMode;
+  version: string;
+  previousVersion?: string;
   installed: boolean;
   installing: boolean;
+  requiresAppClose?: boolean;
   progress?: InstallProgress;
 };
+
+const installerCopy = {
+  install: { start: "Install omp.", done: "Installation complete", busy: "Installing…" },
+  update: { start: "Update omp.", done: "Update complete", busy: "Updating…" },
+  reinstall: { start: "Reinstall omp.", done: "Reinstall complete", busy: "Reinstalling…" },
+  replace: { start: "Replace omp.", done: "Replacement complete", busy: "Replacing…" },
+} satisfies Record<InstallMode, { start: string; done: string; busy: string }>;
+
 export function DesktopInstaller() {
   const [status, setStatus] = useState<InstallerStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [started, setStarted] = useState(false);
   const [confirmExit, setConfirmExit] = useState(false);
+  const [confirmAppClose, setConfirmAppClose] = useState(false);
   const [exitQueued, setExitQueued] = useState(false);
   const exitAfterInstall = useRef(false);
   const [error, setError] = useState("");
@@ -75,6 +89,11 @@ export function DesktopInstaller() {
         ),
       )
     : null;
+  const mode = status?.mode ?? "install";
+  const copy = installerCopy[mode];
+  const freshInstall = mode === "install";
+  const launchLabel = freshInstall ? "Open setup" : "Open omp.";
+  const steps = INSTALL_STEPS.map(step => step.id === "complete" ? launchLabel : step.label);
 
   async function close() {
     try {
@@ -85,6 +104,7 @@ export function DesktopInstaller() {
   }
 
   function requestExit() {
+    setConfirmAppClose(false);
     if (busy || (started && !status?.installed)) setConfirmExit(true);
     else void close();
   }
@@ -93,14 +113,14 @@ export function DesktopInstaller() {
     return () => window.removeEventListener("omp:close-requested", requestExit);
   }, [busy, started, status?.installed]);
 
-  async function action(kind: "install" | "launch") {
+  async function action(kind: "install" | "launch", closeRunningApp = false) {
     setBusy(true);
     setError("");
     if (kind === "install") setStarted(true);
     try {
-      setStatus(
-        await post<InstallerStatus>("/api/desktop/installer", { action: kind }),
-      );
+      const next = await post<InstallerStatus>("/api/desktop/installer", { action: kind, closeRunningApp });
+      setStatus(next);
+      if (next.requiresAppClose && !exitAfterInstall.current) setConfirmAppClose(true);
       if (kind === "launch") await close();
     } catch (error: any) {
       setError(error.message);
@@ -123,7 +143,7 @@ export function DesktopInstaller() {
   return (
     <>
       <DesktopSetupFrame
-        steps={INSTALL_STEPS.map((step) => step.label)}
+        steps={steps}
         current={current}
         busy={busy}
         allowCancelWhileBusy
@@ -131,12 +151,13 @@ export function DesktopInstaller() {
       >
         <section>
           <h1 id="installer-title">
-            {status?.installed ? "Installation complete" : "Install omp."}
+            {status?.installed ? copy.done : copy.start}
           </h1>
           <p>
             {status?.installed
-              ? "Continue to set up OMP and connect your providers."
-              : "Install for your account and bring the OMP runtime up to date. Your chats and settings are kept."}
+              ? freshInstall ? "Continue to set up OMP and connect your providers." : "Your chats and settings are ready in omp."
+              : freshInstall ? "Install for your account and bring the OMP runtime up to date."
+                : "Your chats and settings are kept. The OMP runtime will also be checked for updates."}
           </p>
           <div className="desktop-setup-inset desktop-installer-progress">
             <div className="flex items-center gap-3">
@@ -151,15 +172,18 @@ export function DesktopInstaller() {
                 {exitQueued
                   ? "Finishing safely…"
                   : busy
-                    ? INSTALL_STEPS[current].label
+                    ? steps[current]
                     : status?.installed
                       ? "Installed for your account"
-                      : "Install for your account"}
+                      : freshInstall ? "Install for your account" : "Existing installation"}
               </h2>
             </div>
             <p className="break-all">
               {status?.destination || "Checking installation location…"}
             </p>
+            {status?.previousVersion && status.previousVersion !== status.version && (
+              <p>Version {status.previousVersion} → {status.version}</p>
+            )}
             <p>
               {exitQueued
                 ? "This window will close when the current installation step finishes."
@@ -219,15 +243,30 @@ export function DesktopInstaller() {
               {busy
                 ? status?.installed
                   ? "Opening…"
-                  : "Installing…"
+                  : copy.busy
                 : status?.installed
-                  ? "Open setup"
-                  : "Install omp."}
+                  ? launchLabel
+                  : copy.start}
               <ArrowRight className="size-4" />
             </Button>
           )}
         </footer>
       </DesktopSetupFrame>
+      <Dialog open={confirmAppClose && !confirmExit} onOpenChange={setConfirmAppClose}>
+        <DialogContent className="desktop-installer-confirm" showCloseButton={false}>
+          <DialogTitle>Close omp. to continue?</DialogTitle>
+          <DialogDescription>
+            This will end your current session and stop any running work. Save any unsaved changes before continuing.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant="outline" autoFocus onClick={() => setConfirmAppClose(false)}>Cancel</Button>
+            <Button onClick={() => {
+              setConfirmAppClose(false);
+              void action("install", true);
+            }}>Close omp. and continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={confirmExit} onOpenChange={setConfirmExit}>
         <DialogContent
           className="desktop-installer-confirm"
