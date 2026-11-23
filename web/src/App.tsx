@@ -557,6 +557,7 @@ export default function App() {
       <main className={`workspace-main relative isolate flex min-w-0 flex-1 flex-col ${home?"is-home":empty?"is-empty":""}`}>
         {!(fileRequest&&focusedEditor===chat.key)&&<WorkspaceBackground />}
         <TopBar
+          showWindowControls={!fileRequest || home}
           title={home ? "Home" : chat.title || boot?.sessions?.find((s:any)=>s.path===activePath)?.name || (chat.messages.length ? "Untitled session" : "New session")}
           cwd={cwd}
           inProject={!!projectForSession({cwd},boot?.control?.projects||[])}

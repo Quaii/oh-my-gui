@@ -67,8 +67,9 @@ in the WebView. Do not call the installer publicly release-ready until those che
 
 This is a Windows-first, unsigned development build. Live signed release delivery, OS code signing,
 upgrade/rollback acceptance and native macOS/Linux acceptance remain release work.
-Windows uses a 32px custom title bar with a drag region, double-click maximize/restore and
-keyboard-accessible caption buttons. Native window interactions still require interactive verification.
+Windows integrates keyboard-accessible caption controls into the existing floating workspace, editor
+and Settings toolbars, without a separate title-bar row. Free header space supports dragging and
+double-click maximize/restore. Native window interactions still require interactive verification.
 The app and installer explicitly enable native shadows and request rounded outer corners through
 Windows 11 DWM before showing their windows. This clips the actual WebView surface, including its
 opaque background, rather than rounding only an inner HTML panel. Windows controls corner geometry

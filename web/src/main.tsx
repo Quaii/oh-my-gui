@@ -3,7 +3,6 @@ import {DesktopLifecycle} from "./components/DesktopLifecycle";
 import {DesktopTray} from './components/DesktopTray';
 import {DesktopUpdateNotice} from "./components/DesktopUpdateNotice";
 import React from "react";
-import {DesktopTitleBar} from "./components/DesktopTitleBar";
 import {DesktopSetup} from './components/DesktopSetup';
 import {DesktopInstaller} from './components/DesktopInstaller';
 import { createRoot } from "react-dom/client";
@@ -26,7 +25,6 @@ createRoot(document.getElementById("root")!).render(
       {window.__OMP_TRAY__ ? <ErrorBoundary><DesktopTray/></ErrorBoundary> : <>
       {window.__OMP_DESKTOP__&&!window.__OMP_INSTALLER__&&<DesktopLifecycle/>}
       {window.__OMP_DESKTOP__&&!window.__OMP_INSTALLER__&&<DesktopUpdateNotice/>}
-      {window.__OMP_CUSTOM_CHROME__&&!window.__OMP_INSTALLER__&&<DesktopTitleBar/>}
       <ErrorBoundary>{location.pathname==="/background-preview"?<React.Suspense fallback={null}><BackgroundPreview/></React.Suspense>:<WorkspaceMotion>{window.__OMP_INSTALLER__ ? <DesktopInstaller /> : window.__OMP_DESKTOP__ ? <DesktopSetup><App /></DesktopSetup> : <App />}</WorkspaceMotion>}
     </ErrorBoundary></>}
     </TooltipProvider>

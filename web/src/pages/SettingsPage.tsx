@@ -1,3 +1,4 @@
+import {DesktopWindowControls,dragDesktopWindow} from "../components/DesktopWindowControls";
 import {PageTransition} from '../components/transitions/page-transition';
 import {transitionUpdate} from '../lib/motion';
 import {ErrorBoundary} from "../components/ErrorBoundary";
@@ -181,7 +182,7 @@ export function SettingsPage(props: SettingsPageProps) {
 
       <main className="settings-main workspace-main relative isolate flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <WorkspaceBackground />
-      <header className="settings-floating-toolbar flex h-16 items-center gap-3 px-5">
+      <header onMouseDown={dragDesktopWindow} className="settings-floating-toolbar flex h-16 items-center gap-3 px-5">
         <ToolbarBlur/>
         <Button
           variant="ghost"
@@ -223,6 +224,7 @@ export function SettingsPage(props: SettingsPageProps) {
         <div className="flex shrink-0 items-center gap-1.5">
           <Button variant="ghost" onClick={onRestart} aria-label="Restart session" className="restart-session-button h-9 rounded-xl"><RotateCcw className="size-3.5 shrink-0"/><span aria-hidden="true">Restart session</span></Button>
         </div>
+        <DesktopWindowControls/>
       </header>
       {(note || err) && (
         <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-1.5">

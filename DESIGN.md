@@ -242,13 +242,13 @@ chat screenshots. Change this guide only for an intentional design decision, not
 
 ## Windows custom title bar
 
-The Windows desktop host disables native decorations and renders a 32px custom caption above the
-workspace. It uses the sidebar surface, the accent-colored brand, a flexible left drag region and
-three 46px-wide caption controls. Double-click the drag region to maximize/restore. Minimize,
-maximize/restore and close are independently focusable buttons; close uses a red destructive hover.
-Maximize state follows native resize events, including OS-driven changes. The caption reserves its
-own row, so it does not cover the existing floating workspace toolbar. Browser and non-Windows
-window chrome are unchanged. The controls use authenticated, allowlisted local window actions.
+The Windows desktop host disables native decorations and uses the existing floating panel toolbar
+for minimize, maximize/restore and close. There is no separate caption row. The 36px controls share
+the toolbar material and spacing, separated from app actions by a subtle rule. Close uses a red
+hover. Controls live on the rightmost visible workspace/editor panel and in the Settings toolbar.
+Free header space supports native dragging and double-click maximize/restore; buttons, fields,
+menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
+Browser and non-Windows chrome are unchanged. Window actions remain authenticated and allowlisted.
 Both Windows windows use the native DWM rounded-corner preference and shadow. The frame is styled
 before the window is shown, so the opaque WebView is clipped by Windows at the real outer corners.
 Windows owns maximized/snapped geometry; CSS rounding is not used to simulate the outer frame.

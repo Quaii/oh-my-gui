@@ -1092,17 +1092,13 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 /* Windows-only custom chrome replaces the native caption; web layout stays unchanged. */
 [data-desktop-chrome=true] #root{display:flex;flex-direction:column}
 [data-desktop-chrome=true] .workspace-motion-root{flex:1;height:auto;min-height:0;overflow:hidden}
-.desktop-titlebar{display:flex;align-items:stretch;height:32px;flex-shrink:0;background:var(--sidebar);color:var(--muted-foreground);user-select:none}
-[data-desktop-setup=true] .desktop-titlebar{display:none}
-.desktop-titlebar-drag{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding-left:16px;font-size:12px;touch-action:none}
-.desktop-titlebar-drag>svg,.desktop-titlebar-drag>span{pointer-events:none}
-.desktop-titlebar-error{margin-left:12px;font-size:10px}
-.desktop-caption-buttons{display:flex;flex-shrink:0}
-.desktop-caption-buttons button{display:grid;place-items:center;width:46px;height:32px;border:0;background:transparent;color:var(--foreground)}
-.desktop-caption-buttons button:hover{background:var(--sidebar-accent)}
-.desktop-caption-buttons svg{width:12px;height:12px;stroke-width:1.5}
-.desktop-caption-buttons button:focus-visible{outline:2px solid var(--primary);outline-offset:-3px}
-.desktop-caption-buttons .desktop-caption-close:hover{background:#c42b1c;color:white}
+.desktop-window-controls{position:relative;display:flex;align-items:center;gap:8px;flex-shrink:0;padding-left:8px;border-left:1px solid var(--border)}
+.desktop-window-controls button{display:grid;place-items:center;width:36px;height:36px;color:var(--muted-foreground);border-radius:10px}
+.desktop-window-controls svg{width:14px;height:14px;stroke-width:1.5}
+.desktop-window-controls button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.desktop-window-controls .desktop-window-close:hover{background:#c42b1c;color:white}
+.desktop-window-error{position:absolute;right:0;top:calc(100% + 8px);padding:8px 12px;border-radius:8px;background:var(--popover);color:var(--foreground);font-size:12px;white-space:nowrap}
+[data-desktop-chrome=true] .workspace-header,[data-desktop-chrome=true] .settings-floating-toolbar,[data-desktop-chrome=true] .file-workspace-header{user-select:none;pointer-events:auto}
 .desktop-setup-layout{position:relative;display:flex;gap:12px;width:100%;height:100%;min-width:0;min-height:0;padding:12px;background:var(--sidebar);color:var(--foreground)}
 .desktop-setup-grab-area{position:absolute;inset:0 0 auto;height:24px;z-index:20;cursor:grab;user-select:none;touch-action:none}
 .desktop-setup-grab-area:active{cursor:grabbing}
