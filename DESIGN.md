@@ -243,9 +243,9 @@ chat screenshots. Change this guide only for an intentional design decision, not
 ## Windows custom title bar
 
 The Windows desktop host disables native decorations and uses the existing floating panel toolbar
-for minimize, maximize/restore and close. There is no separate caption row. The 36px controls share
-the toolbar material and spacing, separated from app actions by a subtle rule. Close uses a red
-hover. Controls live on the rightmost visible workspace/editor panel and in the Settings toolbar.
+for minimize, maximize/restore and close. The three 36px buttons sit flush on one rounded toolbar
+surface. Each button has its own hover and focus state, with a red hover on Close. The group lives
+on the rightmost visible workspace/editor panel and in the Settings toolbar.
 Free header space supports native dragging and double-click maximize/restore; buttons, fields,
 menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
 Browser and non-Windows chrome are unchanged. Window actions remain authenticated and allowlisted.

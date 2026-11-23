@@ -992,7 +992,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 
 /* Floating controls own their glass; ordinary scroll lists keep clear edges. */
 .composer-frame>*:not(.composer-blur-gradient){position:relative;z-index:1}
-.floating-toolbar-button,.floating-action-button{border:0;border-radius:10px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);box-shadow:0 3px 12px #0001}
+.floating-toolbar-button,.floating-action-button,.desktop-window-controls{border:0;border-radius:10px;background:color-mix(in srgb,var(--background) 58%,transparent);backdrop-filter:blur(28px) saturate(1.1);box-shadow:0 3px 12px #0001}
 .floating-toolbar-button:hover,.floating-action-button:hover{background:color-mix(in srgb,var(--sidebar-accent) 74%,transparent)}
 .workspace-header>.workspace-header-actions{border-radius:0}
 .appearance-menu-viewport{overscroll-behavior:contain}.background-gallery-scroll{border-radius:8px}.background-gallery{padding:4px 8px 8px 4px;scrollbar-width:none}
@@ -1092,10 +1092,13 @@ html[data-theme-transition=true]::view-transition-old(root){animation:160ms ease
 /* Windows-only custom chrome replaces the native caption; web layout stays unchanged. */
 [data-desktop-chrome=true] #root{display:flex;flex-direction:column}
 [data-desktop-chrome=true] .workspace-motion-root{flex:1;height:auto;min-height:0;overflow:hidden}
-.desktop-window-controls{position:relative;display:flex;align-items:center;gap:8px;flex-shrink:0;padding-left:8px;border-left:1px solid var(--border)}
-.desktop-window-controls button{display:grid;place-items:center;width:36px;height:36px;color:var(--muted-foreground);border-radius:10px}
+.desktop-window-controls{position:relative;display:flex;align-items:center;flex-shrink:0}
+.desktop-window-controls button{display:grid;place-items:center;width:36px;height:36px;color:var(--muted-foreground)}
+.desktop-window-controls button:first-of-type{border-start-start-radius:inherit;border-end-start-radius:inherit}
+.desktop-window-controls button:last-of-type{border-start-end-radius:inherit;border-end-end-radius:inherit}
+.desktop-window-controls button:hover{background:color-mix(in srgb,var(--sidebar-accent) 74%,transparent);color:var(--foreground)}
 .desktop-window-controls svg{width:14px;height:14px;stroke-width:1.5}
-.desktop-window-controls button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.desktop-window-controls button:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
 .desktop-window-controls .desktop-window-close:hover{background:#c42b1c;color:white}
 .desktop-window-error{position:absolute;right:0;top:calc(100% + 8px);padding:8px 12px;border-radius:8px;background:var(--popover);color:var(--foreground);font-size:12px;white-space:nowrap}
 [data-desktop-chrome=true] .workspace-header,[data-desktop-chrome=true] .settings-floating-toolbar,[data-desktop-chrome=true] .file-workspace-header{user-select:none;pointer-events:auto}
