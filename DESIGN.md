@@ -220,6 +220,8 @@ choices accurately; do not recolor provider/company logos as if they were interf
 Backgrounds are ambient, lazy-loaded and independent of the mouse cursor. None is a valid default.
 Use local rendered previews, consistent thumbnail geometry and fixed two-line label slots so long
 names do not offset neighboring tiles. Background fade, blur and tint opacity are different controls.
+Chat and Files share a full-size background clipped to the visible panes.
+
 Respect pause and reduced motion; loading should fit the current background and real skeleton state,
 not introduce a new pulsing scene.
 
