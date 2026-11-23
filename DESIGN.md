@@ -188,7 +188,7 @@ touch. Session statistics are available on demand rather than occupying every sc
 ## The file workspace is a peer panel
 
 The editor shares the workspace background, breadcrumb styling and separate 36px floating toolbar
-buttons. The explorer sits directly on the canvas with a quiet vertical separator, not another opaque
+buttons. The explorer sits directly on the shared canvas without a vertical divider or another opaque
 sidebar slab. Its root picker and search use the shared floating blur treatment.
 
 The code/Markdown viewer lives in a 14px rounded, bordered glass rectangle. File-name tabs sit
@@ -377,3 +377,8 @@ natural width during the reveal; dirty-close guards run before exit. Resize drag
 Opening/closing uses 240ms, shortened to 160ms while loading or when mounted documents exceed 500KB;
 reduced motion is immediate. Toolbar appearance shortcuts are removed; use Settings → Appearance.
 Command palette hints use Ctrl on Windows/Linux and Command on macOS.
+
+Chat and Files share one full-shell background renderer, clipped to the visible pane surfaces.
+Opening, closing, focusing or resizing Files changes the clip, never the background canvas dimensions
+or animation identity. Insets and gaps stay clear. The explorer separator and its left outer border
+are removed. Only the workspace toolbar shows the command-palette shortcut.

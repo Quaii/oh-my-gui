@@ -1254,3 +1254,15 @@ html[data-tray=true] body,html[data-tray=true] #root{height:100%;background:var(
 .file-panel-motion[data-closing=true]{pointer-events:none}
 .file-panel-motion>.file-workspace{position:absolute;inset:0 auto 0 0;width:var(--file-panel-width,42vw);height:100%;margin:0;max-width:none;animation:none}
 .file-panel-motion>.file-workspace[data-overlay=true]{inset:0 auto 0 0;width:var(--file-panel-width,42vw)}
+
+/* The single background canvas never adopts either pane's changing dimensions. */
+.shared-workspace-background{position:absolute;inset:0;z-index:0;isolation:isolate;pointer-events:none;background:var(--custom-chatArea,var(--custom-background,var(--theme-background)))}
+.shared-workspace-background>.workspace-ambience{z-index:0}
+.app-shell>.workspace-route{position:relative;z-index:1}
+.app-shell>.file-panel-motion{z-index:2}
+.app-shell .workspace-main,.app-shell .file-panel-motion>.file-workspace{background:transparent;box-shadow:none}
+.file-browser::after{content:none}
+.file-panel-motion>.file-workspace{border-left-color:transparent}
+
+/* In narrow overlay mode, hide covered chat content, not the shared renderer. */
+.app-shell:has(>.file-panel-motion[data-overlay=true]:not([hidden])) .workspace-main{visibility:hidden}

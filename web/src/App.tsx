@@ -31,7 +31,7 @@ import { navigate, useRoutePath } from "./lib/route";
 import { filterChatCommands, getPalettePrefs, subscribePalette } from "./lib/settings";
 import { clearSessionMeta } from "./lib/sessionmeta";
 import { Brand } from "./components/Brand";
-import { WorkspaceBackground } from "./components/Appearance";
+import {SharedWorkspaceBackground} from "./components/SharedWorkspaceBackground";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
 import { SlidingTabs } from "@/components/ui/sliding-tabs";
@@ -476,6 +476,7 @@ export default function App() {
 
   return (
     <FileOpenContext.Provider value={openFiles}><div className="app-shell relative isolate flex h-full w-full overflow-hidden bg-background text-foreground">
+      {!inSettings&&<SharedWorkspaceBackground/>}
       <PageTransition id={inSettings?"settings":"workspace"} transition="fade" duration={180} className={`workspace-route flex h-full min-h-0 min-w-0 flex-1 ${fileRequest&&focusedEditor===chat.key&&!inSettings&&!home?"editor-focused":""}`}>
       {inSettings ? (
         <SettingsPage
@@ -565,7 +566,7 @@ export default function App() {
       </Sheet>
 
       <main className={`workspace-main relative isolate flex min-w-0 flex-1 flex-col ${home?"is-home":empty?"is-empty":""}`}>
-        {!(fileRequest&&focusedEditor===chat.key)&&<WorkspaceBackground />}
+
         <TopBar
           showWindowControls={!fileRequest || home}
           title={home ? "Home" : chat.title || boot?.sessions?.find((s:any)=>s.path===activePath)?.name || (chat.messages.length ? "Untitled session" : "New session")}
@@ -723,7 +724,7 @@ export default function App() {
       )}
 
       </PageTransition>
-      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={null}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} onOpenPalette={()=>setPaletteOpen(true)} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
+      {Object.entries(fileWorkspaces).map(([key,pane])=><Suspense key={key} fallback={null}><FileWorkspace chatKey={key} focused={focusedEditor===key} onToggleFocus={()=>transitionUpdate(()=>setFocusedEditor(current=>current===key?null:key))} cwd={pane.cwd} request={pane.request} hidden={home||inSettings||key!==chat.key} onClose={()=>{setFocusedEditor(current=>current===key?null:current);setFileWorkspaces(previous=>{const next={...previous};delete next[key];return next;});}}/></Suspense>)}
       <ProjectDialog open={projectDialog} onOpenChange={setProjectDialog} cwd={cwd} onCreated={changeCwd}/>
       <CommandPalette
         open={paletteOpen}
