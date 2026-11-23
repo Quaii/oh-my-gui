@@ -371,3 +371,5 @@ Tab; it does not animate the surrounding input. Queue edits append recovered con
 an existing draft. Goal/task status and subagent activity always come from native results/events.
 
 Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.
+
+The file split animates through one clipped width and opacity transition. Dirty-close guards run before exit. Drag resizing and reduced motion are immediate.
