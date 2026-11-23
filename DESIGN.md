@@ -145,6 +145,8 @@ an entry is unavailable before the user tries to import it.
 
 ## Conversation and composer
 
+The composer's trailing controls run left to right: context usage, microphone, then Send/Stop.
+
 User messages are compact right-aligned surfaces; assistant replies remain text on the canvas. Native
 tool iterations group under one Agent activity disclosure, with the final answer outside it. Thinking
 blocks coalesce rather than presenting every streaming fragment as a separate step. Automatic task
@@ -367,3 +369,5 @@ Voice is a compact icon control in the existing composer row. Dictation updates 
 draft and never sends a prompt automatically. Native completion appears as a muted suffix, accepted with
 Tab; it does not animate the surrounding input. Queue edits append recovered content without discarding
 an existing draft. Goal/task status and subagent activity always come from native results/events.
+
+Desktop workspace cards enter with a 220ms fade and 6px rise and exit in 140ms. Reduced motion removes travel and duration. Streaming updates do not replay this entrance; browser cards retain transition-kit.

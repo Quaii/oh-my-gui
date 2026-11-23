@@ -294,7 +294,10 @@ export function Composer(props: ComposerProps) {
       {images.length>0&&<div className="mb-3 flex flex-wrap gap-2">{images.map((img,i)=><Attachment key={i} size="sm"><AttachmentMedia variant="image"><img src={`data:${img.mimeType};base64,${img.data}`} alt={img.name || "Attachment"} className="size-full object-cover"/></AttachmentMedia><AttachmentContent><AttachmentTitle>{img.name || "Image"}</AttachmentTitle><AttachmentDescription>{Math.round((img.size || 0)/1024)} KB · ready</AttachmentDescription></AttachmentContent><AttachmentActions><AttachmentAction aria-label={`Remove ${img.name || "attachment"}`} onClick={()=>setImages(p=>p.filter((_,j)=>j!==i))}><X className="size-3"/></AttachmentAction></AttachmentActions></Attachment>)}</div>}
 
       <PromptBox
-          trailingActions={<ContextUsage usage={st?.contextUsage} stats={props.stats}/>}
+          trailingActions={<>
+            <ContextUsage usage={st?.contextUsage} stats={props.stats}/>
+            <VoiceControls chat={chat} draft={text} insert={spoken => setText(previous => appendDictation(previous, spoken))}/>
+          </>}
         disabled={permissionsPending}
         value={text}
         onValueChange={setText}
@@ -360,7 +363,6 @@ export function Composer(props: ComposerProps) {
             )}
 
             <PermissionControl launchFlags={props.launchFlags} onPendingChange={setPermissionsPending}/>
-            <VoiceControls chat={chat} draft={text} insert={spoken => setText(previous => appendDictation(previous, spoken))}/>
             {running && (
               <Tooltip>
                 <TooltipTrigger asChild>
