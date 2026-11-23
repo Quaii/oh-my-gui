@@ -161,7 +161,7 @@ export function Sidebar(props: SidebarProps) {
                           <MoreHorizontal className="size-3.5" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" sideOffset={8} className="session-actions-menu w-48 rounded-2xl p-1.5" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuContent align="end" className="session-actions-menu w-48 rounded-2xl p-1.5" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenuItem onSelect={() => setRenaming({ session: s, value: s.name ?? "" })}>
                           <Pencil className="size-3.5" /> Rename
                         </DropdownMenuItem>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { post } from "../../lib/api";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 export function TransportControls({ chatKey }: { chatKey: string | null }) {
   const [mode, setMode] = useState("full"),
     [events, setEvents] = useState(""),
@@ -29,17 +30,16 @@ export function TransportControls({ chatKey }: { chatKey: string | null }) {
           subagent events. Filtering events can hide transcript updates in this
           session. These controls change transport only when you apply them.
         </p>
-        <label className="block space-y-2 text-xs">
-          Message updates
-          <select
-            className="w-full rounded-md border bg-sidebar p-2"
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-          >
-            <option value="full">Full snapshots</option>
-            <option value="delta">Deltas</option>
-          </select>
-        </label>
+        <div className="space-y-2 text-xs">
+          <span>Message updates</span>
+          <Select value={mode} onValueChange={setMode}>
+            <SelectTrigger aria-label="Message updates" className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="full">Full snapshots</SelectItem>
+              <SelectItem value="delta">Deltas</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <label className="block space-y-2 text-xs">
           Native event names (blank forwards all)
           <Textarea
@@ -68,18 +68,17 @@ export function TransportControls({ chatKey }: { chatKey: string | null }) {
         >
           Apply event transport
         </Button>
-        <label className="block space-y-2 text-xs">
-          Subagent subscription
-          <select
-            className="w-full rounded-md border bg-sidebar p-2"
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-          >
-            <option value="off">Off</option>
-            <option value="progress">Lifecycle and progress</option>
-            <option value="events">Lifecycle, progress and events</option>
-          </select>
-        </label>
+        <div className="space-y-2 text-xs">
+          <span>Subagent subscription</span>
+          <Select value={level} onValueChange={setLevel}>
+            <SelectTrigger aria-label="Subagent subscription" className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="off">Off</SelectItem>
+              <SelectItem value="progress">Lifecycle and progress</SelectItem>
+              <SelectItem value="events">Lifecycle, progress and events</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <Button
           size="sm"
           variant="outline"

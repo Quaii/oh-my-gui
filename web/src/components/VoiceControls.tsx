@@ -9,6 +9,7 @@ import {
 } from "../lib/dictation-draft";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 type VoicePeer = {
   owner: string;
@@ -272,15 +273,13 @@ export function VoiceControls({
           </p>
           {!live ? (
             <>
-              <select
-                aria-label="Live microphone"
-                value={microphone}
-                onChange={(e) => setMicrophone(e.target.value)}
-                className="w-full rounded-md border bg-sidebar p-2 text-xs"
-              >
-                <option value="browser">Browser / app microphone</option>
-                <option value="native">OMP machine’s microphone</option>
-              </select>
+              <Select value={microphone} onValueChange={setMicrophone}>
+                <SelectTrigger aria-label="Live microphone" className="w-full text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="browser">Browser / app microphone</SelectItem>
+                  <SelectItem value="native">OMP machine’s microphone</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
                 size="sm"
                 disabled={busy || captureState}

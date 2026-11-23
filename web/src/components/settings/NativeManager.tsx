@@ -8,8 +8,27 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type Descriptor = NativeHelp & { path: string[]; terminal: boolean };
+
+function OptionalChoice({ label, value, choices, onChange }: {
+  label: string;
+  value: string;
+  choices: string[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Select value={value ? `choice:${value}` : "default"} onValueChange={choice => onChange(choice === "default" ? "" : choice.slice(7))}>
+      <SelectTrigger aria-label={label} className="w-full"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="default">Default</SelectItem>
+        {choices.map(choice => <SelectItem value={`choice:${choice}`} key={choice}>{choice}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export default function NativeManager({ cwd }: { cwd: string }) {
   const [path, setPath] = useState<string[]>([]),
     [descriptor, setDescriptor] = useState<Descriptor | null>(null);
@@ -213,21 +232,17 @@ export default function NativeManager({ cwd }: { cwd: string }) {
                     {arg.description}
                   </span>
                   {arg.choices.length ? (
-                    <select
-                      className="w-full rounded-md border bg-sidebar p-2"
+                    <OptionalChoice
+                      label={arg.name}
                       value={args[arg.name] ?? ""}
-                      onChange={(e) =>
+                      choices={arg.choices}
+                      onChange={(value) =>
                         setArgs((previous) => ({
                           ...previous,
-                          [arg.name]: e.target.value,
+                          [arg.name]: value,
                         }))
                       }
-                    >
-                      <option value="">Default</option>
-                      {arg.choices.map((choice) => (
-                        <option key={choice}>{choice}</option>
-                      ))}
-                    </select>
+                    />
                   ) : arg.multiple ? (
                     <Textarea
                       rows={3}
@@ -287,21 +302,17 @@ export default function NativeManager({ cwd }: { cwd: string }) {
                               }
                             />
                           ) : flag.choices.length > 0 ? (
-                            <select
-                              className="w-full rounded-md border bg-sidebar p-2"
+                            <OptionalChoice
+                              label={flag.name}
                               value={values[flag.name] ?? ""}
-                              onChange={(e) =>
+                              choices={flag.choices}
+                              onChange={(value) =>
                                 setValues((previous) => ({
                                   ...previous,
-                                  [flag.name]: e.target.value,
+                                  [flag.name]: value,
                                 }))
                               }
-                            >
-                              <option value="">Default</option>
-                              {flag.choices.map((choice) => (
-                                <option key={choice}>{choice}</option>
-                              ))}
-                            </select>
+                            />
                           ) : flag.repeatable ? (
                             <Textarea
                               rows={3}

@@ -228,6 +228,11 @@ on transition wrappers: losing them can move the whole main panel out of view. A
 transition owners for one interaction. Streaming tokens, typing and live resize dragging remain
 immediate. Reduced motion removes snapshot travel; unsupported APIs fall back to usable state changes.
 
+Dropdowns and popovers reveal from their trigger edge and collapse back toward it. The trigger
+stays in place. Choice lists match the trigger width and prefer opening below it. Menus below the
+composer toolbar would run off-screen, so composer controls prefer opening upward. Menus respect
+viewport space and reduced motion.
+
 The Tauri WebView is an explicit exception: frequent desktop state changes and navigation commit
 immediately without full-canvas snapshots; sidebar width uses a 160ms CSS transition. This avoids
 snapshotting the blurred shader canvas on every interaction. The native window icon follows the

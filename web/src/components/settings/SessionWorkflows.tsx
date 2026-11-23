@@ -4,6 +4,7 @@ import { blockText } from "../../lib/store";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Group } from "./Controls";
 import { flattenNativeTree } from "../../lib/native-tree";
 import { HostIntegration } from "./HostIntegration";
@@ -180,23 +181,18 @@ export function SessionWorkflows({
           </div>
           {entries.length > 0 && (
             <>
-              <select
-                aria-label="Session entry"
-                className="w-full rounded-md border bg-sidebar p-2 text-sm"
-                value={entryId}
-                onChange={(e) => setEntryId(e.target.value)}
-              >
-                <option value="">Choose a checkpoint…</option>
-                {entries.map((entry) => (
-                  <option key={entry.id} value={entry.id}>
-                    {"　".repeat(Math.min(entry.depth ?? 0, 16))}{entry.id.slice(0, 8)} · {entry.type} ·{" "}
-                    {entry.label ||
-                      blockText(entry.message?.content).slice(0, 100) ||
-                      entry.summary ||
-                      ""}
-                  </option>
-                ))}
-              </select>
+              <Select value={entryId ? `entry:${entryId}` : "none"} onValueChange={value => setEntryId(value === "none" ? "" : value.slice(6))}>
+                <SelectTrigger aria-label="Session entry" className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Choose a checkpoint…</SelectItem>
+                  {entries.map((entry) => (
+                    <SelectItem key={entry.id} value={`entry:${entry.id}`}>
+                      {"　".repeat(Math.min(entry.depth ?? 0, 16))}{entry.id.slice(0, 8)} · {entry.type} ·{" "}
+                      {entry.label || blockText(entry.message?.content).slice(0, 100) || entry.summary || ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Input
                 aria-label="Branch label"
                 value={label}
@@ -348,40 +344,25 @@ export function SessionWorkflows({
           >
             Check session ownership
           </Button>
-          <label className="flex items-center justify-between gap-3 text-sm">
-            Interrupt delivery
-            <select
-              className="rounded-md border bg-sidebar p-2 text-xs"
-              value={chat.state?.interruptMode ?? "immediate"}
-              onChange={(e) =>
-                void run({ type: "set_interrupt_mode", mode: e.target.value })
-              }
-            >
-              <option value="immediate">Immediate</option>
-              <option value="wait">Wait</option>
-            </select>
-          </label>
-          <label className="flex items-center justify-between gap-3 text-sm">
-            Cache warming
-            <select
-              aria-label="Cache warming"
-              defaultValue=""
-              className="rounded-md border bg-sidebar p-2 text-xs"
-              onChange={(e) =>
-                void run(
-                  { type: "set_cache_warming", mode: e.target.value },
-                  (data) => setResult(`Cache warming: ${data.mode}`),
-                )
-              }
-            >
-              <option value="" disabled>
-                Set mode…
-              </option>
-              {["off", "streaming", "idle"].map((mode) => (
-                <option key={mode}>{mode}</option>
-              ))}
-            </select>
-          </label>
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span>Interrupt delivery</span>
+            <Select value={chat.state?.interruptMode ?? "immediate"} onValueChange={mode => void run({ type: "set_interrupt_mode", mode })}>
+              <SelectTrigger aria-label="Interrupt delivery" size="sm" className="min-w-28"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="immediate">Immediate</SelectItem>
+                <SelectItem value="wait">Wait</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span>Cache warming</span>
+            <Select defaultValue="" onValueChange={mode => void run({ type: "set_cache_warming", mode }, data => setResult(`Cache warming: ${data.mode}`))}>
+              <SelectTrigger aria-label="Cache warming" size="sm" className="min-w-28"><SelectValue placeholder="Set mode…" /></SelectTrigger>
+              <SelectContent>
+                {["off", "streaming", "idle"].map(mode => <SelectItem key={mode} value={mode}>{mode}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
@@ -458,19 +439,13 @@ export function SessionWorkflows({
             An ephemeral model answer using this session’s context. It does not
             edit files or join the main transcript.
           </p>
-          <select
-            aria-label="Side-question topic"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="w-full rounded-md border bg-sidebar p-2 text-xs"
-          >
-            <option value="">New topic</option>
-            {chat.sideQuestions.map((record) => (
-              <option key={record.id} value={record.id}>
-                {record.question}
-              </option>
-            ))}
-          </select>
+          <Select value={topic ? `topic:${topic}` : "none"} onValueChange={value => setTopic(value === "none" ? "" : value.slice(6))}>
+            <SelectTrigger aria-label="Side-question topic" className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">New topic</SelectItem>
+              {chat.sideQuestions.map(record => <SelectItem key={record.id} value={`topic:${record.id}`}>{record.question}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <Textarea
             rows={2}
             aria-label="Side question"

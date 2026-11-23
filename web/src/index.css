@@ -31,6 +31,28 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Reveal from the attached edge without scaling the menu or moving its trigger. */
+.anchored-menu { --menu-fold: inset(0 0 100% 0); }
+.anchored-menu[data-side=top] { --menu-fold: inset(100% 0 0 0); }
+.anchored-menu[data-side=right] { --menu-fold: inset(0 100% 0 0); }
+.anchored-menu[data-side=left] { --menu-fold: inset(0 0 0 100%); }
+[data-slot=select-trigger][data-state=open] { border-color: var(--ring); }
+[data-slot=select-trigger][data-state=open] [data-slot=select-chevron] { rotate: 180deg; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .anchored-menu[data-state=open] { animation: anchored-menu-open var(--dur-base) var(--ease-out); }
+  .anchored-menu[data-state=closed] { animation: anchored-menu-close var(--dur-fast) ease-in both; }
+  [data-slot=select-chevron] { transition: rotate var(--dur-fast) var(--ease-out); }
+}
+@keyframes anchored-menu-open {
+  from { opacity: 0; clip-path: var(--menu-fold); }
+  to { opacity: 1; clip-path: inset(0); }
+}
+@keyframes anchored-menu-close {
+  from { opacity: 1; clip-path: inset(0); }
+  to { opacity: 0; clip-path: var(--menu-fold); }
+}
+
 /* ---------- dark (default) — spec neutrals, amber accent ---------- */
 :root,
 [data-theme="dark"] {
@@ -729,7 +751,7 @@ code,pre,.font-mono {font-family:var(--workspace-code-font,var(--font-mono));}
 .assistant-message .chat-text,.assistant-message .chat-text p,.assistant-message .chat-text li {color:var(--custom-replies,var(--foreground));}
 .assistant-message pre,.assistant-message [data-slot=code-block],.assistant-message .terminal-command {background:var(--custom-codeBlocks,var(--sidebar));}
 .assistant-message .chat-text>div:has(>pre),.assistant-message [data-slot=code-block-header] {background:var(--custom-codeBlocks,var(--sidebar));}
-[data-glass=true] :is([data-slot=popover-content],[data-slot=dropdown-menu-content],[data-slot=select-content],[data-slot=dialog-content],.composer-menus) {
+[data-glass=true] :is(.anchored-menu,[data-slot=dialog-content],.composer-menus) {
  background:color-mix(in srgb,var(--background) 64%,transparent);backdrop-filter:blur(24px) saturate(1.25);isolation:isolate;
 }
 [data-glass=true] [data-slot=dialog-content] [data-slot=command],
