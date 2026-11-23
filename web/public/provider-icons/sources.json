@@ -48,8 +48,9 @@
   },
   "coralbricks": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/coralbricks.kdl",
-    "icon": null,
-    "domain": "www.coralbricks.ai"
+    "icon": "coralbricks-favicon.svg",
+    "domain": "www.coralbricks.ai",
+    "faviconSource": "https://www.coralbricks.ai/favicon.svg"
   },
   "commandcode": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/commandcode.kdl",
@@ -236,8 +237,9 @@
   },
   "modular": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/modular.kdl",
-    "icon": null,
-    "domain": "modular.com"
+    "icon": "modular-favicon.svg",
+    "domain": "modular.com",
+    "faviconSource": "https://cdn.prod.website-files.com/68c9c3107effc2ea46e1a81f/68c9c3107effc2ea46e1a9b2_favicon.svg"
   },
   "muse-code": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/muse-code.kdl",
@@ -341,8 +343,9 @@
   },
   "scaleway": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/scaleway.kdl",
-    "icon": null,
-    "domain": "scaleway.com"
+    "icon": "scaleway-favicon.svg",
+    "domain": "scaleway.com",
+    "faviconSource": "https://www.scaleway.com/favicon/website/favicon.svg"
   },
   "sambanova": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/sambanova.kdl",
@@ -351,8 +354,9 @@
   },
   "otari": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/otari.kdl",
-    "icon": null,
-    "domain": "app.otari.ai"
+    "icon": "otari-favicon.svg",
+    "domain": "app.otari.ai",
+    "faviconSource": "https://otari.ai/favicon-v2.svg"
   },
   "perplexity": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/perplexity.kdl",
@@ -389,8 +393,9 @@
   },
   "typesafe": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/typesafe.kdl",
-    "icon": null,
-    "domain": "typesafe.ai"
+    "icon": "typesafe-favicon.png",
+    "domain": "typesafe.ai",
+    "faviconSource": "https://framerusercontent.com/images/aNFzSFxM4fjICmnibw7npfZjcQ.png"
   },
   "stepfun": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/stepfun.kdl",
@@ -404,8 +409,9 @@
   },
   "singularityapi-dev": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/singularityapi-dev.kdl",
-    "icon": null,
-    "domain": "app.singularityapi.dev"
+    "icon": "singularityapi-favicon.ico",
+    "domain": "app.singularityapi.dev",
+    "faviconSource": "https://www.singularityapi.dev/favicon.ico?favicon.0fkl6wxittywx.ico?dpl=dpl_7mfxxaVwaBiYQDzUGwu64fZBv8a2"
   },
   "together": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/together.kdl",
@@ -419,8 +425,9 @@
   },
   "singularityapi-tech": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/singularityapi-tech.kdl",
-    "icon": null,
-    "domain": "app.singularityapi.tech"
+    "icon": "singularityapi-favicon.ico",
+    "domain": "app.singularityapi.tech",
+    "faviconSource": "https://www.singularityapi.tech/favicon.ico?favicon.3a9bf6-n-5j92.ico"
   },
   "xai-oauth": {
     "nativeDefinition": "packages/catalog/src/compat/rules/auth/xai-oauth.kdl",

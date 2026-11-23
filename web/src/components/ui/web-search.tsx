@@ -207,7 +207,7 @@ function WebSearch({
         data-slot="web-search-trigger"
         onClick={toggle}
         aria-expanded={isOpen}
-        className="group flex h-10 w-fit max-w-full cursor-pointer items-center gap-2.5 rounded-full bg-[#F4F4F9] pl-1.5 pr-3.5 text-left outline-none transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_1px_1px_rgba(0,0,0,0.04),0_2px_4px_-1px_rgba(0,0,0,0.08)] dark:hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#868593] dark:bg-[#1C1C1C] dark:hover:bg-[#232323]"
+        className="group flex h-10 w-fit max-w-full cursor-pointer items-center gap-2.5 rounded-full bg-[#F4F4F9] pl-1.5 pr-3.5 text-left outline-none transition-[background-color,box-shadow] hover:bg-white hover:shadow-[0_1px_1px_rgba(0,0,0,0.04),0_2px_4px_-1px_rgba(0,0,0,0.08)] dark:hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#868593] dark:bg-[#1C1C1C] dark:hover:bg-[#232323]"
       >
         <GlobeTile searching={searching} progress={ring} reduced={reduced} />
 
@@ -305,7 +305,7 @@ function WebSearch({
                       onClick={() => setExpanded(false)}
                       className={cn(
                         CARD_SHELL,
-                        "group flex-row items-center justify-center gap-1.5 bg-transparent text-[12.5px] font-semibold text-[#868593] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.07)] group-hover/card:translate-y-0 hover:bg-[#F4F4F9] hover:text-black hover:shadow-none dark:bg-transparent dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] dark:hover:bg-[#1C1C1C] dark:hover:text-white",
+                        "group flex-row items-center justify-center gap-1.5 bg-transparent text-[12.5px] font-semibold text-[#868593] group-hover/card:translate-y-0 hover:bg-[#F4F4F9] hover:text-black hover:shadow-none dark:bg-transparent dark:hover:bg-[#1C1C1C] dark:hover:text-white",
                       )}
                     >
                       <Chevron className="-ml-0.5 rotate-180 transition-transform duration-200 group-hover:-translate-y-px" />
@@ -368,7 +368,7 @@ function Collapse({
 // the li takes the hover and the card inside lifts, so the lift can't slide the card out from under the pointer
 // the hover shadow stays inside the 4px the collapse leaves around the cards, or its clip shows as a hard edge
 const CARD_SHELL =
-  "flex h-[84px] w-full cursor-pointer flex-col rounded-[14px] bg-[#F4F4F9] p-2.5 text-left outline-none transition-[background-color,box-shadow,translate] duration-200 group-hover/card:-translate-y-0.5 hover:bg-white hover:shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_1px_1px_rgba(0,0,0,0.04),0_2px_4px_-1px_rgba(0,0,0,0.08)] dark:hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#868593] dark:bg-[#1C1C1C] dark:hover:bg-[#232323]";
+  "flex h-[84px] w-full cursor-pointer flex-col rounded-xl bg-[#F4F4F9] p-2.5 text-left outline-none transition-[background-color,box-shadow,translate] duration-200 group-hover/card:-translate-y-0.5 hover:bg-white hover:shadow-[0_1px_1px_rgba(0,0,0,0.04),0_2px_4px_-1px_rgba(0,0,0,0.08)] dark:hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#868593] dark:bg-[#1C1C1C] dark:hover:bg-[#232323]";
 
 function SourceCard({
   source,
@@ -446,7 +446,7 @@ function MoreCard({
 function SkeletonCard({ reduced, delay }: { reduced: boolean; delay: number }) {
   const bar = "rounded-full bg-black/[0.06] dark:bg-white/[0.07]";
   return (
-    <div className="relative flex h-[84px] flex-col justify-between overflow-hidden rounded-[14px] bg-[#F4F4F9] p-2.5 dark:bg-[#1C1C1C]">
+    <div className="relative flex h-[84px] flex-col justify-between overflow-hidden rounded-xl bg-[#F4F4F9] p-2.5 dark:bg-[#1C1C1C]">
       <span className="flex flex-col gap-1.5 pt-0.5">
         <span className={cn(bar, "h-2.5 w-[88%]")} />
         <span className={cn(bar, "h-2.5 w-[60%]")} />
@@ -581,6 +581,7 @@ function Favicon({ source, size }: { source: WebSource; size: number }) {
         <img
           src={source.favicon}
           alt=""
+          loading="lazy"
           draggable={false}
           onError={() => setBroken(true)}
           className="size-full object-cover"
@@ -748,7 +749,7 @@ function WebSearchCitation({
             <a
               {...linkTo(source.url, linked)}
               tabIndex={-1}
-              className="block rounded-[16px] bg-white p-3 text-left font-runde no-underline shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.05)] dark:bg-[#1C1C1C] dark:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.07)]"
+              className="block rounded-[16px] bg-white p-3 text-left font-runde no-underline shadow-[0_12px_32px_-8px_rgba(0,0,0,0.18)] dark:bg-[#1C1C1C] dark:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.7)]"
             >
               <span className="flex items-center gap-1.5">
                 <Favicon source={source} size={18} />

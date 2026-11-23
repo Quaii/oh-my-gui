@@ -23,3 +23,14 @@ test('saved numbered summaries recover search results without counting links in 
  assert.equal(searchSiteLabel(sources),'Searched 1 site');
  assert.equal(searchSiteLabel(webSources({details:{response:{sources:[]}}})),'Search complete · no sources reported');
 });
+
+test('search source favicons use only a public website hostname', () => {
+ const sources = webSources({sources: [
+  {url: 'https://news.example.com/report?secret=sample#details', favicon: 'https://elsewhere.test/image.png'},
+  {url: 'http://127.0.0.1:8080/local'},
+  {url: 'https://project.internal/search'},
+ ]});
+ assert.deepEqual(sources.map(source => source.favicon), [
+  '/api/browser-favicon?host=news.example.com', undefined, undefined,
+ ]);
+});

@@ -25,7 +25,7 @@ import { listBuiltinTools } from "./tools.ts";
 import { runSlash } from "./slash.ts";
 import { openSessionFile, readChatSnapshot } from "./snapshot.ts";
 import { readControl, writeControl, selectedPersona, PERSONA_EXTENSION, validateControl } from "./control.ts";
-import { readModelConfig, saveProvider } from "./model-config.ts";
+import { readModelConfig, removeProvider, saveProvider } from "./model-config.ts";
 import { providerFavicon } from "./provider-favicon.ts";
 import { isProviderWebsiteHost, providerWebsiteHost } from "../../shared/provider-website.ts";
 import { runtimeInfo, runtimeUsage, rpcCatalog } from "./runtime.ts";
@@ -319,14 +319,16 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       return true;
     }
     if (p === "/api/model-config") {
-      json(res, 200, req.method === "PUT" ? await saveProvider(await readBody(req)) : await readModelConfig());
+      if (req.method === "PUT") json(res, 200, await saveProvider(await readBody(req)));
+      else if (req.method === "DELETE") json(res, 200, await removeProvider(url.searchParams.get("provider") ?? ""));
+      else json(res, 200, await readModelConfig());
       return true;
     }
-    if (p === "/api/provider-favicon" && req.method === "GET") {
+    if ((p === "/api/provider-favicon" || p === "/api/browser-favicon") && req.method === "GET") {
       const host = url.searchParams.get("host") ?? "";
-      const configured = isProviderWebsiteHost(host) &&
-        (await readModelConfig()).providers.some(provider => providerWebsiteHost(provider.baseUrl) === host);
-      const icon = configured ? await providerFavicon(host) : undefined;
+      const allowed = isProviderWebsiteHost(host) && (p === "/api/browser-favicon" ||
+        (await readModelConfig()).providers.some(provider => providerWebsiteHost(provider.baseUrl) === host));
+      const icon = allowed ? await providerFavicon(host) : undefined;
       if (!icon) {
         res.writeHead(404, { "cache-control": "private, max-age=300" }).end();
       } else {

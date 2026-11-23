@@ -36,7 +36,7 @@
     "mono": true
   },
   "coralbricks": {
-    "favicon": "https://www.coralbricks.ai/favicon.ico"
+    "src": "/provider-icons/coralbricks-favicon.svg"
   },
   "commandcode": {
     "src": "/provider-icons/commandcode.svg",
@@ -184,7 +184,7 @@
     "mono": false
   },
   "modular": {
-    "favicon": "https://modular.com/favicon.ico"
+    "src": "/provider-icons/modular-favicon.svg"
   },
   "muse-code": {
     "favicon": "https://meta.com/favicon.ico",
@@ -267,14 +267,14 @@
     "mono": false
   },
   "scaleway": {
-    "favicon": "https://scaleway.com/favicon.ico"
+    "src": "/provider-icons/scaleway-favicon.svg"
   },
   "sambanova": {
     "src": "/provider-icons/sambanova-color.svg",
     "mono": false
   },
   "otari": {
-    "favicon": "https://app.otari.ai/favicon.ico"
+    "src": "/provider-icons/otari-favicon.svg"
   },
   "perplexity": {
     "src": "/provider-icons/perplexity-color.svg",
@@ -305,7 +305,7 @@
     "mono": false
   },
   "typesafe": {
-    "favicon": "https://typesafe.ai/favicon.ico"
+    "src": "/provider-icons/typesafe-favicon.png"
   },
   "stepfun": {
     "src": "/provider-icons/stepfun-color.svg",
@@ -316,7 +316,7 @@
     "src": "/provider-icons/synthetic-favicon.ico"
   },
   "singularityapi-dev": {
-    "favicon": "https://app.singularityapi.dev/favicon.ico"
+    "src": "/provider-icons/singularityapi-favicon.ico"
   },
   "together": {
     "src": "/provider-icons/together-color.svg",
@@ -327,7 +327,7 @@
     "mono": false
   },
   "singularityapi-tech": {
-    "favicon": "https://app.singularityapi.tech/favicon.ico"
+    "src": "/provider-icons/singularityapi-favicon.ico"
   },
   "xai-oauth": {
     "src": "/provider-icons/grok.svg",
