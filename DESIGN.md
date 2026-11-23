@@ -128,6 +128,9 @@ actions sit immediately **before** the right-aligned control and reveal on row h
 discoverable keyboard and touch alternatives. Existing mobile navigation switches to a sheet/compact
 section picker; do not force desktop widths into narrow windows.
 
+Keep navigation icons in the Settings sidebar. Settings rows start with a 15px semibold label
+and a short, left-aligned description beneath it. Use icons in cards for actions and status.
+
 ## Conversation and composer
 
 User messages are compact right-aligned surfaces; assistant replies remain text on the canvas. Native

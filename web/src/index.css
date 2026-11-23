@@ -594,6 +594,8 @@
 .settings-content { container-type: inline-size; }
 .setting-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--border); }
 .setting-row:last-child { border-bottom: 0; }
+.setting-label { font-size: 15px; line-height: 1.4; font-weight: 600; }
+.setting-description { margin-top: 4px; max-width: 60ch; font-size: 13px; line-height: 1.45; color: var(--muted-foreground); }
 .settings-nav button { min-height: 36px; padding: 8px 12px; border-radius: 8px; font-size: 13px; }
 .settings-nav button[aria-current="page"] { box-shadow: none; background: var(--secondary); }
 .settings-nav .label-cap { padding: 12px 12px 6px; font-size: 11px; letter-spacing: .03em; text-transform: none; }

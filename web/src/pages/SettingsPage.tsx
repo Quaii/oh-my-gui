@@ -7,7 +7,7 @@ import { RuntimeOutput } from '../components/RuntimeOutput';
 import { ProviderAccounts } from '../components/settings/ProviderAccounts';
 import { parseLaunchArgs, formatLaunchArgs, validateGuiLaunchArgs } from '../../../shared/launch-args';
 import {supportsFastMode} from "../lib/model-capabilities";
-import { SettingsNavigation, savedSettingsPanel, SettingGlyph, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
+import { SettingsNavigation, savedSettingsPanel, SETTINGS_ITEMS as ALL_ITEMS, type SettingsPanelId as PanelId } from "../components/settings/SettingsNavigation";
 import { ProviderIcon } from "../components/ProviderIcon";
 import { PanelSkeleton, ListSkeleton, ProviderSkeleton } from "@/components/ui/loading-shapes";
 import { Switch } from "@/components/ui/switch";
@@ -49,6 +49,15 @@ const ExtensionsPanel = lazy(() => import("../components/settings/ExtensionsPane
 const ContextFilesPanel = lazy(() => import("../components/settings/ContextFilesPanel"));
 const CapabilitiesPanel = lazy(() => import("../components/settings/CapabilitiesPanel"));
 const NativeManager = lazy(() => import('../components/settings/NativeManager'));
+
+const PAGE_DESCRIPTIONS: Partial<Record<PanelId, string>> = {
+  "usage": "Token trends, model usage, and workspace activity.",
+  "appearance": "Choose how your workspace looks and feels.",
+  "skills": "Manage the skills available to OMP.",
+  "mcp": "Connect tools and services to your agent.",
+  "tools": "Manage tools and approvals.",
+  "session": "Controls for the current conversation."
+};
 
 const TAB_PANELS: Partial<Record<PanelId, string>> = {
   models: "model",
@@ -173,6 +182,7 @@ export function SettingsPage(props: SettingsPageProps) {
   const tabSettings = useMemo(() => (tab ? settings.filter((s) => s.ui?.tab === tab) : []), [settings, tab]);
   const searching = q.trim().length > 0;
   const current = ALL_ITEMS.find((i) => i.id === panel)?.label ?? "Settings";
+  const pageDescription = searching ? undefined : PAGE_DESCRIPTIONS[panel];
 
   const st = chat.state;
 
@@ -242,7 +252,10 @@ export function SettingsPage(props: SettingsPageProps) {
         {/* content */}
         <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef} viewportClassName="settings-content min-h-0 min-w-0">
           <div className={`settings-page-content mx-auto w-full px-5 pb-10 sm:px-9 ${panel==="usage"&&!searching?"is-wide":"max-w-[920px]"}`}>
-            <div className="mb-7"><h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1><p className="mt-2 text-[13px] text-muted-foreground">{panel === "usage" ? "Token trends, model usage, and activity across your workspace." : panel === "appearance" ? "Choose how your workspace looks and feels." : panel === "skills" ? "Discover and manage the skills available to OMP." : panel === "mcp" ? "Connect the tools and services your agent can use." : panel === "tools" ? "Manage the tools available to your agent." : panel === "session" ? "Controls for the current conversation." : "Configure this part of your workspace."}</p></div>
+            <div className="mb-7">
+              <h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1>
+              {pageDescription && <p className="mt-2 text-[13px] text-muted-foreground">{pageDescription}</p>}
+            </div>
             <div className="mb-4 md:hidden">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -348,7 +361,7 @@ export function SettingsPage(props: SettingsPageProps) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="setting-row settings-field">
-      <Label className="flex items-center gap-2.5 text-[14px] font-medium text-foreground"><SettingGlyph settingKey={label.toLowerCase()} type="string"/>{label}</Label>
+      <Label className="setting-label text-foreground">{label}</Label>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );

@@ -1,14 +1,12 @@
 import {LayoutMotion} from "../transitions/WorkspaceMotion";
-import {toolSettingIcon} from "../ToolIcons";
-import {useRef,type ComponentType} from "react";
+import {useRef} from "react";
 import {useSmoothWheel} from "@/lib/use-smooth-wheel";
-import {GraduationCap,ScanLine,Save,Search,Database,Landmark,Target,GitFork,Link2,Unplug,WandSparkles,NotebookPen,Layers2} from "lucide-react";
-import { Zap, Gauge, Timer, RotateCcw, Minimize2, Radio, ArrowRightLeft, ListStart, UserRound, Fingerprint, BarChart3, Power, Shield, Globe, Hash, Layers, TextCursorInput, Eye, Volume2 } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Brand } from "../Brand";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, ChartNoAxesCombined, MessagesSquare, Workflow, Terminal, Boxes, KeyRound, MousePointer2, Wrench, ListTodo, Sparkles, Puzzle, FileText, Network, Command, Library, Brain, FolderOpen, HardDrive, Palette, SlidersHorizontal, FileCode2, ShieldCheck, Info, ChevronsLeft, ChevronsRight } from "../NavigationIcons";
+import { Cpu, ChartNoAxesCombined, MessagesSquare, Workflow, Terminal, Boxes, KeyRound, MousePointer2, Wrench, ListTodo, Sparkles, Puzzle, FileText, Network, Command, Library, Brain, FolderOpen, Palette, SlidersHorizontal, FileCode2, ShieldCheck, Info, ChevronsLeft, ChevronsRight } from "../NavigationIcons";
 
 export const SETTINGS_GROUPS = [
   {section:"Runtime",items:[{id:"runtime",label:"Installation",icon:Cpu},{id:"usage",label:"Usage",icon:ChartNoAxesCombined},{id:"session",label:"Session",icon:MessagesSquare},{id:"routing",label:"Routing",icon:Workflow},{id:"models",label:"Models",icon:Boxes},{id:"providers",label:"Providers",icon:KeyRound}]},
@@ -31,15 +29,4 @@ export function SettingsNavigation({panel,onSelect,collapsed,onToggle}:{panel:st
    return collapsed?<Tooltip key={item.id}><TooltipTrigger asChild>{button}</TooltipTrigger><TooltipContent side="right">{item.label}</TooltipContent></Tooltip>:button;
   })}</div>)}</div></ScrollArea></nav>
  </aside></LayoutMotion>;
-}
-
-export function SettingGlyph({settingKey,type}:{settingKey:string;type:string}){
- const group=settingKey.split(".")[0];
- const key=settingKey.toLowerCase().replace(/[^a-z0-9]/g,"");
- const rules:[RegExp,ComponentType<any>][]=[[/thinking|reasoning|effort/,Brain],[/fastmode/,Zap],[/slowmode|speed/,Gauge],[/timeout|runtime|delay|interval/,Timer],[/retry|rescan|refresh/,RotateCcw],[/compact|summari/,Minimize2],[/steer|interrupt/,ArrowRightLeft],[/followup|queue/,ListStart],[/stream/,Radio],[/model/,Boxes],[/sessionid/,Fingerprint],[/name|identity|persona/,UserRound],[/usage|cost|tokens/,BarChart3],[/approval|permission|safe/,Shield],[/url|endpoint|network|proxy/,Globe],[/max|min|limit|count|size|depth/,Gauge],[/font|text|prompt/,TextCursorInput],[/visible|display|show|hide/,Eye],[/audio|speech|voice/,Volume2],[/scope|layer/,Layers]];
- const icons:Record<string,ComponentType<any>>={task:ListTodo,skills:Library,memory:Brain,mcp:Network,providers:KeyRound,provider:KeyRound,models:Boxes,modelRoles:Boxes,modelPresets:Boxes,shell:Terminal,bash:Terminal,tools:Wrench,read:FileText,write:FileText,edit:FileCode2,files:FolderOpen,appearance:Palette,context:Library,interaction:MousePointer2,extensions:Puzzle,thinking:Brain};
- const memoryIcons:Record<string,ComponentType<any>>={"autolearn.enabled":GraduationCap,"autolearn.autoContinue":ScanLine,"memory.backend":Database,"mnemopi.dbPath":HardDrive,"mnemopi.bank":Landmark,"mnemopi.scoping":Target,"mnemopi.embeddingVariant":Layers2,"mnemopi.autoRecall":Search,"mnemopi.autoRetain":Save,"mnemopi.polyphonicRecall":GitFork,"mnemopi.enhancedRecall":WandSparkles,"mnemopi.proactiveLinking":Link2,"mnemopi.noEmbeddings":Unplug,"hindsight.apiToken":KeyRound,"hindsight.bankId":Landmark,"hindsight.scoping":Target,"hindsight.globalScope":Globe,"hindsight.autoRecall":Search,"hindsight.autoRetain":Save,"hindsight.retainMode":NotebookPen,"hindsight.mentalModelsEnabled":Brain,"hindsight.mentalModelAutoSeed":Sparkles};
- const semantic=/claude.*project/i.test(settingKey)?FolderOpen:/claude.*user/i.test(settingKey)?UserRound:/opencode.*project/i.test(settingKey)?FileCode2:/opencode.*user/i.test(settingKey)?Fingerprint:/isolation.*backend/i.test(settingKey)?Layers:/ovnf.*binary/i.test(settingKey)?Terminal:undefined;
- const Icon=semantic || toolSettingIcon(settingKey) || memoryIcons[settingKey] || rules.find(([pattern])=>pattern.test(key))?.[1] || icons[group] || (type==="number"?Hash:SlidersHorizontal);
- return <Icon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5}/>;
 }

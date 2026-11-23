@@ -1,4 +1,3 @@
-import { ToolIcon } from "../ToolIcons";
 import { Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ListSkeleton,ToolsSkeleton } from "@/components/ui/loading-shapes";
@@ -94,13 +93,13 @@ export function ToolsPanel({
             const active = live?.includes(t.name);
             return (
               <div key={t.name} className="flex items-start gap-3 border-b border-border/50 py-4 last:border-0">
-                <span className="pt-0.5 text-muted-foreground"><ToolIcon name={t.name}/></span><div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[12px] text-fog-100">{t.name}</span>
+                    <span className="setting-label break-all text-foreground">{t.name}</span>
                     {active && <Check className="size-3 text-muted-foreground" aria-label="Active in the current session"/>}
                     
                   </div>
-                  <div className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{t.description}</div>
+                  <div className="setting-description">{t.description}</div>
                 </div>
                 <Switch checked={on} onCheckedChange={value=>onSave(s.key,s.type==="boolean"?value:value?"on":"off")} aria-label={`Enable ${t.name}`} />
               </div>
@@ -109,7 +108,7 @@ export function ToolsPanel({
         )}
       </Group>
 
-      <Group title="Runtime-managed tools"><p className="py-3 text-xs text-muted-foreground">Availability depends on the active runtime, launch flags and permissions. A check means the current session reports the tool.</p><div className="grid gap-x-8 py-2 sm:grid-cols-2">{alwaysOn.map(t=><div key={t.name} title={t.description} className="flex items-center gap-3 py-3 text-[13px]"><span className="text-muted-foreground"><ToolIcon name={t.name}/></span><span>{t.name}</span>{live?.includes(t.name)&&<Check className="ml-auto size-3.5 text-muted-foreground" aria-label="Reported by this session"/>}</div>)}</div></Group>
+      <Group title="Runtime-managed tools"><p className="py-3 text-xs text-muted-foreground">Availability depends on the runtime, launch flags, and permissions. Checks mark tools reported by this session.</p><div className="grid gap-x-8 py-2 sm:grid-cols-2">{alwaysOn.map(t=><div key={t.name} title={t.description} className="flex items-center gap-3 py-3 text-[13px]"><span className="setting-label break-all">{t.name}</span>{live?.includes(t.name)&&<Check className="ml-auto size-3.5 text-muted-foreground" aria-label="Reported by this session"/>}</div>)}</div></Group>
 
       </SkeletonReveal>
       <div className="pt-2">

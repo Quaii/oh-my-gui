@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Setting } from "../../lib/settings";
-import { labelOf } from "../../lib/settings";
+import { descriptionOf, labelOf } from "../../lib/settings";
 import { Group, SettingRow, Empty } from "./Controls";
 
 export interface ConfigListProps {
@@ -14,7 +14,7 @@ export interface ConfigListProps {
 
 export function matchesQuery(s: Setting, q: string): boolean {
   if (!q) return true;
-  const hay = `${s.key} ${labelOf(s)} ${s.ui?.group ?? ""} ${s.ui?.tab ?? ""} ${s.ui?.description ?? s.description ?? ""}`.toLowerCase();
+  const hay = `${s.key} ${labelOf(s)} ${s.ui?.group ?? ""} ${s.ui?.tab ?? ""} ${descriptionOf(s)} ${s.ui?.description ?? s.description ?? ""}`.toLowerCase();
   return q
     .toLowerCase()
     .split(/\s+/)
@@ -44,7 +44,7 @@ export function ConfigList({ settings, query = "", onSave, onReset, hideAdvanced
 
   return (
     <div>
-      <p className="mb-4 text-xs leading-relaxed text-muted-foreground">These controls write global OMP configuration. Launch overrides can take precedence; restart the session for startup-only changes. Terminal appearance and keybinding preferences affect the native terminal interface.</p>
+      <p className="mb-4 text-xs leading-relaxed text-muted-foreground">Global OMP settings. Launch overrides take priority. Startup changes need a restart. Terminal appearance and keybindings apply to the terminal.</p>
       {grouped.map(([group, list]) => (
         <Group key={group} title={group} hint={`${list.length}`}>
           {list.map((s) => (

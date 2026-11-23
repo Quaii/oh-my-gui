@@ -1,4 +1,5 @@
 import { get, post } from "./api";
+import { settingDescriptions } from "./settings-copy";
 
 export interface SettingUi {
   label?: string;
@@ -40,6 +41,11 @@ export async function resetSetting(key: string) {
 
 export function labelOf(s: Setting): string {
   return s.ui?.label ?? s.key;
+}
+
+export function descriptionOf(s: Setting): string {
+  return (Object.hasOwn(settingDescriptions, s.key) ? settingDescriptions[s.key] : undefined)
+    ?? s.ui?.description ?? s.description;
 }
 
 export function prettyKey(key: string): string {

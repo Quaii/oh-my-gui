@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
-import { Puzzle, Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 
 interface SkillInfo {
   name: string;
@@ -91,10 +91,9 @@ export function SkillsPanel({
         <div className="space-y-1.5">
           {filtered.map((s) => (
             <div key={s.name + (s.filePath ?? "")} className="skill-row flex items-start gap-4 rounded-xl border border-border/60 bg-card/50 p-4">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary text-muted-foreground"><Puzzle className="size-4" /></span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[14px] font-medium ${disabled.has(s.name) ? "text-muted-foreground" : "text-foreground"}`}>{s.name}</span>
+                  <span className={`setting-label ${disabled.has(s.name) ? "text-muted-foreground" : "text-foreground"}`}>{s.name}</span>
                   {s.source && <Badge variant="secondary" className="text-[10px] font-normal">{s.source}</Badge>}
                 </div>
                 {s.description && <div className="mt-1 line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">{s.description}</div>}

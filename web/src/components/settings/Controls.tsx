@@ -1,7 +1,6 @@
-import { SettingGlyph } from "./SettingsNavigation";
 import { useEffect, useState } from "react";
 import type { Setting } from "../../lib/settings";
-import { labelOf, prettyKey } from "../../lib/settings";
+import { descriptionOf, labelOf } from "../../lib/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -108,21 +107,21 @@ export function SettingRow({
   };
 
   const label = labelOf(setting);
-  const desc = setting.ui?.description ?? setting.description;
+  const desc = descriptionOf(setting);
   const complex =
     setting.type === "array" || setting.type === "record" || setting.type === "object";
 
   return (
     <div className="setting-row">
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2.5"><SettingGlyph settingKey={setting.key} type={setting.type}/>
-          <Label className="text-[14px] font-medium text-foreground" title={setting.key}>{label}</Label>
+        <div className="flex items-center gap-2">
+          <Label className="setting-label text-foreground" title={setting.key}>{label}</Label>
           {setting.explicit && (
             <span className="size-1.5 rounded-full bg-primary" title="set explicitly in config.yml" />
           )}
         </div>
-        {desc && <div className="mt-1 ml-[26px] max-w-[60ch] text-[13px] leading-relaxed text-muted-foreground">{desc}</div>}
-        {setting.ui?.rpcDefault && <p className="mt-1 ml-[26px] max-w-[60ch] text-xs leading-relaxed text-muted-foreground">OMP uses a neutral RPC default when this preference is unset. Explicit configuration and launch/session overrides take precedence.</p>}
+        {desc && <p className="setting-description">{desc}</p>}
+        {setting.ui?.rpcDefault && <p className="setting-description">When unset, OMP uses its RPC default. Config and launch or session overrides take priority.</p>}
       </div>
 
       <div className="setting-control flex min-w-0 flex-wrap items-center gap-2">
@@ -224,7 +223,7 @@ export function Group({ title, hint, children }: { title: string; hint?: string;
   return (
     <section className="settings-group mb-7">
       <div className="mb-3 flex items-baseline gap-2">
-        <h3 className="text-[15px] font-semibold tracking-tight text-foreground">{title}</h3>
+        <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
         {hint && <span className="font-mono text-[10px] text-muted-foreground/70">{hint}</span>}
       </div>
       <div className="settings-group-body rounded-xl border border-border/60 bg-card/50 px-4">{children}</div>
