@@ -1266,3 +1266,5 @@ html[data-tray=true] body,html[data-tray=true] #root{height:100%;background:var(
 
 /* In narrow overlay mode, hide covered chat content, not the shared renderer. */
 .app-shell:has(>.file-panel-motion[data-overlay=true]:not([hidden])) .workspace-main{visibility:hidden}
+
+.workspace-toolbar-slot{display:flex;flex:0 0 auto;align-items:center;height:36px;overflow:clip}

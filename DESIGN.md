@@ -382,3 +382,6 @@ Chat and Files share one full-shell background renderer, clipped to the visible 
 Opening, closing, focusing or resizing Files changes the clip, never the background canvas dimensions
 or animation identity. Insets and gaps stay clear. The explorer separator and its left outer border
 are removed. Only the workspace toolbar shows the command-palette shortcut.
+
+Workspace toolbar card/window-control slots stay mounted and tween width, spacing and opacity over
+240ms when Files opens or closes. Hidden slots are inert; reduced motion applies changes immediately.

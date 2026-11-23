@@ -3,7 +3,7 @@ import { Minus, Square, Copy, X } from "lucide-react";
 
 type WindowAction = "drag" | "minimize" | "toggle-maximize" | "close" | "sync-state";
 
-function hasCustomChrome() {
+export function hasCustomChrome() {
   return !!window.__OMP_CUSTOM_CHROME__ && !window.__OMP_INSTALLER__ && !window.__OMP_TRAY__;
 }
 
