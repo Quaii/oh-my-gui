@@ -78,6 +78,7 @@ export interface SettingsPageProps {
   sidebarCollapsed:boolean;
   onToggleSidebar:()=>void;
   chat: any;
+  thinkingLevels: string[];
   config: any;
   onConfigSaved: (c: any) => void;
   onSend: (text: string) => void;
@@ -330,7 +331,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : panel === "capabilities" ? (<CapabilitiesPanel chatKey={chat.loaded ? chat.key : null} />
             ) : panel === "models" ? (<><ModelRolesPanel settingsLoading={loading && !payload} chatKey={chat.loaded ? chat.key : null} settings={settings} onSave={save} /><ConfigList settings={tabSettings.filter(s=>s.key!=="modelRoles")} onSave={save} onReset={reset} /></>
             ) : panel === "session" ? (
-              <><SessionPanel st={st} chat={chat} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><details className="mt-6"><summary className="cursor-pointer py-3 text-sm">Advanced session diagnostics</summary><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></details></>
+              <><SessionPanel st={st} chat={chat} thinkingLevels={props.thinkingLevels} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><details className="mt-6"><summary className="cursor-pointer py-3 text-sm">Advanced session diagnostics</summary><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></details></>
             ) : panel === "flags" ? (
               <FlagsPanel
                 flagDraft={flagDraft}
@@ -422,12 +423,14 @@ function Pill({on,onClick,label}:{on:boolean;onClick:()=>void;children:React.Rea
 function SessionPanel({
   st,
   chat,
+  thinkingLevels,
   cmd,
   nameDraft,
   setNameDraft,
 }: {
   st: any;
   chat: any;
+  thinkingLevels: string[];
   cmd: (c: any) => Promise<any>;
   nameDraft: string;
   setNameDraft: (v: string) => void;
@@ -452,7 +455,7 @@ function SessionPanel({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(chat.thinkingLevels ?? ["off", "low", "medium", "high", "xhigh", "max"]).map((l: string) => (
+              {thinkingLevels.map((l) => (
                 <SelectItem key={l} value={l} className="text-[12px]">
                   {l}
                 </SelectItem>
