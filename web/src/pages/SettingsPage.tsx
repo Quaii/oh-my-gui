@@ -19,12 +19,16 @@ import {ToolbarBlur} from "../components/ToolbarBlur";
 import { RuntimePanel } from "../components/settings/RuntimePanel";
 import { AppVersion } from '../components/settings/UpdatesPanel';
 import { CustomProvidersPanel, ModelRolesPanel } from "../components/settings/ModelsPanel";
+import { ChatModelVisibility } from "../components/settings/ChatModelVisibility";
+import type { ChatPickerModel } from "../lib/model-visibility";
+import type { Persona, WebControlConfig } from "../../../shared/control";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonReveal, SettingsSkeleton } from "@/components/ui/skeleton-reveal";
 import { api, get, post, put } from "../lib/api";
 import { fetchSettings, resetSetting, saveSetting, type Setting, type SettingsPayload } from "../lib/settings";
 import { Btn, Empty, Group } from "../components/settings/Controls";
 import { ConfigList } from "../components/settings/ConfigList";
+import { SettingsHeading } from "../components/settings/SettingsHeading";
 import { McpPanel } from "../components/settings/McpPanel";
 import { SkillsPanel } from "../components/settings/SkillsPanel";
 import { ToolsPanel } from "../components/settings/ToolsPanel";
@@ -51,12 +55,16 @@ const CapabilitiesPanel = lazy(() => import("../components/settings/Capabilities
 const NativeManager = lazy(() => import('../components/settings/NativeManager'));
 
 const PAGE_DESCRIPTIONS: Partial<Record<PanelId, string>> = {
-  "usage": "Token trends, model usage, and workspace activity.",
+  "usage": "Token, model, and activity history for this OMP installation.",
   "appearance": "Choose how your workspace looks and feels.",
+  "models": "Choose the models available in chat and set defaults by role.",
+  "providers": "Manage provider accounts and custom API endpoints.",
   "skills": "Manage the skills available to OMP.",
   "mcp": "Connect tools and services to your agent.",
   "tools": "Manage tools and approvals.",
-  "session": "Controls for the current conversation."
+  "session": "Controls for the current conversation.",
+  "memory": "Configure what OMP learns and remembers across conversations.",
+  "all": "Launch overrides take priority. Startup settings take effect after restarting OMP."
 };
 
 const TAB_PANELS: Partial<Record<PanelId, string>> = {
@@ -88,6 +96,11 @@ export interface SettingsPageProps {
   info: any;
   onRefreshState: () => void;
   onRefreshModels: () => void;
+  chatModels: ChatPickerModel[];
+  hiddenChatModels: string[];
+  onChatModelsVisibilityChange: (hidden: string[]) => void;
+  onPersonaLibrarySaved: (control: WebControlConfig) => void;
+  onStartPersona: (persona: Persona) => void;
 }
 
 export function SettingsPage(props: SettingsPageProps) {
@@ -239,29 +252,31 @@ export function SettingsPage(props: SettingsPageProps) {
   const searching = q.trim().length > 0;
   const current = ALL_ITEMS.find((i) => i.id === panel)?.label ?? "Settings";
   const pageDescription = searching ? undefined : PAGE_DESCRIPTIONS[panel];
+  const usagePage = !searching && panel === "usage";
+  const pageHeading = <SettingsHeading level="h1" title={searching ? "Search results" : current} description={pageDescription} />;
 
   const st = chat.state;
   const selectPanel = (id: PanelId) => transitionUpdate(() => { setPanel(id); setQ(""); });
 
   return (
     <div className="settings-layout flex h-full min-h-0 min-w-0 flex-1">
-      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={selectPanel}/>
+      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={selectPanel} onBack={onBack}/>
 
       <main className="settings-main workspace-main relative isolate flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <WorkspaceBackground />
-      <header onMouseDown={dragDesktopWindow} className="settings-floating-toolbar flex h-16 items-center gap-3 px-5">
+      <header onMouseDown={dragDesktopWindow} className="settings-floating-toolbar flex items-center">
         <ToolbarBlur/>
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
           aria-label="Back to workspace"
-          className="h-9 shrink-0 gap-2 rounded-xl text-muted-foreground"
+          className="h-9 shrink-0 gap-2 rounded-xl text-muted-foreground md:hidden"
         >
           <ArrowLeft className="size-4" /><span className="hidden sm:inline">Back to workspace</span>
         </Button>
 
-        <div className="relative ml-auto hidden w-[300px] md:block">
+        <div className="relative hidden w-full max-w-[300px] min-w-0 md:block">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
@@ -277,7 +292,7 @@ export function SettingsPage(props: SettingsPageProps) {
           <SettingsMobileNavigation panel={panel} onSelect={selectPanel} />
         </div>
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5 md:ml-auto">
           <Button variant="ghost" onClick={onRestart} aria-label="Restart session" className="restart-session-button h-9 rounded-xl"><RotateCcw className="size-3.5 shrink-0"/><span aria-hidden="true">Restart session</span></Button>
         </div>
         <DesktopWindowControls/>
@@ -297,12 +312,8 @@ export function SettingsPage(props: SettingsPageProps) {
 
         {/* content */}
         <ScrollArea className="flex-1 min-h-0" viewportRef={contentRef} viewportClassName="settings-content min-h-0 min-w-0">
-          <div className={`settings-page-content mx-auto w-full ${panel==="usage"&&!searching?"is-wide":"max-w-[920px]"}`}>
-            <div className="settings-page-header">
-              <h1 className="text-[24px] font-semibold tracking-tight">{searching ? "Search results" : current}</h1>
-              {pageDescription && <p className="mt-2 text-[13px] text-muted-foreground">{pageDescription}</p>}
-            </div>
-            <div className="settings-page-header md:hidden">
+          <div className="settings-page-content mx-auto w-full">
+            <div className="settings-mobile-search md:hidden">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -314,24 +325,25 @@ export function SettingsPage(props: SettingsPageProps) {
                 />
               </div>
             </div>
+            {!usagePage && pageHeading}
 
             <SkeletonReveal loading={loading && !payload && (searching || ["all", "interaction", "tasks", "memory", "files", "shell", "context"].includes(panel))} skeleton={<PanelSkeleton panel={searching?"all":panel}/>} label="Loading settings">
             <PageTransition id={searching?"search":panel} transition="fade" duration={160}>
-            <ErrorBoundary key={panel}><Suspense fallback={<PanelSkeleton panel={panel}/>}>
+            <ErrorBoundary key={panel}><Suspense fallback={<>{usagePage && pageHeading}<PanelSkeleton panel={panel}/></>}>
             {searching ? (
               <ConfigList settings={settings} query={q} onSave={save} onReset={reset} />
             ) : panel === "runtime" ? (<RuntimePanel chatKey={chat.loaded ? chat.key : null}><details className="settings-card"><summary className="cursor-pointer py-3 text-sm">Launch configuration</summary><FlagsPanel flagDraft={flagDraft} setFlagDraft={setFlagDraft} onSave={() => { try { setFlags(validateGuiLaunchArgs(parseLaunchArgs(flagDraft))); onRestart(); } catch (error:any) { setErr(error.message); } }} /></details></RuntimePanel>
             ) : panel === "updates" ? (<UpdatesPanel/>
             ) : panel === "native" ? (<NativeManager cwd={info?.cwd || ''}/>
-            ) : panel === "usage" ? (<UsagePanel />
+            ) : panel === "usage" ? (<UsagePanel title={current} description={pageDescription} />
             ) : panel === "routing" ? (<RoutingPanel chatKey={chat.loaded ? chat.key : null} />
-            ) : panel === "personas" ? (<PersonaPanel />
-            ) : panel === "extensions" ? (<ExtensionsPanel cwd={info?.cwd || ""} onRestart={onRestart} />
-            ) : panel === "context-files" ? (<ContextFilesPanel cwd={info?.cwd || ""} onRestart={onRestart} />
+            ) : panel === "personas" ? (<PersonaPanel onSaved={props.onPersonaLibrarySaved} onStart={props.onStartPersona} />
+            ) : panel === "extensions" ? (<ExtensionsPanel cwd={info?.cwd || ""} projectPath={info?.projectPath} onRestart={onRestart} />
+            ) : panel === "context-files" ? (<ContextFilesPanel cwd={info?.cwd || ""} onRestart={onRestart} onManagePersonas={() => setPanel("personas")} />
             ) : panel === "capabilities" ? (<CapabilitiesPanel chatKey={chat.loaded ? chat.key : null} />
-            ) : panel === "models" ? (<><ModelRolesPanel settingsLoading={loading && !payload} chatKey={chat.loaded ? chat.key : null} settings={settings} onSave={save} /><ConfigList settings={tabSettings.filter(s=>s.key!=="modelRoles")} onSave={save} onReset={reset} /></>
+            ) : panel === "models" ? (<div className="settings-stack"><ChatModelVisibility models={props.chatModels} hidden={props.hiddenChatModels} onChange={props.onChatModelsVisibilityChange}/><ModelRolesPanel settingsLoading={loading && !payload} chatKey={chat.loaded ? chat.key : null} settings={settings} onSave={save} /><ConfigList settings={tabSettings.filter(s=>s.key!=="modelRoles")} onSave={save} onReset={reset} /></div>
             ) : panel === "session" ? (
-              <><SessionPanel st={st} chat={chat} thinkingLevels={props.thinkingLevels} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><details className="mt-6"><summary className="cursor-pointer py-3 text-sm">Advanced session diagnostics</summary><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></details></>
+              <div className="settings-stack"><SessionPanel st={st} chat={chat} thinkingLevels={props.thinkingLevels} cmd={cmd} nameDraft={nameDraft} setNameDraft={setNameDraft} /><details><summary className="cursor-pointer py-3 text-sm">Advanced session diagnostics</summary><SessionWorkflows key={chat.key} chat={chat} cmd={cmd} /></details></div>
             ) : panel === "flags" ? (
               <FlagsPanel
                 flagDraft={flagDraft}
@@ -389,7 +401,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 onErr={setErr}
               />
             ) : panel === "about" ? (
-              <AboutPanel info={info} chat={chat} />
+              <AboutPanel />
             ) : tab ? (
               <div className="settings-stack">
                 {panel === "appearance" && <><ThemeBlock /><AppearanceEditor /></>}
@@ -436,7 +448,7 @@ function SessionPanel({
   setNameDraft: (v: string) => void;
 }) {
   return (
-    <div>
+    <div className="settings-stack">
       <Group title="Model">
         <Field label="Active model">
           <div className="flex items-center gap-2">
@@ -517,7 +529,7 @@ function SessionPanel({
         </Field>
       </Group>
 
-      <details className="my-5"><summary className="cursor-pointer py-3 text-sm text-muted-foreground">Agent setup and project instructions</summary><Agent><AgentHeader name="OMP" model={st?.model?.id}/><AgentContent><AgentInstructions>{(Array.isArray(st?.systemPrompt)?st.systemPrompt:[st?.systemPrompt]).filter((x:any)=>typeof x==="string").join("\n\n") || "The runtime has not reported a system prompt."}</AgentInstructions>{st?.dumpTools?.length>0&&<AgentTools>{st.dumpTools.map((t:any,i:number)=><AgentTool key={i} value={String(i)} tool={typeof t==="string"?{description:t}:{description:t.description||t.name,jsonSchema:t.parameters||t.inputSchema}}/>)}</AgentTools>}</AgentContent></Agent></details>
+      <details><summary className="cursor-pointer py-3 text-sm text-muted-foreground">Agent setup and project instructions</summary><Agent><AgentHeader name="OMP" model={st?.model?.id}/><AgentContent><AgentInstructions>{(Array.isArray(st?.systemPrompt)?st.systemPrompt:[st?.systemPrompt]).filter((x:any)=>typeof x==="string").join("\n\n") || "The runtime has not reported a system prompt."}</AgentInstructions>{st?.dumpTools?.length>0&&<AgentTools>{st.dumpTools.map((t:any,i:number)=><AgentTool key={i} value={String(i)} tool={typeof t==="string"?{description:t}:{description:t.description||t.name,jsonSchema:t.parameters||t.inputSchema}}/>)}</AgentTools>}</AgentContent></Agent></details>
       <Group title="Session">
         <Field label="Name">
           <div className="flex gap-2">
@@ -565,7 +577,7 @@ function FlagsPanel({
   onSave: () => void;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="settings-card-stack">
       <p className="max-w-[70ch] text-[12.5px] leading-relaxed text-muted-foreground">
         Extra CLI flags passed to <span className="font-mono text-fog-200">omp --mode rpc-ui</span> when a session starts. Quote paths or values containing spaces.
         Changing them restarts the current session process (the transcript stays on disk).
@@ -628,7 +640,7 @@ function ProvidersPanel({
 }) {
   const [filter,setFilter]=useState("");
   return (
-    <div className="settings-card-stack"><div className="flex items-center justify-between gap-4"><h2 className="text-sm font-semibold">Provider accounts</h2><Input value={filter} onChange={e=>setFilter(e.target.value)} aria-label="Filter providers" placeholder="Find a provider…" className="h-9 max-w-64 rounded-xl"/></div>
+    <div className="settings-card-stack"><SettingsHeading title="Provider accounts" action={<Input value={filter} onChange={e=>setFilter(e.target.value)} aria-label="Filter providers" placeholder="Find a provider…" className="h-9 max-w-64 rounded-xl"/>} />
       <SkeletonReveal loading={loading} skeleton={<ProviderSkeleton/>} label="Loading provider accounts"><div className="settings-card-stack">
         {providers.filter(p=>`${p.name} ${p.id}`.toLowerCase().includes(filter.toLowerCase())).map((p) => (
           <ProviderAccounts key={p.id} provider={p} cwd={cwd} cmd={cmd} loginBusy={loginBusy} onSignIn={onSignIn} onCredentialsChanged={onCredentialsChanged} />
@@ -730,21 +742,39 @@ function RawConfigPanel({
   );
 }
 
-function AboutPanel({ info, chat }: { info: any; chat: any }) {
+function AboutPanel() {
+  const credits = [
+    ["shadcn/ui","Accessible interface primitives","https://ui.shadcn.com/"],
+    ["Rare UI","Chat, themes, tasks, code, and project components","https://www.rareui.com/"],
+    ["23rd","Interactive shader backgrounds","https://www.23rd.dev/"],
+    ["React Bits · David Haz","Ambient background renderers · locally captured previews","https://reactbits.dev/"],
+    ["Transitions.dev","Loading and reveal motion","https://transitions.dev/library.html"],
+    ["Lucide","Workspace icon set","https://lucide.dev/"],
+    ["Phosphor","Workspace icon set","https://phosphoricons.com/"],
+    ["Tabler","Workspace icon set · MIT","https://tabler.io/icons"],
+    ["Heroicons","Workspace icon set · MIT","https://heroicons.com/"],
+    ["Remix Icon","Workspace icon set · Apache 2.0","https://remixicon.com/"],
+    ["Bootstrap Icons","Workspace icon set · MIT","https://icons.getbootstrap.com/"],
+    ["Lobe Icons","AI provider marks","https://github.com/lobehub/lobe-icons"],
+    ["Material Icon Theme","File type icons","https://github.com/material-extensions/vscode-material-icon-theme"],
+    ["Unslop · Damir Sokolovsky","Interface review workflow · CC BY 4.0","https://github.com/heydamir/unslop"]
+  ];
   return (
-    <div className="space-y-2 font-mono text-[12px] text-fog-300">
-      <AppVersion/>
-      <section className="mb-8 font-sans"><h2 className="mb-2 text-base font-semibold text-foreground">Credits</h2><p className="mb-4 text-sm text-muted-foreground">The libraries and creators behind this workspace.</p><div className="settings-card settings-card-list divide-y divide-border">{[["shadcn/ui","Accessible interface primitives","https://ui.shadcn.com/"],["Rare UI","Chat, themes, tasks, code, and project components","https://www.rareui.com/"],["23rd","Interactive shader backgrounds","https://www.23rd.dev/"],["React Bits · David Haz","63 ambient background renderers · locally captured previews","https://reactbits.dev/"],["Transitions.dev","Loading and reveal motion","https://transitions.dev/library.html"],["Lucide","Workspace icon set","https://lucide.dev/"],["Phosphor","Workspace icon set","https://phosphoricons.com/"],["Tabler","Workspace icon set · MIT","https://tabler.io/icons"],["Heroicons","Workspace icon set · MIT","https://heroicons.com/"],["Remix Icon","Workspace icon set · Apache 2.0","https://remixicon.com/"],["Bootstrap Icons","Workspace icon set · MIT","https://icons.getbootstrap.com/"],["Lobe Icons","AI provider marks","https://github.com/lobehub/lobe-icons"],["Material Icon Theme","File type icons","https://github.com/material-extensions/vscode-material-icon-theme"],["Unslop · Damir Sokolovsky","Interface review workflow · CC BY 4.0","https://github.com/heydamir/unslop"]].map(([name,description,url])=><a key={name} href={url} target="_blank" rel="noreferrer" className="flex flex-wrap items-center justify-between gap-2 py-4 text-[13px] hover:text-foreground"><span className="font-medium text-foreground">{name}</span><span className="text-xs text-muted-foreground">{description}</span></a>)}</div></section><h2 className="mb-4 font-sans text-base font-semibold text-foreground">Installation details</h2><div>omp binary: {info?.omp}</div>
-      <div>agent dir: {info?.agentDir}</div>
-      <div>session dir: {info?.sessionsDir}</div>
-      <div>cwd: {info?.cwd}</div>
-      <div>protocol: {JSON.stringify(chat.ready ?? {})}</div>
-      <div className="pt-3 font-sans text-[11.5px] leading-relaxed text-muted-foreground">
-        Settings write to <span className="font-mono">~/.omp/agent/config.yml</span> through the omp CLI itself, MCP
-        servers to <span className="font-mono">~/.omp/agent/mcp.json</span> (user) or{" "}
-        <span className="font-mono">&lt;cwd&gt;/.omp/mcp.json</span> (project). Nothing here reimplements the runtime.
+    <section className="font-sans">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="settings-heading-title">Credits</h2>
+        <AppVersion compact />
       </div>
-    </div>
+      <p className="mb-4 mt-2 text-sm text-muted-foreground">The libraries and creators behind this workspace.</p>
+      <div className="settings-card settings-card-list divide-y divide-border">
+        {credits.map(([name, description, url]) => (
+          <a key={name} href={url} target="_blank" rel="noreferrer" className="flex flex-wrap items-center justify-between gap-2 py-4 text-[13px] hover:text-foreground">
+            <span className="font-medium text-foreground">{name}</span>
+            <span className="text-xs text-muted-foreground">{description}</span>
+          </a>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -847,7 +877,7 @@ function PrimitiveInput({ value, onChange }: { value: any; onChange: (v: any) =>
 function ThemeBlock() {
   return (
     <section className="settings-group">
-      <header><h2 className="text-base font-semibold">Workspace theme</h2></header>
+      <SettingsHeading title="Workspace theme" />
       <div className="settings-card"><AppearanceControls expanded /></div>
     </section>
   );

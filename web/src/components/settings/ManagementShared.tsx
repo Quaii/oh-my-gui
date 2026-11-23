@@ -23,7 +23,7 @@ export function useRemote<T = any>(url: string | null) {
 }
 export function Notice({ error, text }: { error?: string; text?: string }) {
   if (!error && !text) return null;
-  return <div role={error ? "alert" : "status"} className={`mb-4 rounded-xl border px-4 py-3 text-[13px] leading-relaxed ${error ? "border-destructive/30 bg-destructive/5 text-destructive" : "border-border bg-secondary/40 text-muted-foreground"}`}>{error || text}</div>;
+  return <div role={error ? "alert" : "status"} className={`settings-notice rounded-xl border px-4 py-3 text-[13px] leading-relaxed ${error ? "border-destructive/30 bg-destructive/5 text-destructive" : "border-border bg-secondary/40 text-muted-foreground"}`}>{error || text}</div>;
 }
 export function ModelPicker({ models, provider, modelId, onChange, label = "Model" }: { models: any[]; provider: string; modelId: string; onChange: (provider: string, id: string) => void; label?: string }) {
   const [open,setOpen]=useState(false);

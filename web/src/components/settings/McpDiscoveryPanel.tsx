@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SettingsHeading } from "./SettingsHeading";
 import type { DiscoveredMcpServer, McpDiscovery, McpImportScope } from "../../../../shared/mcp-discovery";
 import { Button } from "@/components/ui/button";
 import { api } from "../../lib/api";
@@ -56,14 +57,11 @@ export function McpDiscoveryPanel({
     }
   }
 
-  return <div className="space-y-3">
-    <div className="flex flex-wrap items-start justify-between gap-2">
-      <div>
-        <h2 className="text-sm font-semibold">Discovered in other apps</h2>
-        <p className="mt-1 text-xs text-muted-foreground">Codex, Claude Code, and ZCode. Imports start disabled for review.</p>
-      </div>
-      <Button size="sm" variant="outline" onClick={() => { setResult(undefined); setRevision(value => value + 1); }} disabled={busy || (!data && !error)}>Refresh</Button>
-    </div>
+  return <div className="settings-card-stack">
+    <SettingsHeading title="Discovered in other apps"
+      description="Codex, Claude Code, and ZCode. Imports start disabled for review."
+      action={<Button size="sm" variant="outline" onClick={() => { setResult(undefined); setRevision(value => value + 1); }} disabled={busy || (!data && !error)}>Refresh</Button>}
+    />
     {!data && !error && <p role="status" className="text-sm text-muted-foreground">Looking for MCP servers…</p>}
     {data?.servers.length === 0 && <Empty>No servers found in the supported apps.</Empty>}
     {!!data?.servers.length && <div className="settings-group-body settings-card settings-card-list">
@@ -71,8 +69,8 @@ export function McpDiscoveryPanel({
         const reason = unavailable(server);
         const checked = choices.some(choice => choice.id === server.id);
         const duplicate = !checked && names.has(server.name);
-        return <label key={server.id} className="flex min-w-0 cursor-pointer items-start gap-3 border-b border-border py-3 last:border-0">
-          <input type="checkbox" className="mt-1 size-4 shrink-0 accent-primary" checked={checked}
+        return <label key={server.id} className="settings-card-row min-w-0 cursor-pointer border-b border-border py-3 last:border-0">
+          <input type="checkbox" className="size-4 shrink-0 accent-primary" checked={checked}
             disabled={busy || !!reason || duplicate}
             onChange={event => setSelected(previous => event.target.checked ? [...previous, server.id] : previous.filter(id => id !== server.id))} />
           <span className="min-w-0 flex-1">

@@ -23,6 +23,7 @@ import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
 import { RightRail } from "./components/RightRail";
 import { Composer } from "./components/Composer";
+import { readHiddenChatModels, saveHiddenChatModels, visibleChatModels } from "./lib/model-visibility";
 import { RuntimeOutput, ExtensionWidgets } from './components/RuntimeOutput';
 import { MessageRow, AssistantMessage, buildResultMap } from "./components/Message";
 import { DialogHost, Toasts } from "./components/Dialogs";
@@ -41,7 +42,9 @@ import ProximitySidebar from "@/components/ui/proximity-sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowDown, ArrowUpRight, Code2, ScanSearch, GitPullRequest } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ArrowDown, ArrowUpRight, Code2, ScanSearch, GitPullRequest, Sparkles } from "lucide-react";
 
 const FileWorkspace=lazy(()=>import("./components/FileWorkspace"));
 const LS_CWD = "ompfe.cwd";
@@ -53,6 +56,8 @@ export default function App() {
   const [chat, dispatch] = useState<ChatState>(initialChat);
   const [boot, setBoot] = useState<any>(null);
   const [models, setModels] = useState<any[]>([]);
+  const [hiddenChatModels, setHiddenChatModels] = useState(readHiddenChatModels);
+  const chatModels = useMemo(() => visibleChatModels(models, hiddenChatModels), [models, hiddenChatModels]);
   const [modelThinking, setModelThinking] = useState<{ key: string; levels: string[] } | null>(null);
   const modelProvider = chat.state?.model?.provider;
   const modelId = chat.state?.model?.id;
@@ -92,12 +97,14 @@ export default function App() {
   });
 
   const keyRef = useRef<string | null>(null);
+  const personaLaunch = useRef<{ key: string; persona: Persona } | null>(null);
   const attachVersion = useRef(0);
   const unsubRef = useRef<(() => void) | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickRef = useRef(true);
 
   const cwd = boot?.cwd ?? localStorage.getItem(LS_CWD) ?? "";
+  const personas: Persona[] = boot?.control?.personas ?? [];
   const changedFilesCwd = (boot?.allSessions ?? boot?.sessions ?? []).find((session:any) => session.path === activePath)?.cwd || cwd;
   const changedFilesRoot = projectForSession({cwd:changedFilesCwd},boot?.control?.projects || [])?.path || changedFilesCwd;
   const fileRequest=chat.key?fileWorkspaces[chat.key]?.request:null;
@@ -180,7 +187,9 @@ export default function App() {
       dispatch({ ...initialChat, key, loaded: false });
       setActivePath(sessionPath ?? null);
       try {
-        await post("/api/bridge", { key, cwd:sessionCwd||cwd, sessionPath, args: flags });
+        const personaId = !sessionPath && personaLaunch.current?.key === key
+          ? personaLaunch.current.persona.id : null;
+        await post("/api/bridge", { key, cwd:sessionCwd||cwd, sessionPath, args: flags, personaId });
         if (version !== attachVersion.current) return;
         unsubRef.current = subscribeEvents(
           key,
@@ -414,6 +423,16 @@ export default function App() {
   /* ---------- actions ---------- */
   const leaveProject=async()=>{const b=await get("/api/bootstrap");localStorage.setItem(LS_CWD,b.cwd);setBoot(b);navigate("/");setHome(false);await attach(`new:${Date.now()}`,undefined,b.cwd);};
   const newSession = () => {void leaveProject();};
+  const startPersonaChat = (persona: Persona) => {
+    const key = `new:${crypto.randomUUID()}`;
+    personaLaunch.current = { key, persona };
+    navigate("/");
+    setHome(false);
+    void attach(key, undefined, cwd);
+  };
+  const updatePersonaLibrary = (control: WebControlConfig) => {
+    setBoot((current: any) => current ? { ...current, control } : current);
+  };
   const newProjectChat=(path:string)=>{localStorage.setItem(LS_CWD,path);setBoot((b:any)=>({...b,cwd:path}));navigate("/");setHome(false);attach(`new:${Date.now()}`,undefined,path);};
   const openSession = (s: any) => { navigate("/");setHome(false);if(s.cwd){localStorage.setItem(LS_CWD,s.cwd);setBoot((b:any)=>({...b,cwd:s.cwd}));}attach(`s:${s.path}`,s.path,s.cwd); };
   useEffect(() => {
@@ -554,6 +573,14 @@ export default function App() {
           info={{ ...boot, cwd, projectPath: projectForSession({ cwd }, boot?.control?.projects || [])?.path }}
           onRefreshState={refreshState}
           onRefreshModels={refreshModels}
+          onPersonaLibrarySaved={updatePersonaLibrary}
+          onStartPersona={startPersonaChat}
+          chatModels={models}
+          hiddenChatModels={hiddenChatModels}
+          onChatModelsVisibilityChange={hidden => {
+            saveHiddenChatModels(hidden);
+            setHiddenChatModels(hidden);
+          }}
         />
       ) : (
         <>
@@ -734,18 +761,43 @@ export default function App() {
 
         {!home && <div ref={composerRef} className="composer-region relative z-10 shrink-0 pt-3 pb-5">
           <div className="composer-frame relative mx-auto w-full max-w-[752px]"><div className="composer-blur-gradient" aria-hidden="true"/>
+            <ExtensionWidgets widgets={chat.widgets} placement="aboveEditor" />
+            {empty && !running && personas.length > 0 && (
+              <div className="pointer-events-auto mb-2 flex">
+                {personaLaunch.current?.key === chat.key ? (
+                  <span className="floating-toolbar-button inline-flex min-w-0 items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground">
+                    <Sparkles className="size-3.5 shrink-0" />
+                    <span className="truncate">Persona: {personaLaunch.current.persona.name}</span>
                   </span>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="floating-toolbar-button">
+                        <Sparkles className="size-3.5" /> New chat with persona
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                      {personas.map(persona => (
+                        <DropdownMenuItem key={persona.id} onSelect={() => startPersonaChat(persona)}>
+                          {persona.name}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             )}
-            <ExtensionWidgets widgets={chat.widgets} placement="aboveEditor" />
             {projectForSession({cwd},boot?.control?.projects||[])&&chat.loaded&&<ProjectSuggestions chatKey={chat.key} projectPath={cwd} revision={chat.messages.length} running={running} empty={empty} onSelect={text=>void onSend(text,[])}/>}
             <Composer
               launchFlags={flags}
               chat={chat}
               stats={stats}
               commands={paletteCommands}
-              models={models}
+              models={chatModels}
+              onManageModels={() => {
+                localStorage.setItem("ompfe.settings.panel", "models");
+                openSettings();
+              }}
               thinkingLevels={thinkingLevels}
               onSend={onSend}
               onAbort={onAbort}

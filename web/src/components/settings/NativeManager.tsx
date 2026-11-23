@@ -192,7 +192,7 @@ export default function NativeManager({ cwd }: { cwd: string }) {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Find an operation…"
               />
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-[var(--space-content)] sm:grid-cols-2">
                 {descriptor.commands
                   .filter((command) =>
                     `${command.name} ${command.description}`

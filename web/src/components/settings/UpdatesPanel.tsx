@@ -3,11 +3,19 @@ import { Button } from "../ui/button";
 import { useUpdateStatus } from "../../lib/app-updates";
 import { Download, RefreshCw } from "lucide-react";
 
-export function AppVersion() {
+export function AppVersion({ compact = false }: { compact?: boolean }) {
   const { data, error } = useRemote("/api/app-release");
+  if (compact) {
+    return (
+      <span className="shrink-0 whitespace-nowrap text-right text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">omp.</span>{" "}
+        {data?.version ?? (error ? "Unavailable" : "…")}
+      </span>
+    );
+  }
   return (
     <div className="mb-6 font-sans">
-      <h2 className="text-base font-semibold text-foreground">
+      <h2 className="settings-heading-title">
         omp.{" "}
         {data ? (
           <span className="text-muted-foreground">{data.version}</span>
@@ -85,15 +93,15 @@ export default function UpdatesPanel() {
           </p>
         )}
       </section>
-      <section>
-        <h2 className="mb-4 text-base font-semibold">Changelog</h2>
+      <section className="settings-card-stack">
+        <h2 className="settings-heading-title">Changelog</h2>
         <Notice error={error} />
         {loading && (
           <p role="status" className="text-sm text-muted-foreground">
             Loading release notes…
           </p>
         )}
-        <div className="space-y-4">
+        <div className="settings-card-stack empty:hidden">
           {data?.releases?.map((release: any) => (
             <article
               key={release.version}

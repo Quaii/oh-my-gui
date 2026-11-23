@@ -35,11 +35,6 @@ export function DesktopSetup({ children }: { children: ReactNode }) {
     if (!status && !error) return;
     return revealDesktop(!activated ? 'setup' : 'workspace');
   }, [status, error, ready, activated]);
-  useEffect(() => {
-    const reopen = () => { setTheme(getTheme()); setReady(false); setStep(0); void refresh(); };
-    window.addEventListener('omp:desktop-setup', reopen);
-    return () => window.removeEventListener('omp:desktop-setup', reopen);
-  }, []);
 
   async function install() {
     setBusy(true); setError('');

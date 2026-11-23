@@ -44,7 +44,7 @@ export function CommandsPanel({
         {c.description && <p className="mt-1 break-words text-xs text-muted-foreground">{c.description}</p>}
       </div>
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-        <Toggle value={on} onChange={() => toggle(c.name)} label={`Show /${c.name} in chat palette`} />
+        <Toggle value={on} onChange={() => toggle(c.name)} label={`Show /${c.name} in the composer’s slash menu`} />
         <Button variant="outline" size="sm" onClick={() => onRun(c.name)} aria-label={`Run /${c.name} in chat`}>Run</Button>
       </div>
     </div>
@@ -67,7 +67,7 @@ export function CommandsPanel({
 
       <p className="text-xs text-muted-foreground">Turn on a command to show it in the composer’s <code>/</code> menu. You can run commands from either list.</p>
 
-      <Group title="In chat palette">
+      <Group title="In composer">
         {inChat.length === 0 ? <p className="py-[var(--space-row)] text-xs text-muted-foreground">No matching commands.</p> : inChat.map((c) => row(c, true))}
       </Group>
 

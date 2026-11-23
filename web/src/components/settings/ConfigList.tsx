@@ -44,7 +44,6 @@ export function ConfigList({ settings, query = "", onSave, onReset, hideAdvanced
 
   return (
     <div className="settings-stack">
-      <p className="text-xs leading-relaxed text-muted-foreground">Global OMP settings. Launch overrides take priority. Startup changes need a restart. Terminal appearance and keybindings apply to the terminal.</p>
       {grouped.map(([group, list]) => (
         <Group key={group} title={group}>
           {list.map((s) => (

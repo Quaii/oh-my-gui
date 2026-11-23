@@ -223,7 +223,7 @@ export function Group({ title, hint, children }: { title: string; hint?: string;
   return (
     <section className="settings-group">
       <header className="flex items-baseline gap-2">
-        <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
+        <h3 className="settings-heading-title">{title}</h3>
         {hint && <span className="font-mono text-[10px] text-muted-foreground/70">{hint}</span>}
       </header>
       <div className="settings-group-body settings-card settings-card-list">{children}</div>

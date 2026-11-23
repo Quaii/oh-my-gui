@@ -212,7 +212,7 @@ export function McpPanel({ cwd, projectPath, onRestart }: { cwd: string; project
           No MCP servers in this scope. Add one, or write <span className="font-mono">mcpServers</span> JSON directly.
         </Empty>
       ) : (
-        <div className="space-y-2">
+        <div className="settings-card-stack">
           {names.map((name) => {
             const s = servers[name];
             const pr = probes[name];
