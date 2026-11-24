@@ -24,17 +24,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: windows-latest
-            label: windows-x64
-          - runner: macos-15
+          - runner: macos-26
             label: macos-arm64
-          - runner: macos-15-intel
-            label: macos-x64
-          - runner: ubuntu-22.04
-            label: linux-x64
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: refs/tags/v0.1.2
       - uses: actions/setup-node@v6
         with:
           node-version: 24.18.1
