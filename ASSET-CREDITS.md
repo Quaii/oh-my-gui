@@ -1,7 +1,8 @@
 # Asset and component credits
 
-- Project website: the Carbon-colored mark comes from the app's existing brand artwork. The README
-  and site screenshots are captures of the actual interface with fictional projects, tasks, and chats.
+- Project website: the mark comes from the app's existing brand artwork. The README and site use
+  actual app captures with fictional projects, tasks, and chats. The appearance study assembles
+  cropped captures of seven theme and background pairings from the same workspace.
 
 - OMP configuration enum choices: native definitions from [oh-my-pi v18.20.0](https://github.com/can1357/oh-my-pi/tree/v18.20.0/packages/coding-agent/src), including provider tiers, voices and task effort. `server/data/settings-enums.json` records the pinned version; the metadata generator merges them only for that version.
 
