@@ -12,11 +12,12 @@ Do not copy an early rule or a third-party component's stock styling as the prod
 
 ## Project website
 
-The [project website](site/index.html) uses Carbon-based colors and a shared content width to frame
-real app captures. The hero shows a project conversation. Home and Appearance have their own
-sections, with a keyboard-accessible gallery for comparing appearance settings, theme combinations,
-and light and dark workspaces. Use narrow app captures where available on phones. Keep setup links
-and commands together at the end of the page. Motion is brief and respects reduced motion.
+The [project website](site/index.html) uses the app's Carbon, Steel and Paper palettes. The floating
+navigation borrows the app's tinted glass treatment. The project chat enters over a Steel-toned
+background and levels as the visitor scrolls. The Carbon workspace tour has a vertical
+navigation rail on desktop and a horizontal row on narrow screens. The appearance section groups
+the theme sampler and settings gallery. Use narrow app captures where available on phones. Keep
+setup links and commands together. Motion is brief and respects reduced motion.
 
 ## The material hierarchy
 
