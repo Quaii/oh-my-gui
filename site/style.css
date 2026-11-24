@@ -399,6 +399,13 @@ code { font-family: "Cascadia Mono", Consolas, monospace; }
   .mobile-navigation nav a { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--corner); text-decoration: none; }
   .mobile-navigation nav a:hover { background: #ffffff18; }
 }
+@media (max-width: 380px) {
+  .nav-bar { gap: 6px; }
+  .nav-bar .brand { font-size: 14px; }
+  .mobile-navigation summary { padding-inline: 6px; }
+  .nav-actions .button { padding-inline: 9px; }
+  .nav-actions .button > span { display: none; }
+}
 @media (max-width: 670px) {
   .hero-window { width: min(100%, 312px); }
   .start-layout { grid-template-columns: 1fr; gap: 20px; }
