@@ -13,7 +13,7 @@ import { PanelSkeleton, ListSkeleton, ProviderSkeleton } from "@/components/ui/l
 import { Switch } from "@/components/ui/switch";
 import { Brand } from "../components/Brand";
 import { Agent, AgentHeader, AgentContent, AgentInstructions, AgentTools, AgentTool } from "@/components/ui/agent";
-import { AppearanceEditor } from "../components/settings/AppearanceEditor";
+import { AppearancePanel } from "../components/settings/AppearancePanel";
 import { WorkspaceBackground } from "../components/Appearance";
 import {ToolbarBlur} from "../components/ToolbarBlur";
 import { RuntimePanel } from "../components/settings/RuntimePanel";
@@ -33,7 +33,6 @@ import { McpPanel } from "../components/settings/McpPanel";
 import { SkillsPanel } from "../components/settings/SkillsPanel";
 import { ToolsPanel } from "../components/settings/ToolsPanel";
 import { CommandsPanel } from "../components/settings/CommandsPanel";
-import { AppearanceControls } from "../components/Appearance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -404,7 +403,7 @@ export function SettingsPage(props: SettingsPageProps) {
               <AboutPanel />
             ) : tab ? (
               <div className="settings-stack">
-                {panel === "appearance" && <><ThemeBlock /><AppearanceEditor /></>}
+                {panel === "appearance" && <AppearancePanel />}
                 {panel === "appearance" ? <details className="harness-display-settings"><summary className="cursor-pointer py-3 text-[13px] text-muted-foreground">Harness display settings</summary><ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced /></details> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}
               </div>
             ) : (
@@ -869,16 +868,5 @@ function PrimitiveInput({ value, onChange }: { value: any; onChange: (v: any) =>
       onChange={(e) => onChange(e.target.value)}
       className="h-7 font-mono text-[12px]"
     />
-  );
-}
-
-/* ------------------------------------------------------------------ */
-
-function ThemeBlock() {
-  return (
-    <section className="settings-group">
-      <SettingsHeading title="Workspace theme" />
-      <div className="settings-card"><AppearanceControls expanded /></div>
-    </section>
   );
 }

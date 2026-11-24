@@ -18,11 +18,13 @@
       "next/navigation": ["web/src/lib/next-shims.tsx"]
     },
     "types": [
-      "node"
+      "node",
+      "vite/client"
     ]
   },
   "include": [
     "server/src",
-    "web/src"
+    "web/src",
+    "site/demo"
   ]
 }

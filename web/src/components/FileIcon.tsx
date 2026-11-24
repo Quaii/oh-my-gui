@@ -24,7 +24,7 @@ export function FileIcon({path,theme}:{path:string;theme?:FileIconThemeId}){
  const [failed,setFailed]=useState(false),icon=fileIconName(path),label=(path.split('.').pop()?.toUpperCase()||'File')+' file';
  useEffect(()=>setFailed(false),[icon,mode]);
  if(mode==='minimal'||!icon||failed){const Icon=mode==='minimal'?outline(path):File;return <Icon aria-label={label} data-file-icon-theme={mode} className="size-4 shrink-0 text-muted-foreground"/>;}
- const src='/file-icons/'+icon+'.svg';
+ const src=`${import.meta.env?.BASE_URL ?? '/'}file-icons/${icon}.svg`;
  if(mode==='monochrome')return <span role="img" aria-label={label} data-file-icon-theme={mode} className="size-4 shrink-0 bg-current text-muted-foreground" style={{maskImage:`url("${src}")`,WebkitMaskImage:`url("${src}")`,maskSize:'contain',maskPosition:'center',maskRepeat:'no-repeat'} as CSSProperties}/>;
  return <img src={src} alt={label} data-file-icon-theme={mode} className="size-4 shrink-0" onError={()=>setFailed(true)}/>;
 }
