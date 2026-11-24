@@ -48,7 +48,7 @@ export function DesktopWindowControls() {
   return <div className="desktop-window-controls" role="group" aria-label="Window controls">
     {error && <span role="status" className="desktop-window-error">{error}</span>}
     <button type="button" onClick={() => command("minimize")} aria-label="Minimize window" title="Minimize"><Minus /></button>
-    <button type="button" onClick={() => command("toggle-maximize")} aria-label={maximized ? "Restore window" : "Maximize window"} title={maximized ? "Restore" : "Maximize"}>{maximized ? <Copy /> : <Square />}</button>
+    <button type="button" onClick={() => command("toggle-maximize")} aria-label={maximized ? "Restore window" : "Maximize window"} title={maximized ? "Restore" : "Maximize"}>{maximized ? <Copy className="origin-center -scale-x-100" /> : <Square />}</button>
     <button type="button" className="desktop-window-close" onClick={() => command("close")} aria-label="Close window" title="Close"><X /></button>
   </div>;
 }
