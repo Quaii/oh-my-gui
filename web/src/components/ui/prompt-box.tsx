@@ -670,10 +670,10 @@ function PromptBox({
                                 >
                                     {streaming ? (
                                         <motion.rect
-                                            x={7}
-                                            y={7}
-                                            width={10}
-                                            height={10}
+                                            x={5}
+                                            y={5}
+                                            width={14}
+                                            height={14}
                                             rx={2.5}
                                             fill="currentColor"
                                             style={{ transformBox: 'fill-box', transformOrigin: 'center' }}

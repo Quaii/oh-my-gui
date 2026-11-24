@@ -177,6 +177,7 @@ an entry is unavailable before the user tries to import it.
 ## Conversation and composer
 
 The composer's trailing controls run left to right: context usage, microphone, then Send/Stop.
+The Stop square is centered and fills over half of the icon's canvas.
 
 User messages are compact right-aligned surfaces; assistant replies remain text on the canvas.
 Progress updates, tool calls, reasoning, and system notes share one activity disclosure per turn.
