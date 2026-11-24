@@ -12,7 +12,6 @@ export function RuntimePanel({ chatKey, children }: { chatKey: string | null; ch
     <div className="flex justify-end">
       <Button variant="outline" size="sm" onClick={refresh} disabled={loading}><RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />Refresh runtime</Button>
     </div>
-    {children}
     <Notice error={error} />
     <SkeletonReveal loading={loading && !data} skeleton={<PanelSkeleton panel="runtime"/>} label="Inspecting OMP runtime">
       {data && <div className="settings-stack">
@@ -21,5 +20,6 @@ export function RuntimePanel({ chatKey, children }: { chatKey: string | null; ch
         <Notice text="The parallel task limit is an OMP setting, not a provider quota. Queued messages and task activity are reported by the selected live session." />
       </div>}
     </SkeletonReveal>
+    {children}
   </div>;
 }
