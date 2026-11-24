@@ -2,24 +2,29 @@
 
 <h1 align="center">omp.</h1>
 
-<p align="center">A desktop and browser workspace for <a href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>.</p>
+<p align="center"><a href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>, with a UI.</p>
 
 <p align="center"><a href="#get-started">Get started</a> · <a href="#showcase">Screenshots</a> · <a href="DESKTOP.md">Desktop builds</a> · <a href="https://github.com/Quaii/omp-frontend/releases">Releases</a></p>
 
-Use your local OMP runtime through a graphical workspace. Keep coding conversations together by project, follow the agent’s current tasks, and review changed files alongside the chat.
+The CLI you already use, in a desktop and browser workspace for your chats, projects, and files. omp. connects to your local Oh My Pi installation.
 
 ## Showcase
 
-<!-- Release gallery slot 1. Replace site/assets/workspace-overview.webp with a fresh 16:10 app capture when needed. Use demo data. -->
-![Workspace overview showing unfinished tasks, projects, and recent chats](site/assets/workspace-overview.webp)
+<!-- Replace these captures with new app screenshots using fictional project data. Keep the shared asset paths so the website updates as well. -->
 
-<!-- Release gallery slot 2. Replace site/assets/project-chat.webp with a matching 16:10 app capture when needed. Use demo data. -->
-<details>
-<summary>See a project conversation</summary>
+[![Workspace overview in Carbon, showing unfinished tasks, projects, and recent chats](site/assets/workspace-overview.webp)](site/assets/workspace-overview.webp)
 
-![Project conversation reviewing CSV import cases](site/assets/project-chat.webp)
+### Seven ways to style the workspace
 
-</details>
+[![Seven app slices in Carbon, Ash, Steel, Forest, Midnight, Plum, and Paper with different backgrounds](site/assets/theme-study.webp)](site/assets/theme-study.webp)
+
+Each slice pairs a different theme with a different background. The images below open at full size.
+
+| Project chat | Appearance |
+| --- | --- |
+| [![Project conversation reviewing CSV import cases](site/assets/project-chat.webp)](site/assets/project-chat.webp) | [![Appearance settings showing the theme and background controls](site/assets/appearance.webp)](site/assets/appearance.webp) |
+| **Steel / Tide** | **Paper / Silver** |
+| [![Workspace overview with the Steel theme and Tide background](site/assets/workspace-steel.webp)](site/assets/workspace-steel.webp) | [![Workspace overview with the Paper theme and Silver background](site/assets/workspace-paper.webp)](site/assets/workspace-paper.webp) |
 
 ## What you can do
 
@@ -76,6 +81,6 @@ The live chat and routing checks in [scripts](scripts) use a configured model an
 
 ## Project website
 
-The [static landing page](site/index.html) shares the two showcase images above. To preview it, serve the `site/` directory with a local static HTTP server. The page has no build step and needs no runtime credentials.
+The [static landing page](site/index.html) uses the shared showcase assets in `site/assets/`. Open it locally or serve the `site/` directory with a static HTTP server. The page has no build step and needs no runtime credentials.
 
 The [Pages workflow](.github/workflows/site-pages.yml) is manual. Once it is on the default branch and GitHub Pages is configured to use GitHub Actions, an owner can run **Publish project website** from the Actions tab. Review the site’s visibility before running it. The workflow deploys only `site/`. [GitHub Pages configuration guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
