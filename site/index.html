@@ -84,41 +84,43 @@
           <h2 id="workspace-title">Inside the workspace</h2>
           <p>Everything starts with your project folder.</p>
         </div>
-        <div class="tour" aria-label="Workspace tour">
-          <div class="tour-stage" tabindex="0" aria-label="Workspace previews">
-            <figure id="home">
-              <div class="image-link">
-                <picture>
-                  <source media="(max-width: 540px)" srcset="assets/workspace-overview-narrow.webp" width="432" height="600">
-                  <img src="assets/workspace-overview.webp" alt="Home showing what is running, unfinished tasks, and recent conversations" width="1440" height="900" loading="lazy" draggable="false">
-                </picture>
-              </div>
-              <figcaption><strong>Resume your work</strong><span>Find running chats and unfinished tasks on Home.</span></figcaption>
-            </figure>
-            <figure id="tour-chat">
-              <div class="image-link">
-                <picture>
-                  <source media="(max-width: 540px)" srcset="assets/project-activity-narrow.webp" width="432" height="600">
-                  <img src="assets/project-activity.webp" alt="Agent activity expanded in the Atlas chat, showing the files read before the reply" width="1440" height="900" loading="lazy" draggable="false">
-                </picture>
-              </div>
-              <figcaption><strong>Follow the agent</strong><span>Open activity, see what ran, and steer the conversation.</span></figcaption>
-            </figure>
-            <figure id="tour-files">
-              <div class="image-link">
-                <picture>
-                  <source media="(max-width: 540px)" srcset="assets/project-files-narrow.webp" width="432" height="600">
-                  <img src="assets/project-files.webp" alt="The Atlas project file editor with import.ts open" width="1440" height="900" loading="lazy" draggable="false">
-                </picture>
-              </div>
-              <figcaption><strong>Review the project</strong><span>Open source files beside the conversation.</span></figcaption>
-            </figure>
-          </div>
-          <div class="tour-controls" hidden>
+      </div>
+      <div class="tour" aria-label="Workspace tour">
+        <div class="tour-stage" tabindex="0" aria-label="Workspace previews">
+          <figure id="home">
+            <div class="image-link">
+              <picture>
+                <source media="(max-width: 540px)" srcset="assets/workspace-overview-narrow.webp" width="432" height="600">
+                <img src="assets/workspace-overview.webp" alt="Home showing what is running, unfinished tasks, and recent conversations" width="1440" height="900" loading="lazy" draggable="false">
+              </picture>
+            </div>
+            <figcaption><strong>Resume your work</strong><span>Find running chats and unfinished tasks on Home.</span></figcaption>
+          </figure>
+          <figure id="tour-chat">
+            <div class="image-link">
+              <picture>
+                <source media="(max-width: 540px)" srcset="assets/project-activity-narrow.webp" width="432" height="600">
+                <img src="assets/project-activity.webp" alt="Agent activity expanded in the Atlas chat, showing the files read before the reply" width="1440" height="900" loading="lazy" draggable="false">
+              </picture>
+            </div>
+            <figcaption><strong>Follow the agent</strong><span>Open activity, see what ran, and steer the conversation.</span></figcaption>
+          </figure>
+          <figure id="tour-files">
+            <div class="image-link">
+              <picture>
+                <source media="(max-width: 540px)" srcset="assets/project-files-narrow.webp" width="432" height="600">
+                <img src="assets/project-files.webp" alt="The Atlas project file editor with import.ts open" width="1440" height="900" loading="lazy" draggable="false">
+              </picture>
+            </div>
+            <figcaption><strong>Review the project</strong><span>Open source files beside the conversation.</span></figcaption>
+          </figure>
+        </div>
+        <div class="tour-controls" hidden>
+          <div class="tour-arrows">
             <button type="button" data-tour-prev aria-label="Previous workspace preview">←</button>
-            <output aria-live="polite"></output>
             <button type="button" data-tour-next aria-label="Next workspace preview">→</button>
           </div>
+          <output aria-live="polite"></output>
         </div>
       </div>
     </section>

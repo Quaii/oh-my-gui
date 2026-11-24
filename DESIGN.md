@@ -14,7 +14,8 @@ Do not copy an early rule or a third-party component's stock styling as the prod
 
 The [project website](site/index.html) uses a continuous light-to-dark background with the app’s
 Steel tones and dot texture. The top navigation uses a translucent backdrop blur. The project chat
-levels on scroll, and the workspace carousel supports dragging, touch, and keyboard navigation.
+levels on scroll, and the workspace carousel fades to the viewport edges. Its arrows overlay the
+active screenshot on hover and keyboard focus, with visible arrows on touch devices.
 The theme slices sit in their own section. The app’s actual Settings page is visible below, locked
 to Appearance, where only the settings content scrolls. Motion respects reduced motion.
 

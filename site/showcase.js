@@ -32,7 +32,10 @@ function slideOffset(slide) {
 
 function updateCarousel() {
   const offsets = frames.map(slide => Math.abs(slideOffset(slide)));
-  activeFrame = offsets.indexOf(Math.min(...offsets));
+  const closestFrame = offsets.indexOf(Math.min(...offsets));
+  if (closestFrame !== activeFrame) frames[activeFrame].removeAttribute('data-active');
+  activeFrame = closestFrame;
+  frames[activeFrame].setAttribute('data-active', '');
   const closest = (activeFrame - firstFrame + slides.length) % slides.length;
   if (closest === activeSlide) return;
 
