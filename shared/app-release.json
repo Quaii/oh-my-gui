@@ -1,6 +1,14 @@
 {
   "releases": [
     {
+      "version": "0.1.3",
+      "title": "First Windows release",
+      "changes": [
+        "First official Windows x64 installer for Oh My GUI.",
+        "Manual downloads are available through GitHub Releases."
+      ]
+    },
+    {
       "version": "0.1.2",
       "title": "Oh My GUI public preview",
       "changes": [
