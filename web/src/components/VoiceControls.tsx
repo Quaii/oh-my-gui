@@ -223,9 +223,9 @@ export function VoiceControls({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="composer-chip" aria-label="Voice and dictation">
+        <Button type="button" variant="ghost" className="composer-trailing-control" aria-label="Voice and dictation">
           <Mic className="size-3.5" />
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent side="top" align="start" className="w-80 space-y-4 p-4">
         <p className="text-sm font-medium">Voice and dictation</p>

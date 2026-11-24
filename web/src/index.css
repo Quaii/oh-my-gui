@@ -665,6 +665,19 @@
 .composer-region [data-slot="prompt-box-actions"] { flex-wrap: wrap; padding-right: var(--space-2); }
 .composer-chip { display: flex; align-items: center; gap: var(--space-compact); padding: var(--space-compact) var(--space-2); border-radius: var(--radius-item); font-size: 12px; color: var(--muted-foreground); transition: background 160ms, color 160ms; }
 .composer-chip:hover { color: var(--foreground); background: var(--secondary); }
+.composer-trailing-control {
+  width:4.375rem;
+  height:2.25rem;
+  flex:none;
+  gap:var(--space-compact);
+  padding-inline:var(--space-1);
+  border-radius:var(--radius-control);
+  color:var(--muted-foreground);
+  font-size:12px;
+  font-weight:400;
+}
+.composer-trailing-control:hover {color:var(--foreground);}
+@media (max-width:640px) {.composer-trailing-control {width:3.5rem;}}
 .workspace-ambience { pointer-events: none; position: absolute; inset: 0; z-index: -1; opacity:var(--background-opacity,.25); mask-image:var(--background-mask,linear-gradient(#000,transparent 100%));filter:blur(var(--background-blur,0px)); }
 .workspace-ambience + .workspace-header { background: transparent; }
 
