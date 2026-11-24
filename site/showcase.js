@@ -154,6 +154,27 @@ document.addEventListener('pointerleave', event => {
 
 const pageLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'))
   .filter(link => ['#frontend', '#workspace', '#appearance', '#get-started'].includes(link.hash));
+const navigation = document.querySelector('.nav');
+const heroImage = document.querySelector('#project-chat .image-link');
+let navigationFrame = 0;
+
+function updateNavigationContrast() {
+  navigationFrame = 0;
+  const bar = navigation.getBoundingClientRect();
+  const image = heroImage.getBoundingClientRect();
+  // The page gradient also darkens below the hero on short layouts.
+  const onScreenshot = image.top < bar.top + bar.height / 2 && image.bottom > bar.top + bar.height / 2;
+  navigation.toggleAttribute('data-dark-backdrop', onScreenshot || window.scrollY >= 760);
+}
+
+function queueNavigationContrast() {
+  if (!navigationFrame) navigationFrame = requestAnimationFrame(updateNavigationContrast);
+}
+
+updateNavigationContrast();
+window.addEventListener('scroll', queueNavigationContrast, { passive: true });
+window.addEventListener('resize', queueNavigationContrast);
+window.addEventListener('pageshow', queueNavigationContrast);
 
 function updateNavigation() {
   const id = location.hash.slice(1);

@@ -62,13 +62,19 @@ a { color: inherit; text-underline-offset: .24em; }
   position: fixed;
   z-index: 2;
   inset: max(12px, env(safe-area-inset-top)) 0 auto;
-  color: #eff3f7;
+  color: #18232d;
   pointer-events: none;
 }
 .nav-bar, .tour-arrows button {
-  background: rgb(110 110 110 / 19%);
-  box-shadow: 0 8px 32px #0c141d35, inset 0 1px #ffffff1c;
-  backdrop-filter: blur(20px) brightness(40%);
+  background: rgb(255 255 255 / 14%);
+  box-shadow: 0 8px 32px #0c141d26, inset 0 1px #ffffff33;
+  backdrop-filter: blur(20px);
+}
+.nav[data-dark-backdrop] {
+  color: #f3f7fa;
+}
+.nav[data-dark-backdrop] .nav-bar {
+  backdrop-filter: blur(20px) brightness(.82);
 }
 .nav-bar {
   position: relative;
@@ -98,8 +104,8 @@ a { color: inherit; text-underline-offset: .24em; }
   border-radius: var(--corner);
   transition: background-color 140ms, color 140ms;
 }
-.nav-links a, .source-link { color: #d6dfe7; }
-.nav-links a:hover, .nav-links a[aria-current="location"], .source-link:hover { background: #ffffff18; color: #fff; }
+.nav-links a, .source-link { color: inherit; }
+.nav-links a:hover, .nav-links a[aria-current="location"], .source-link:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
 .footer-links nav a { color: var(--carbon-muted); }
 .footer-links nav a:hover { background: var(--carbon-panel); color: var(--carbon-text); }
 .mobile-navigation { display: none; }
@@ -123,7 +129,7 @@ a { color: inherit; text-underline-offset: .24em; }
 .button:active { transform: translateY(1px); }
 .nav .button { background: #cfdae4; color: #18232d; }
 .nav .button:hover { background: #f0f5f8; }
-.nav :focus-visible { outline-color: #cedeea; }
+.nav :focus-visible { outline-color: currentColor; }
 .skip-link {
   position: fixed;
   z-index: 3;
@@ -259,7 +265,7 @@ p { color: var(--muted); }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.tour-arrows button:hover { background: rgb(150 150 150 / 24%); }
+.tour-arrows button:hover { background: rgb(255 255 255 / 24%); }
 @media (hover: hover) and (pointer: fine) {
   .tour:not(:has(figure[data-active] .image-link:hover, .tour-arrows button:hover, .tour-arrows button:focus-visible, .tour-stage:focus-visible)) .tour-arrows button {
     opacity: 0;
@@ -364,6 +370,7 @@ code { font-family: "Cascadia Mono", Consolas, monospace; }
     padding: 6px;
     border-radius: 12px;
     background: #202b35;
+    color: #f3f7fa;
     box-shadow: 0 10px 30px #10182040;
   }
   .mobile-navigation nav a { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--corner); text-decoration: none; }

@@ -13,9 +13,9 @@ Do not copy an early rule or a third-party component's stock styling as the prod
 ## Project website
 
 The [project website](site/index.html) uses a continuous light-to-dark background with the app’s
-Steel tones and dot texture. The top navigation and carousel arrows use a neutral tint over a live
-backdrop blur. The project chat levels on scroll, and the workspace carousel fades at the viewport
-edges while keeping the inner
+Steel tones and dot texture. The top navigation and carousel arrows use translucent white over
+live backdrop blur. Navigation labels adjust for the light hero and darker content. The project chat
+levels on scroll, and the workspace carousel fades at the viewport edges while keeping the inner
 part of each neighboring preview solid. Frosted arrows overlay the active screenshot on hover and
 keyboard focus and stay visible on touch devices.
 The theme slices form a display-only gallery. The app’s actual Settings page is visible below, locked
