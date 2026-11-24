@@ -23,7 +23,7 @@ import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
 import { RightRail } from "./components/RightRail";
 import { Composer } from "./components/Composer";
-import { readHiddenChatModels, saveHiddenChatModels, visibleChatModels } from "./lib/model-visibility";
+import { readHiddenChatModels, saveHiddenChatModels } from "./lib/model-visibility";
 import { RuntimeOutput, ExtensionWidgets } from './components/RuntimeOutput';
 import { MessageRow, AssistantMessage, buildResultMap } from "./components/Message";
 import { DialogHost, Toasts } from "./components/Dialogs";
@@ -57,7 +57,10 @@ export default function App() {
   const [boot, setBoot] = useState<any>(null);
   const [models, setModels] = useState<any[]>([]);
   const [hiddenChatModels, setHiddenChatModels] = useState(readHiddenChatModels);
-  const chatModels = useMemo(() => visibleChatModels(models, hiddenChatModels), [models, hiddenChatModels]);
+  const updateModelVisibility = useCallback((hidden: string[]) => {
+    saveHiddenChatModels(hidden);
+    setHiddenChatModels(hidden);
+  }, []);
   const [modelThinking, setModelThinking] = useState<{ key: string; levels: string[] } | null>(null);
   const modelProvider = chat.state?.model?.provider;
   const modelId = chat.state?.model?.id;
@@ -593,10 +596,7 @@ export default function App() {
           onStartPersona={startPersonaChat}
           chatModels={models}
           hiddenChatModels={hiddenChatModels}
-          onChatModelsVisibilityChange={hidden => {
-            saveHiddenChatModels(hidden);
-            setHiddenChatModels(hidden);
-          }}
+          onChatModelsVisibilityChange={updateModelVisibility}
         />
       ) : (
         <>
@@ -809,11 +809,9 @@ export default function App() {
               chat={chat}
               stats={stats}
               commands={paletteCommands}
-              models={chatModels}
-              onManageModels={() => {
-                localStorage.setItem("ompfe.settings.panel", "models");
-                openSettings();
-              }}
+              models={models}
+              hiddenModels={hiddenChatModels}
+              onModelVisibilityChange={updateModelVisibility}
               thinkingLevels={thinkingLevels}
               onSend={onSend}
               onAbort={onAbort}

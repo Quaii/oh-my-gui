@@ -3,34 +3,33 @@ import { VoiceControls } from './VoiceControls';
 import { appendDictation } from '../lib/dictation-draft';
 import { useWordCompletion } from '../lib/use-word-completion';
 import {supportsFastMode} from "../lib/model-capabilities";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from "@/components/ui/command";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { ContextUsage } from "./ContextUsage";
 import { Attachment, AttachmentContent, AttachmentTitle, AttachmentDescription, AttachmentMedia, AttachmentActions, AttachmentAction } from "@/components/ui/attachment";
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
-import { ProviderIcon } from "./ProviderIcon";
 import { PromptBox } from "@/components/ui/prompt-box";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import type { ChatState } from "../lib/store";
-import { Check, Brain, ChevronDown, ListPlus, Paperclip, Search, X, Zap } from "lucide-react";
+import { Brain, ChevronDown, ListPlus, Paperclip, Search, X, Zap } from "lucide-react";
 import type { DraftImage } from "../lib/composer-queue";
 import type { ComposerQueue } from "../lib/use-composer-queue";
 import { QueuedMessages } from "./QueuedMessages";
+import { ChatModelPicker, type ChatModelOption } from "./ChatModelPicker";
 
 export interface ComposerProps {
   chat: ChatState;
   launchFlags: string[];
   stats?: any;
   commands: any[];
-  models: any[];
+  models: ChatModelOption[];
+  hiddenModels: string[];
+  onModelVisibilityChange: (hidden: string[]) => void;
   thinkingLevels: string[];
   onSend: (text: string, images: any[]) => Promise<boolean>;
   onAbort: () => void;
   queue: ComposerQueue;
   onModelChange: (provider: string, id: string) => void;
-  onManageModels?: () => void;
   onThinkingChange: (level: string) => void;
   onToggleFast: () => void;
   onSlash: (name: string) => void;
@@ -70,9 +69,7 @@ export function Composer(props: ComposerProps) {
   const [extensionBackup, setExtensionBackup] = useState<string | null>(null);
   const editorEvent = useRef<string | null>(null);
   const [palette, setPalette] = useState<{ open: boolean; index: number }>({ open: false, index: 0 });
-  const [modelOpen, setModelOpen] = useState(false);
   const [thinkOpen, setThinkOpen] = useState(false);
-  const [filter, setFilter] = useState("");
   const taRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const saveTimer = useRef<number | null>(null);
@@ -163,18 +160,6 @@ export function Composer(props: ComposerProps) {
       .filter((c) => c.name.toLowerCase().includes(q) || (c.aliases ?? []).some((a: string) => a.includes(q)))
       .slice(0, 12);
   }, [text, commands, editId]);
-
-  const filteredModels = useMemo(() => {
-    const q = filter.trim().toLowerCase();
-    const list = models.map((m) => ({
-      provider: m.provider,
-      id: m.id,
-      name: m.name ?? m.id,
-      context: m.contextWindow,
-    }));
-    if (!q) return list;
-    return list.filter((m) => `${m.provider}/${m.id} ${m.name}`.toLowerCase().includes(q));
-  }, [models, filter]);
 
   useEffect(() => {
     setPalette((p) => ({ ...p, open: text.startsWith("/") && slashMatches.length > 0, index: 0 }));
@@ -395,7 +380,8 @@ export function Composer(props: ComposerProps) {
               onChange={(e) => attach(e.target.files)}
             />
 
-            <Popover open={modelOpen} onOpenChange={setModelOpen}><PopoverTrigger asChild><button className={chip} aria-label={`Model: ${model?.name ?? model?.id ?? "none"}`}><ProviderIcon provider={model?.provider || ""}/><span className="max-w-[170px] truncate">{model?.name ?? model?.id ?? "Model"}</span><ChevronDown className="size-3"/></button></PopoverTrigger><PopoverContent side="top" align="start" className="w-[400px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl p-0"><Command><CommandInput placeholder="Search models" value={filter} onValueChange={setFilter}/><CommandList className="max-h-72 p-1.5"><CommandEmpty>No matching models</CommandEmpty>{filteredModels.map(m=><CommandItem key={`${m.provider}/${m.id}`} value={`${m.provider}/${m.id} ${m.name}`} className="min-h-10 gap-3 rounded-lg px-3" onSelect={()=>{props.onModelChange(m.provider,m.id);setModelOpen(false);}}><ProviderIcon provider={m.provider}/><span className="min-w-0 flex-1 truncate text-[13px]">{m.name}<span className="mt-0.5 block text-[11px] text-muted-foreground">{m.provider}{m.context?` · ${Math.round(m.context/1000)}k context`:""}</span></span>{m.provider===model?.provider&&m.id===model?.id&&<Check className="size-3.5"/>}</CommandItem>)}</CommandList></Command>{props.onManageModels && <div className="border-t border-border p-1.5"><Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={()=>{setModelOpen(false);props.onManageModels?.();}}>Manage model visibility</Button></div>}</PopoverContent></Popover>
+            <ChatModelPicker className={chip} model={model} models={models} hidden={props.hiddenModels}
+              onVisibilityChange={props.onModelVisibilityChange} onSelect={props.onModelChange} />
             <DropdownMenu open={thinkOpen} onOpenChange={setThinkOpen}><DropdownMenuTrigger asChild><button className={chip} aria-label={`Thinking level: ${st?.thinkingLevel ?? "off"}`}><Brain className="size-3.5"/><span>{st?.thinkingLevel ?? "off"}</span><ChevronDown className="size-3"/></button></DropdownMenuTrigger><DropdownMenuContent side="top" align="start" className="w-52 rounded-2xl p-2"><DropdownMenuLabel className="px-3 pb-2 pt-1 text-xs font-medium text-muted-foreground">Thinking level</DropdownMenuLabel><DropdownMenuRadioGroup value={st?.thinkingLevel || "off"} onValueChange={props.onThinkingChange}>{thinkingLevels.map(level=><DropdownMenuRadioItem key={level} value={level} className="min-h-9 rounded-lg text-[13px] capitalize">{level}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu>
             {supportsFastMode(st?.model) && (
             <Tooltip>
