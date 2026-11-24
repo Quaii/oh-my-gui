@@ -14,11 +14,11 @@ The CLI you already use, in a desktop and browser workspace for your chats, proj
 
 [![Workspace overview in Carbon, showing unfinished tasks, projects, and recent chats](site/assets/workspace-overview.webp)](site/assets/workspace-overview.webp)
 
-### Seven ways to style the workspace
+### A workspace you can make your own
 
 [![Seven app slices in Carbon, Ash, Steel, Forest, Midnight, Plum, and Paper with different backgrounds](site/assets/theme-study.webp)](site/assets/theme-study.webp)
 
-Each slice pairs a different theme with a different background. The images below open at full size.
+These seven examples are a starting point. You can change individual interface colors, use your own background image, and adjust fonts, icons, scale, corner radius, and glass effects. The images below open at full size.
 
 | Project chat | Appearance |
 | --- | --- |
