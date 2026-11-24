@@ -2,39 +2,42 @@
 
 <h1 align="center">omp.</h1>
 
-<p align="center"><a href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>, with a UI.</p>
+<p align="center"><strong>The AI harness you know. Reimagined for desktop.</strong></p>
 
-<p align="center"><a href="#get-started">Get started</a> · <a href="#showcase">Screenshots</a> · <a href="DESKTOP.md">Desktop builds</a> · <a href="https://github.com/Quaii/omp-frontend/releases">Releases</a></p>
+<p align="center"><a href="https://github.com/Quaii/omp-frontend/releases">Download</a> · <a href="#showcase">Showcase</a> · <a href="#get-started">Get started</a> · <a href="DESKTOP.md">Desktop builds</a></p>
 
-The CLI you already use, in a desktop and browser workspace for your chats, projects, and files. omp. connects to your local Oh My Pi installation.
+omp. brings [Oh My Pi](https://github.com/can1357/oh-my-pi) to the desktop, with project chats, live agent activity, and your files in one window. It connects to your local Oh My Pi runtime and uses the providers, models, and tools you already have configured. The same interface runs in your browser.
 
 ## Showcase
 
-<!-- Replace these captures with new app screenshots using fictional project data. Keep the shared asset paths so the website updates as well. -->
+[![A project conversation in omp. with the Atlas project sidebar and a CSV import review](site/assets/project-chat.webp)](site/assets/project-chat.webp)
 
-[![Workspace overview in Carbon, showing unfinished tasks, projects, and recent chats](site/assets/workspace-overview.webp)](site/assets/workspace-overview.webp)
+### Inside the workspace
 
-### A workspace you can make your own
+Start from a project folder.
 
-[![Seven app slices in Carbon, Ash, Steel, Forest, Midnight, Plum, and Paper with different backgrounds](site/assets/theme-study.webp)](site/assets/theme-study.webp)
+| Resume your work | Follow the agent | Review the project |
+| --- | --- | --- |
+| [![Home overview with unfinished tasks and recent chats](site/assets/workspace-overview.webp)](site/assets/workspace-overview.webp) | [![Expanded agent activity showing files read in an Atlas chat](site/assets/project-activity.webp)](site/assets/project-activity.webp) | [![Atlas file editor open beside a conversation](site/assets/project-files.webp)](site/assets/project-files.webp) |
+| Find running chats and unfinished tasks on Home. | Open activity, see what ran, and steer the conversation. | Open source files beside the conversation. |
 
-These seven examples are a starting point. You can change individual interface colors, use your own background image, and adjust fonts, icons, scale, corner radius, and glass effects. The images below open at full size.
+### A theme for your work
 
-| Project chat | Appearance |
-| --- | --- |
-| [![Project conversation reviewing CSV import cases](site/assets/project-chat.webp)](site/assets/project-chat.webp) | [![Appearance settings showing the theme and background controls](site/assets/appearance.webp)](site/assets/appearance.webp) |
-| **Steel / Tide** | **Paper / Silver** |
-| [![Workspace overview with the Steel theme and Tide background](site/assets/workspace-steel.webp)](site/assets/workspace-steel.webp) | [![Workspace overview with the Paper theme and Silver background](site/assets/workspace-paper.webp)](site/assets/workspace-paper.webp) |
+[![Diagonal workspace previews labeled Carbon, Ash, Steel, Forest, Midnight, Plum, and Paper](site/assets/theme-study.webp)](site/assets/theme-study.webp)
+
+### The way you want it
+
+Make a theme your own with a custom background, accent colors, fonts, icons, scaling, corner radius, and glass effects. The [interactive Appearance demo](#project-website) uses the app’s actual settings page.
+
+[![Appearance settings showing theme presets and background previews](site/assets/appearance.webp)](site/assets/appearance.webp)
 
 ## What you can do
 
-| Area | In omp. |
-| --- | --- |
-| Workspace | Resume running or unfinished work from Home. Pin chats, group them by project, and start a new project chat from a folder. |
-| Conversations | Watch the agent work, expand tool activity, queue and steer follow-ups, and revisit earlier turns. |
-| Files | Inspect changed files and open source beside the chat. Save with conflict detection for externally changed files. |
-| Runtime | Manage providers, models and role overrides, skills, MCP servers, prompts, personas, and extensions. |
-| Usage and appearance | See local token and cost estimates, check supported subscription quotas, and customize your theme and background. |
+- **Organize ongoing work.** Group chats by project, pin the ones you revisit, and pick up unfinished tasks from Home.
+- **Stay in the conversation.** Inspect tool activity, queue follow-ups, steer a running turn, and revisit earlier messages.
+- **Work beside your files.** Inspect changes and edit files next to the chat. The editor checks for external changes before saving.
+- **Configure Oh My Pi.** Manage providers and models, assign models to roles, and work with skills, MCP servers, personas, prompts, and extensions.
+- **Track usage.** Review token counts and estimated API costs, and check remaining limits for supported subscriptions.
 
 ## Get started
 
@@ -47,7 +50,7 @@ Check [GitHub Releases](https://github.com/Quaii/omp-frontend/releases) for avai
 Install Node.js 24 or newer and the [Oh My Pi runtime](https://github.com/can1357/oh-my-pi#install), then run:
 
 ```sh
-git clone --branch tauri https://github.com/Quaii/omp-frontend.git
+git clone https://github.com/Quaii/omp-frontend.git
 cd omp-frontend
 npm ci
 npm run dev
@@ -83,4 +86,4 @@ The live chat and routing checks in [scripts](scripts) use a configured model an
 
 Run `npm run site:build` and `npm run site:preview` to see the [project website](site/index.html) and its interactive Appearance demo at [localhost:57102](http://localhost:57102). The demo renders the web app’s Settings page with navigation locked to Appearance. It runs without an OMP runtime or credentials.
 
-The [Pages workflow](.github/workflows/site-pages.yml) is manual. Once it is on the default branch and GitHub Pages is configured to use GitHub Actions, an owner can run **Publish project website** from the Actions tab. Review the site’s visibility before running it. The workflow builds and deploys `dist/site/`. [GitHub Pages configuration guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+The [Pages workflow](.github/workflows/site-pages.yml) is manual. Once GitHub Pages is configured to use GitHub Actions, an owner can run **Publish project website** from the Actions tab. Review the site’s visibility before running it. The workflow builds and deploys `dist/site/`. [GitHub Pages configuration guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
