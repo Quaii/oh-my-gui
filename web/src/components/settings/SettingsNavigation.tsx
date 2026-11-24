@@ -66,8 +66,8 @@ export function savedSettingsPanel():SettingsPanelId {
   return SETTINGS_ITEMS.some(i => i.id === saved) ? saved as SettingsPanelId : "appearance";
 }
 
-type SettingsSelection = { panel: SettingsPanelId; onSelect: (id: SettingsPanelId) => void };
-export function SettingsMobileNavigation({ panel, onSelect }: SettingsSelection) {
+type SettingsSelection = { panel: SettingsPanelId; onSelect: (id: SettingsPanelId) => void; locked?: boolean };
+export function SettingsMobileNavigation({ panel, onSelect, locked }: SettingsSelection) {
   const item = (entry: PanelItem) => (
     <DropdownMenuItem key={entry.id} aria-current={panel === entry.id ? "page" : undefined} onSelect={() => onSelect(entry.id)}>
       <entry.icon className="size-4" />{entry.label}
@@ -75,7 +75,7 @@ export function SettingsMobileNavigation({ panel, onSelect }: SettingsSelection)
   );
   return <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="outline" size="sm" aria-label="Settings sections" className="max-w-[38vw]">
+      <Button variant="outline" size="sm" aria-label="Settings sections" disabled={locked} className="max-w-[38vw]">
         <span className="truncate">{SETTINGS_ITEMS.find(entry => entry.id === panel)?.label ?? "Settings"}</span>
         <ChevronRight className="size-3 rotate-90" />
       </Button>
@@ -94,21 +94,21 @@ export function SettingsMobileNavigation({ panel, onSelect }: SettingsSelection)
   </DropdownMenu>;
 }
 
-export function SettingsNavigation({panel,onSelect,collapsed,onToggle,onBack}: SettingsSelection & {collapsed:boolean;onToggle:()=>void;onBack:()=>void}) {
+export function SettingsNavigation({panel,onSelect,collapsed,onToggle,onBack,locked}: SettingsSelection & {collapsed:boolean;onToggle:()=>void;onBack:()=>void}) {
  const navRef=useRef<HTMLElement|null>(null);useSmoothWheel(navRef,'[data-slot=scroll-area-viewport]');
  const [advancedOpen, setAdvancedOpen] = useState(false);
  useEffect(() => { setAdvancedOpen(false); }, [panel]);
 
  function renderItem(item: PanelItem) {
-   const button=<button key={item.id} aria-label={collapsed?item.label:undefined} aria-current={panel===item.id?"page":undefined} onClick={()=>onSelect(item.id)} className={`settings-nav-item flex items-center rounded-lg text-left text-[13px] transition-colors ${collapsed?"mx-auto size-10 justify-center":"ml-3 w-[calc(100%-12px)] gap-2.5 px-3 py-1.5"}`}><item.icon className="size-4 shrink-0" strokeWidth={1.5}/>{!collapsed&&<span className="truncate whitespace-nowrap">{item.label}</span>}</button>;
+   const button=<button key={item.id} aria-label={collapsed?item.label:undefined} aria-current={panel===item.id?"page":undefined} disabled={locked && panel!==item.id} onClick={()=>onSelect(item.id)} className={`settings-nav-item flex items-center rounded-lg text-left text-[13px] transition-colors disabled:opacity-55 ${collapsed?"mx-auto size-10 justify-center":"ml-3 w-[calc(100%-12px)] gap-2.5 px-3 py-1.5"}`}><item.icon className="size-4 shrink-0" strokeWidth={1.5}/>{!collapsed&&<span className="truncate whitespace-nowrap">{item.label}</span>}</button>;
    return collapsed?<Tooltip key={item.id}><TooltipTrigger asChild>{button}</TooltipTrigger><TooltipContent side="right">{item.label}</TooltipContent></Tooltip>:button;
  }
- const back = <Button variant="ghost" size={collapsed ? "icon" : "sm"} aria-label="Back to workspace" onClick={onBack}
+ const back = <Button variant="ghost" size={collapsed ? "icon" : "sm"} aria-label="Back to workspace" onClick={onBack} disabled={locked}
    className={collapsed ? "mx-auto text-muted-foreground" : "w-full justify-start text-muted-foreground"}>
    <ArrowLeft className="size-4" />{!collapsed && "Back to workspace"}
  </Button>;
  return <LayoutMotion><aside style={{width:collapsed?64:264}} className="settings-sidebar hidden h-full shrink-0 overflow-hidden bg-sidebar md:flex md:flex-col" data-collapsed={collapsed}>
-  <div className={`settings-brand-row flex h-18 shrink-0 items-center gap-2.5 ${collapsed?"justify-center":"px-5"}`}>
+  <div inert={locked} className={`settings-brand-row flex h-18 shrink-0 items-center gap-2.5 ${collapsed?"justify-center":"px-5"}`}>
    {collapsed?<Tooltip><TooltipTrigger asChild><button aria-label="Expand settings sidebar" onClick={onToggle} className="group relative grid size-10 shrink-0 place-items-center rounded-xl hover:bg-sidebar-accent"><Brand className="size-7 transition-opacity group-hover:opacity-0 group-focus-visible:opacity-0"/><ChevronsRight className="absolute size-4 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"/></button></TooltipTrigger><TooltipContent side="right">Expand sidebar</TooltipContent></Tooltip>:<><Brand className="size-7 shrink-0"/><div className="min-w-0 flex-1 whitespace-nowrap"><p className="text-[16px] font-semibold">omp<span className="text-primary">.</span></p><p className="mt-0.5 text-[11px] text-muted-foreground">Settings</p></div><Button variant="ghost" size="icon-sm" aria-label="Collapse settings sidebar" onClick={onToggle} className="size-7 shrink-0 text-muted-foreground"><ChevronsLeft className="size-4"/></Button></>}
   </div>
   <div className={`flex shrink-0 ${collapsed ? "px-2" : "px-3"}`}>
@@ -123,7 +123,7 @@ export function SettingsNavigation({panel,onSelect,collapsed,onToggle,onBack}: S
             <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <CollapsibleTrigger aria-label="Advanced" className={`settings-nav-item settings-advanced-trigger flex items-center rounded-lg text-left ${collapsed ? "mx-auto size-10 justify-center" : "justify-between"}`}>
+                  <CollapsibleTrigger aria-label="Advanced" disabled={locked} className={`settings-nav-item settings-advanced-trigger flex items-center rounded-lg text-left ${collapsed ? "mx-auto size-10 justify-center" : "justify-between"}`}>
                     {collapsed ? <SlidersHorizontal className="size-4" /> : <>
                       <span>Advanced</span>
                       <ChevronRight className="size-4 transition-transform motion-reduce:transition-none" />

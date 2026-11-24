@@ -15,7 +15,7 @@ Do not copy an early rule or a third-party component's stock styling as the prod
 The [project website](site/index.html) uses the app's Carbon, Steel and Paper palettes. Its bottom
 dock uses a translucent backdrop blur. The project chat levels as the visitor scrolls through the
 light-to-dark hero. The workspace tour is a manual carousel with narrow captures on phones. The
-angled theme slices lead into a standalone preview built with the app's Appearance controls. Keep
+angled theme slices lead into the app's actual Settings page, locked to Appearance. Keep
 setup links and commands together. Motion respects reduced motion.
 
 ## The material hierarchy

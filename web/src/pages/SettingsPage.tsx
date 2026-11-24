@@ -102,19 +102,33 @@ export interface SettingsPageProps {
   onStartPersona: (persona: Persona) => void;
 }
 
-export function SettingsPage(props: SettingsPageProps) {
+const noRuntimeAction = () => {};
+const appearancePreviewProps: SettingsPageProps = {
+  onBack: noRuntimeAction, sidebarCollapsed: false, onToggleSidebar: noRuntimeAction,
+  chat: { key: null, loaded: false }, thinkingLevels: [], config: null,
+  onConfigSaved: noRuntimeAction, onSend: noRuntimeAction, flags: [], setFlags: noRuntimeAction,
+  onRestart: noRuntimeAction, info: null, onRefreshState: noRuntimeAction, onRefreshModels: noRuntimeAction,
+  chatModels: [], hiddenChatModels: [], onChatModelsVisibilityChange: noRuntimeAction,
+  onPersonaLibrarySaved: noRuntimeAction, onStartPersona: noRuntimeAction,
+};
+
+export function SettingsPage(input: SettingsPageProps | { appearancePreview: true }) {
+  const preview = "appearancePreview" in input;
+  const props = preview ? appearancePreviewProps : input;
   const { onBack, sidebarCollapsed, onToggleSidebar, chat, config, onConfigSaved, onSend, flags, setFlags, onRestart, info, onRefreshState, onRefreshModels } = props;
 
   const contentRef=useRef<HTMLDivElement>(null);
-  const [panel,setPanel]=useState<PanelId>(savedSettingsPanel);
+  const [selectedPanel,setPanel]=useState<PanelId>(() => preview ? "appearance" : savedSettingsPanel());
+  const panel = preview ? "appearance" : selectedPanel;
   useEffect(() => {
+    if (preview) return;
     const selectSavedPanel = () => setPanel(savedSettingsPanel());
     window.addEventListener('omp:settings-panel', selectSavedPanel);
     return () => window.removeEventListener('omp:settings-panel', selectSavedPanel);
-  }, []);
-  useEffect(() => {localStorage.setItem("ompfe.settings.panel", panel);contentRef.current?.scrollTo({top:0,behavior:"instant"});}, [panel]);
+  }, [preview]);
+  useEffect(() => {if (!preview) localStorage.setItem("ompfe.settings.panel", panel);contentRef.current?.scrollTo({top:0,behavior:"instant"});}, [panel, preview]);
   const [payload, setPayload] = useState<SettingsPayload | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!preview);
   const [q, setQ] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -140,12 +154,13 @@ export function SettingsPage(props: SettingsPageProps) {
   }, [config]);
 
   useEffect(() => {
+    if (preview) return;
     setLoading(true);
     fetchSettings()
       .then(setPayload)
       .catch((e) => setErr(String(e?.message ?? e)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [preview]);
 
   const refreshProviders = useCallback(async () => {
     if (!chat.key || !chat.loaded || providerView.current.panel !== "providers" || providerView.current.key !== chat.key) return;
@@ -248,18 +263,18 @@ export function SettingsPage(props: SettingsPageProps) {
   const settings: Setting[] = payload?.settings ?? [];
   const tab = TAB_PANELS[panel];
   const tabSettings = useMemo(() => (tab ? settings.filter((s) => s.ui?.tab === tab) : []), [settings, tab]);
-  const searching = q.trim().length > 0;
+  const searching = !preview && q.trim().length > 0;
   const current = ALL_ITEMS.find((i) => i.id === panel)?.label ?? "Settings";
   const pageDescription = searching ? undefined : PAGE_DESCRIPTIONS[panel];
   const usagePage = !searching && panel === "usage";
   const pageHeading = <SettingsHeading level="h1" title={searching ? "Search results" : current} description={pageDescription} />;
 
   const st = chat.state;
-  const selectPanel = (id: PanelId) => transitionUpdate(() => { setPanel(id); setQ(""); });
+  const selectPanel = (id: PanelId) => { if (!preview) transitionUpdate(() => { setPanel(id); setQ(""); }); };
 
   return (
     <div className="settings-layout flex h-full min-h-0 min-w-0 flex-1">
-      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={selectPanel} onBack={onBack}/>
+      <SettingsNavigation panel={panel} collapsed={sidebarCollapsed} onToggle={onToggleSidebar} onSelect={selectPanel} onBack={onBack} locked={preview}/>
 
       <main className="settings-main workspace-main relative isolate flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <WorkspaceBackground />
@@ -268,6 +283,7 @@ export function SettingsPage(props: SettingsPageProps) {
         <Button
           variant="ghost"
           size="sm"
+          disabled={preview}
           onClick={onBack}
           aria-label="Back to workspace"
           className="h-9 shrink-0 gap-2 rounded-xl text-muted-foreground md:hidden"
@@ -279,6 +295,7 @@ export function SettingsPage(props: SettingsPageProps) {
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
+            disabled={preview}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search settings…"
             aria-label="Search settings"
@@ -288,11 +305,11 @@ export function SettingsPage(props: SettingsPageProps) {
 
         {/* mobile section picker */}
         <div className="ml-auto md:hidden">
-          <SettingsMobileNavigation panel={panel} onSelect={selectPanel} />
+          <SettingsMobileNavigation panel={panel} onSelect={selectPanel} locked={preview} />
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 md:ml-auto">
-          <Button variant="ghost" onClick={onRestart} aria-label="Restart session" className="restart-session-button h-9 rounded-xl"><RotateCcw className="size-3.5 shrink-0"/><span aria-hidden="true">Restart session</span></Button>
+          <Button variant="ghost" onClick={onRestart} disabled={preview} aria-label="Restart session" className="restart-session-button h-9 rounded-xl"><RotateCcw className="size-3.5 shrink-0"/><span aria-hidden="true">Restart session</span></Button>
         </div>
         <DesktopWindowControls/>
       </header>
@@ -317,6 +334,7 @@ export function SettingsPage(props: SettingsPageProps) {
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={q}
+                  disabled={preview}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search settings…"
                   aria-label="Search settings"
@@ -404,7 +422,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : tab ? (
               <div className="settings-stack">
                 {panel === "appearance" && <AppearancePanel />}
-                {panel === "appearance" ? <details className="harness-display-settings"><summary className="cursor-pointer py-3 text-[13px] text-muted-foreground">Harness display settings</summary><ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced /></details> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}
+                {panel === "appearance" ? <details className="harness-display-settings"><summary className="cursor-pointer py-3 text-[13px] text-muted-foreground">Harness display settings</summary>{preview ? <Empty>Available when a local Oh My Pi runtime is connected.</Empty> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}</details> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}
               </div>
             ) : (
               <Empty>Nothing here.</Empty>
