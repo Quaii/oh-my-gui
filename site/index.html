@@ -20,7 +20,7 @@
   <script src="showcase.js" defer></script>
 </head>
 <body>
-  <div class="nav">
+  <header class="nav">
     <div class="wrap nav-bar">
       <a class="skip-link" href="#main">Skip to content</a>
       <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="30" height="30">omp.</a>
@@ -43,11 +43,10 @@
         <a class="button" href="#get-started">Get omp. <span aria-hidden="true">↓</span></a>
       </div>
     </div>
-  </div>
+  </header>
 
   <main id="main">
     <section class="hero" aria-labelledby="hero-title" data-enter>
-      <div class="hero-ground" aria-hidden="true"></div>
       <div class="wrap">
         <div class="hero-text">
           <div class="hero-head">
@@ -88,30 +87,30 @@
         <div class="tour" aria-label="Workspace tour">
           <div class="tour-stage" tabindex="0" aria-label="Workspace previews">
             <figure id="home">
-              <a class="image-link" href="assets/workspace-overview.webp" aria-label="Open the full Home screenshot">
+              <div class="image-link">
                 <picture>
                   <source media="(max-width: 540px)" srcset="assets/workspace-overview-narrow.webp" width="432" height="600">
-                  <img src="assets/workspace-overview.webp" alt="Home showing what is running, unfinished tasks, and recent conversations" width="1440" height="900" loading="lazy">
+                  <img src="assets/workspace-overview.webp" alt="Home showing what is running, unfinished tasks, and recent conversations" width="1440" height="900" loading="lazy" draggable="false">
                 </picture>
-              </a>
+              </div>
               <figcaption><strong>Resume your work</strong><span>Find running chats and unfinished tasks on Home.</span></figcaption>
             </figure>
             <figure id="tour-chat">
-              <a class="image-link" href="assets/project-activity.webp" aria-label="Open the full agent activity screenshot">
+              <div class="image-link">
                 <picture>
                   <source media="(max-width: 540px)" srcset="assets/project-activity-narrow.webp" width="432" height="600">
-                  <img src="assets/project-activity.webp" alt="Agent activity expanded in the Atlas chat, showing the files read before the reply" width="1440" height="900" loading="lazy">
+                  <img src="assets/project-activity.webp" alt="Agent activity expanded in the Atlas chat, showing the files read before the reply" width="1440" height="900" loading="lazy" draggable="false">
                 </picture>
-              </a>
+              </div>
               <figcaption><strong>Follow the agent</strong><span>Open activity, see what ran, and steer the conversation.</span></figcaption>
             </figure>
             <figure id="tour-files">
-              <a class="image-link" href="assets/project-files.webp" aria-label="Open the full file explorer screenshot">
+              <div class="image-link">
                 <picture>
                   <source media="(max-width: 540px)" srcset="assets/project-files-narrow.webp" width="432" height="600">
-                  <img src="assets/project-files.webp" alt="The Atlas project file editor with import.ts open" width="1440" height="900" loading="lazy">
+                  <img src="assets/project-files.webp" alt="The Atlas project file editor with import.ts open" width="1440" height="900" loading="lazy" draggable="false">
                 </picture>
-              </a>
+              </div>
               <figcaption><strong>Review the project</strong><span>Open source files beside the conversation.</span></figcaption>
             </figure>
           </div>
@@ -124,22 +123,34 @@
       </div>
     </section>
 
-    <section id="appearance" class="appearance" aria-labelledby="appearance-title">
+    <section id="themes" class="themes" aria-labelledby="themes-title">
       <div class="wrap">
         <div class="section-head">
-          <h2 id="appearance-title">Try the appearance controls.</h2>
-          <p>Pick a theme and try backgrounds, fonts, icons, accents, and glass effects in the app’s Appearance page below.</p>
+          <h2 id="themes-title">A theme for your work.</h2>
+          <p>Pick a theme to see it applied in the app’s Appearance settings.</p>
         </div>
         <div class="theme-strip" aria-label="Sample themes">
-          <a class="theme-slice theme-carbon" href="assets/workspace-overview.webp" data-theme="carbon"><span><img src="assets/workspace-overview.webp" alt="" loading="lazy"></span><b>Carbon</b></a>
-          <a class="theme-slice theme-ash" href="assets/theme-ash.webp" data-theme="ash"><span><img src="assets/theme-ash.webp" alt="" loading="lazy"></span><b>Ash</b></a>
-          <a class="theme-slice theme-steel" href="assets/workspace-steel.webp" data-theme="steel"><span><img src="assets/workspace-steel.webp" alt="" loading="lazy"></span><b>Steel</b></a>
-          <a class="theme-slice theme-forest" href="assets/theme-forest.webp" data-theme="forest"><span><img src="assets/theme-forest.webp" alt="" loading="lazy"></span><b>Forest</b></a>
-          <a class="theme-slice theme-midnight" href="assets/theme-midnight.webp" data-theme="slate"><span><img src="assets/theme-midnight.webp" alt="" loading="lazy"></span><b>Midnight</b></a>
-          <a class="theme-slice theme-plum" href="assets/theme-plum.webp" data-theme="plum"><span><img src="assets/theme-plum.webp" alt="" loading="lazy"></span><b>Plum</b></a>
-          <a class="theme-slice theme-paper" href="assets/workspace-paper.webp" data-theme="daylight"><span><img src="assets/workspace-paper.webp" alt="" loading="lazy"></span><b>Paper</b></a>
+          <div class="theme-track">
+            <a class="theme-slice theme-carbon" href="assets/workspace-overview.webp" data-theme="carbon"><span><img src="assets/workspace-overview.webp" alt="" loading="lazy"></span><b>Carbon</b></a>
+            <a class="theme-slice theme-ash" href="assets/theme-ash.webp" data-theme="ash"><span><img src="assets/theme-ash.webp" alt="" loading="lazy"></span><b>Ash</b></a>
+            <a class="theme-slice theme-steel" href="assets/workspace-steel.webp" data-theme="steel"><span><img src="assets/workspace-steel.webp" alt="" loading="lazy"></span><b>Steel</b></a>
+            <a class="theme-slice theme-forest" href="assets/theme-forest.webp" data-theme="forest"><span><img src="assets/theme-forest.webp" alt="" loading="lazy"></span><b>Forest</b></a>
+            <a class="theme-slice theme-midnight" href="assets/theme-midnight.webp" data-theme="slate"><span><img src="assets/theme-midnight.webp" alt="" loading="lazy"></span><b>Midnight</b></a>
+            <a class="theme-slice theme-plum" href="assets/theme-plum.webp" data-theme="plum"><span><img src="assets/theme-plum.webp" alt="" loading="lazy"></span><b>Plum</b></a>
+            <a class="theme-slice theme-paper" href="assets/workspace-paper.webp" data-theme="daylight"><span><img src="assets/workspace-paper.webp" alt="" loading="lazy"></span><b>Paper</b></a>
+          </div>
         </div>
-        <div id="appearance-preview">
+      </div>
+    </section>
+
+    <section id="appearance" class="appearance" aria-labelledby="appearance-title">
+      <div class="wrap">
+        <div class="section-head appearance-intro">
+          <h2 id="appearance-title">The way you want it.</h2>
+          <p>Change backgrounds, fonts, icons, accents, and glass effects in the app’s Appearance page.</p>
+          <button class="button demo-toggle" type="button" aria-expanded="false" aria-controls="appearance-preview" hidden>Try it yourself <span aria-hidden="true">↓</span></button>
+        </div>
+        <div id="appearance-preview" class="appearance-preview">
           <iframe class="appearance-frame" title="Interactive omp. Appearance settings" loading="lazy" hidden></iframe>
           <p class="appearance-fallback">The interactive preview is available in the built site.</p>
         </div>
@@ -150,7 +161,7 @@
   <footer id="get-started" class="closing" aria-labelledby="get-started-title">
     <div class="wrap">
       <div class="closing-content">
-        <h2 id="get-started-title">Run omp. locally</h2>
+        <h2 id="get-started-title">Download omp.</h2>
         <div class="start-layout">
           <article>
             <h3>Desktop</h3>
@@ -159,7 +170,7 @@
             <a href="https://github.com/Quaii/omp-frontend/blob/tauri/DESKTOP.md">Read the build guide</a>
           </article>
           <article>
-            <h3>Browser</h3>
+            <h3>Build from source</h3>
             <p><a href="https://github.com/Quaii/omp-frontend/tree/tauri">Clone the repository</a>. Install Node.js 24+ and <a href="https://github.com/can1357/oh-my-pi#install">Oh My Pi</a>, then run these commands from the repo.</p>
             <pre><code>npm ci
 npm run dev</code></pre>

@@ -6,6 +6,7 @@ const next = controls.querySelector('[data-tour-next]');
 const position = controls.querySelector('output');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let activeSlide = -1;
+let drag;
 
 function slideOffset(slide) {
   const viewport = track.getBoundingClientRect();
@@ -43,9 +44,46 @@ track.addEventListener('keydown', event => {
   event.preventDefault();
   moveTo(index);
 });
+track.addEventListener('pointerdown', event => {
+  if (event.pointerType === 'touch') {
+    delete track.dataset.mouseDrag;
+    return;
+  }
+  if (!event.isPrimary || event.button !== 0) return;
+  event.preventDefault();
+  track.focus({ preventScroll: true });
+  track.dataset.mouseDrag = '';
+  track.scrollTo({ left: track.scrollLeft, behavior: 'instant' });
+  drag = { pointer: event.pointerId, start: event.clientX, scroll: track.scrollLeft, slide: activeSlide };
+  track.setPointerCapture(event.pointerId);
+});
+track.addEventListener('pointermove', event => {
+  if (drag?.pointer !== event.pointerId) return;
+  const distance = drag.start - event.clientX;
+  if (Math.abs(distance) < 4 && !track.classList.contains('is-dragging')) return;
+  track.classList.add('is-dragging');
+  track.scrollLeft = drag.scroll + distance;
+});
+function finishDrag(event) {
+  if (drag?.pointer !== event.pointerId) return;
+  if (track.classList.contains('is-dragging')) {
+    const distance = track.scrollLeft - drag.scroll;
+    updateCarousel();
+    const swipe = event.type === 'pointerup' && Math.abs(distance) > Math.min(90, track.clientWidth * .12);
+    const index = swipe && activeSlide === drag.slide ? drag.slide + Math.sign(distance) : activeSlide;
+    moveTo(Math.max(0, Math.min(slides.length - 1, index)));
+  }
+  track.classList.remove('is-dragging');
+  drag = undefined;
+}
+track.addEventListener('pointerup', finishDrag);
+track.addEventListener('pointercancel', finishDrag);
+track.addEventListener('lostpointercapture', finishDrag);
 
 const frame = document.querySelector('.appearance-frame');
 const fallback = document.querySelector('.appearance-fallback');
+const preview = document.querySelector('#appearance-preview');
+const demoToggle = document.querySelector('.demo-toggle');
 const themeLinks = Array.from(document.querySelectorAll('[data-theme]'));
 const demoUrl = new URL('demo/', location.href);
 let pendingTheme;
@@ -54,6 +92,15 @@ let demoReady = false;
 function sendTheme(theme) {
   if (!demoReady) return;
   frame.contentWindow.postMessage({ type: 'omp:appearance-demo-theme', theme }, demoUrl.origin);
+}
+
+function toggleDemo(open, scroll = false) {
+  demoToggle.setAttribute('aria-expanded', String(open));
+  preview.hidden = !open;
+  preview.classList.toggle('is-open', open);
+  if (!open) return;
+  if (!frame.hasAttribute('src')) frame.src = demoUrl.href;
+  if (scroll) preview.scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'instant' : 'smooth' });
 }
 
 window.addEventListener('message', event => {
@@ -75,15 +122,17 @@ fetch(new URL('ready.json', demoUrl))
   .then(response => response.ok && response.json())
   .then(status => {
     if (!status?.appearanceDemo) return;
-    frame.src = demoUrl.href;
     frame.hidden = false;
     fallback.hidden = true;
+    demoToggle.hidden = false;
+    toggleDemo(location.hash === '#appearance-preview');
+    demoToggle.addEventListener('click', () => toggleDemo(preview.hidden, preview.hidden));
     for (const link of themeLinks) {
       link.addEventListener('click', event => {
         event.preventDefault();
         if (demoReady) sendTheme(link.dataset.theme);
         else pendingTheme = link.dataset.theme;
-        document.querySelector('#appearance-preview').scrollIntoView({ block: 'start' });
+        toggleDemo(true, true);
       });
     }
   })
