@@ -66,9 +66,9 @@ a { color: inherit; text-underline-offset: .24em; }
   pointer-events: none;
 }
 .nav-bar, .tour-arrows button {
-  background: #182532b0;
+  background: rgb(110 110 110 / 19%);
   box-shadow: 0 8px 32px #0c141d35, inset 0 1px #ffffff1c;
-  backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) brightness(40%);
 }
 .nav-bar {
   position: relative;
@@ -259,7 +259,7 @@ p { color: var(--muted); }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.tour-arrows button:hover { background: #334657bb; }
+.tour-arrows button:hover { background: rgb(150 150 150 / 24%); }
 @media (hover: hover) and (pointer: fine) {
   .tour:not(:has(figure[data-active] .image-link:hover, .tour-arrows button:hover, .tour-arrows button:focus-visible, .tour-stage:focus-visible)) .tour-arrows button {
     opacity: 0;
