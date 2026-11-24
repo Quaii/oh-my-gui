@@ -128,31 +128,7 @@ track.addEventListener('lostpointercapture', finishDrag);
 
 const frame = document.querySelector('.appearance-frame');
 const fallback = document.querySelector('.appearance-fallback');
-const preview = document.querySelector('#appearance-preview');
-const themeLinks = Array.from(document.querySelectorAll('[data-theme]'));
 const demoUrl = new URL('demo/', location.href);
-let pendingTheme;
-let demoReady = false;
-
-function sendTheme(theme) {
-  if (!demoReady) return;
-  frame.contentWindow.postMessage({ type: 'omp:appearance-demo-theme', theme }, demoUrl.origin);
-}
-
-window.addEventListener('message', event => {
-  if (event.origin !== demoUrl.origin || event.source !== frame.contentWindow) return;
-  if (event.data?.type !== 'omp:appearance-demo-current') return;
-
-  demoReady = true;
-  for (const link of themeLinks) {
-    if (link.dataset.theme === event.data.theme) link.setAttribute('aria-current', 'true');
-    else link.removeAttribute('aria-current');
-  }
-  if (pendingTheme) {
-    sendTheme(pendingTheme);
-    pendingTheme = undefined;
-  }
-});
 
 fetch(new URL('ready.json', demoUrl))
   .then(response => response.ok && response.json())
@@ -161,18 +137,20 @@ fetch(new URL('ready.json', demoUrl))
     frame.src = demoUrl.href;
     frame.hidden = false;
     fallback.hidden = true;
-    for (const link of themeLinks) {
-      link.addEventListener('click', event => {
-        event.preventDefault();
-        if (demoReady) sendTheme(link.dataset.theme);
-        else pendingTheme = link.dataset.theme;
-        preview.scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'instant' : 'smooth' });
-      });
-    }
   })
   .catch(() => {
     // The HTML-only preview can still show the screenshots.
   });
+
+const root = document.documentElement;
+document.addEventListener('pointermove', event => {
+  if (event.pointerType !== 'mouse' || event.buttons) return;
+  root.classList.toggle('scrollbar-near', event.clientX >= window.innerWidth - 16);
+}, { passive: true });
+window.addEventListener('blur', () => root.classList.remove('scrollbar-near'));
+document.addEventListener('pointerleave', event => {
+  if (!event.buttons && event.clientX < window.innerWidth - 16) root.classList.remove('scrollbar-near');
+});
 
 const pageLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'))
   .filter(link => ['#frontend', '#workspace', '#appearance', '#get-started'].includes(link.hash));

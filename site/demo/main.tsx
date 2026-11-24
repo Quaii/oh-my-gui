@@ -2,25 +2,11 @@ import { createRoot } from "react-dom/client";
 import { ErrorBoundary } from "../../web/src/components/ErrorBoundary";
 import { WorkspaceMotion } from "../../web/src/components/transitions/WorkspaceMotion";
 import { TooltipProvider } from "../../web/src/components/ui/tooltip";
-import { APP_THEMES, applyTheme, DEFAULT_THEME, getTheme } from "../../web/src/lib/theme";
+import { applyTheme, DEFAULT_THEME } from "../../web/src/lib/theme";
 import { SettingsPage } from "../../web/src/pages/SettingsPage";
 import "./demo.css";
 
 applyTheme(DEFAULT_THEME);
-
-function reportTheme() {
-  window.parent.postMessage({ type: "omp:appearance-demo-current", theme: getTheme() }, window.location.origin);
-}
-
-window.addEventListener("omp:appearance", reportTheme);
-reportTheme();
-
-window.addEventListener("message", event => {
-  if (event.origin !== window.location.origin || event.source !== window.parent) return;
-  if (event.data?.type !== "omp:appearance-demo-theme") return;
-  const theme = APP_THEMES.find(option => option.value === event.data.theme);
-  if (theme) applyTheme(theme.value);
-});
 
 createRoot(document.getElementById("root")!).render(
   <TooltipProvider delayDuration={300}>
