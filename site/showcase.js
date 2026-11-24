@@ -41,5 +41,11 @@ tabs.forEach((tab, index) => {
   });
 });
 
-const linkedTab = panels.findIndex(panel => `#${panel.id}` === location.hash);
-selectTab(Math.max(0, linkedTab));
+function selectLinkedTab() {
+  const linkedTab = panels.findIndex(panel => `#${panel.id}` === location.hash);
+  if (linkedTab >= 0) selectTab(linkedTab);
+}
+
+selectTab(0);
+selectLinkedTab();
+window.addEventListener('hashchange', selectLinkedTab);

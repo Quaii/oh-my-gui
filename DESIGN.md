@@ -10,6 +10,14 @@ describe default UI scale; user appearance overrides remain supported. Read the 
 in [index.css](web/src/index.css): the file contains older declarations superseded later in the cascade.
 Do not copy an early rule or a third-party component's stock styling as the product specification.
 
+## Project website
+
+The [project website](site/index.html) uses Carbon-based colors and a shared content width to frame
+real app captures. The hero shows a project conversation. Home and Appearance have their own
+sections, with a keyboard-accessible gallery for comparing appearance settings, theme combinations,
+and light and dark workspaces. Use narrow app captures where available on phones. Keep setup links
+and commands together at the end of the page. Motion is brief and respects reduced motion.
+
 ## The material hierarchy
 
 There are three distinct surface roles. Do not turn them into a single universal glass style.
