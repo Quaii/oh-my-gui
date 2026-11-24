@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 
-const repository = "Quaii/omp-frontend";
+const repository = "Quaii/oh-my-gui";
 export function mergeUpdateFragments(fragments) {
   if (!fragments.length) throw Error("No signed update fragments found.");
   const first = fragments[0],

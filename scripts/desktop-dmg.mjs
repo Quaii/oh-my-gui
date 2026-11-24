@@ -24,7 +24,7 @@ export async function createDevelopmentDmg(root) {
   try {
     await fs.cp(app, path.join(staging, 'omp.app'), { recursive: true, verbatimSymlinks: true });
     await fs.symlink('/Applications', path.join(staging, 'Applications'));
-    execFileSync('hdiutil', ['create', '-ov', '-volname', 'omp.', '-srcfolder', staging, '-format', 'UDZO', destination], { stdio: 'inherit', timeout: 180000 });
+    execFileSync('hdiutil', ['create', '-ov', '-volname', 'Oh My GUI', '-srcfolder', staging, '-format', 'UDZO', destination], { stdio: 'inherit', timeout: 180000 });
     execFileSync('hdiutil', ['verify', destination], { stdio: 'inherit', timeout: 60000 });
     console.log('Created and verified development DMG without mounting: ' + destination);
   } finally {

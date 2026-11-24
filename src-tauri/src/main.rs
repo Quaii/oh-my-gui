@@ -294,7 +294,7 @@ fn startup_error(message: &str) {
     unsafe {
         use windows_sys::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
         let text: Vec<u16> = message.encode_utf16().chain(Some(0)).collect();
-        let title: Vec<u16> = "omp. could not start"
+        let title: Vec<u16> = "Oh My GUI could not start"
             .encode_utf16()
             .chain(Some(0))
             .collect();
@@ -338,7 +338,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     let (backend, url) = start_backend(app.handle(), installer)?;
     app.manage(backend);
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
-        .title(if installer { "Install omp." } else { "omp." })
+        .title(if installer { "Install Oh My GUI" } else { "Oh My GUI" })
         .decorations(!cfg!(windows))
         .shadow(!cfg!(windows))
         .visible(false)
@@ -417,7 +417,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
         {
             let failed_app = startup_app.clone();
             let _ = startup_app.run_on_main_thread(move || {
-                startup_error("The interface could not load. Close this copy and run the packaged omp. installer or app again.");
+                startup_error("The interface could not load. Close this copy and run the packaged Oh My GUI installer or app again.");
                 failed_app.exit(1);
             });
         }

@@ -144,7 +144,7 @@ fail the job. The recovery is disabled when Apple signing/notarization credentia
 
 ## Verified package build
 
-[Run 43836649167](https://github.com/Quaii/omp-frontend/actions/runs/43836649167) passed Windows x64,
+[Run 43836649167](https://github.com/Quaii/oh-my-gui/actions/runs/43836649167) passed Windows x64,
 macOS arm64, macOS x64 and Linux x64 packaging, all 54 tests, checksum generation and the private
 bundled-backend readiness/authentication/health/assets/shutdown checks. The artifacts remain private.
 Browser fixture checks covered setup navigation, missing/connected runtime and dark/light themes.

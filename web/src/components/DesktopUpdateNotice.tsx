@@ -59,7 +59,7 @@ export function DesktopUpdateNotice() {
             aria-label="App update"
           >
             <p className="text-sm font-medium">
-              omp. {status.version} is available
+              Oh My GUI {status.version} is available
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button size="sm" onClick={() => setOpen(true)}>
@@ -83,7 +83,7 @@ export function DesktopUpdateNotice() {
       >
         <DialogContent className="desktop-update-dialog">
           <DialogTitle>
-            Update omp.{status?.version ? ` to ${status.version}` : ""}
+            Update Oh My GUI{status?.version ? ` to ${status.version}` : ""}
           </DialogTitle>
           <DialogDescription>
             Install the latest version and restart. Your chats and settings are

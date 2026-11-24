@@ -60,7 +60,7 @@ export class DesktopUpdates {
     this.native = {
       phase: enabled ? "idle" : "disabled",
       message: enabled
-        ? "Check for a new version of omp."
+        ? "Check for a new version of Oh My GUI."
         : "Automatic updates are not configured for this build yet.",
     };
   }

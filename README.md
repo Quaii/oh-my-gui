@@ -1,16 +1,16 @@
 <p align="center"><img src="site/assets/brand.svg" alt="" width="54" height="54"></p>
 
-<h1 align="center">omp.</h1>
+<h1 align="center">Oh My GUI</h1>
 
 <p align="center"><strong>The AI harness you know. Reimagined for desktop.</strong></p>
 
-<p align="center"><a href="https://github.com/Quaii/omp-frontend/releases">Download</a> · <a href="#showcase">Showcase</a> · <a href="#get-started">Get started</a> · <a href="DESKTOP.md">Desktop builds</a></p>
+<p align="center"><a href="https://quaii.github.io/oh-my-gui/">Website</a> · <a href="https://github.com/Quaii/oh-my-gui/releases">Releases</a> · <a href="#showcase">Showcase</a> · <a href="#get-started">Get started</a></p>
 
-omp. brings [Oh My Pi](https://github.com/can1357/oh-my-pi) to the desktop, with project chats, live agent activity, and your files in one window. It connects to your local Oh My Pi runtime and uses the providers, models, and tools you already have configured. The same interface runs in your browser.
+Oh My GUI is an independent desktop app for [Oh My Pi](https://github.com/can1357/oh-my-pi), with project chats, live agent activity, and your files in one window. It connects to your local Oh My Pi runtime and uses the providers, models, and tools you already have configured. The same interface runs in your browser.
 
 ## Showcase
 
-[![A project conversation in omp. with the Atlas project sidebar and a CSV import review](site/assets/project-chat.webp)](site/assets/project-chat.webp)
+[![A project conversation in Oh My GUI with the Atlas project sidebar and a CSV import review](site/assets/project-chat.webp)](site/assets/project-chat.webp)
 
 ### Inside the workspace
 
@@ -43,15 +43,15 @@ Make a theme your own with a custom background, accent colors, fonts, icons, sca
 
 ### Desktop
 
-Check [GitHub Releases](https://github.com/Quaii/omp-frontend/releases) for available downloads. The Windows build uses a custom installer and first-launch setup that can offer to install or update OMP. macOS and Linux package builds and platform verification requirements are in the [desktop guide](DESKTOP.md).
+Check [GitHub Releases](https://github.com/Quaii/oh-my-gui/releases) for packaged builds or build your own from the [desktop guide](DESKTOP.md). The Windows installer can install or update the Oh My Pi runtime during setup.
 
 ### Browser or source development
 
 Install Node.js 24 or newer and the [Oh My Pi runtime](https://github.com/can1357/oh-my-pi#install), then run:
 
 ```sh
-git clone https://github.com/Quaii/omp-frontend.git
-cd omp-frontend
+git clone https://github.com/Quaii/oh-my-gui.git
+cd oh-my-gui
 npm ci
 npm run dev
 ```

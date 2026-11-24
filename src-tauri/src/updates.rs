@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn update_urls_require_https_without_credentials() {
         assert!(secure_url(
-            &"https://github.com/Quaii/omp-frontend/releases/latest/download/latest.json"
+            &"https://github.com/Quaii/oh-my-gui/releases/latest/download/latest.json"
                 .parse()
                 .unwrap()
         ));

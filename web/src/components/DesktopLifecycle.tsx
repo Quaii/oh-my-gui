@@ -45,7 +45,7 @@ export function DesktopLifecycle() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Quit omp.?</DialogTitle>
+          <DialogTitle>Quit Oh My GUI?</DialogTitle>
           <DialogDescription>
             {running === null
               ? "Quitting stops any running sessions."
@@ -68,7 +68,7 @@ export function DesktopLifecycle() {
             variant="destructive"
             onClick={() => void action("close-confirmed")}
           >
-            Quit omp.
+            Quit Oh My GUI
           </Button>
         </div>
       </DialogContent>

@@ -99,7 +99,7 @@ test("release manifest rejects mixed versions, duplicate targets and untrusted a
     notes: "Notes",
     platforms: {
       "windows-x86_64": {
-        url: "https://github.com/Quaii/omp-frontend/releases/download/v0.2.0/omp.exe",
+        url: "https://github.com/Quaii/oh-my-gui/releases/download/v0.2.0/omp.exe",
         signature: "signed",
       },
     },

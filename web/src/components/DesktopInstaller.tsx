@@ -29,10 +29,10 @@ type InstallerStatus = {
 };
 
 const installerCopy = {
-  install: { start: "Install omp.", done: "Installation complete", busy: "Installing…" },
-  update: { start: "Update omp.", done: "Update complete", busy: "Updating…" },
-  reinstall: { start: "Reinstall omp.", done: "Reinstall complete", busy: "Reinstalling…" },
-  replace: { start: "Replace omp.", done: "Replacement complete", busy: "Replacing…" },
+  install: { start: "Install Oh My GUI", done: "Installation complete", busy: "Installing…" },
+  update: { start: "Update Oh My GUI", done: "Update complete", busy: "Updating…" },
+  reinstall: { start: "Reinstall Oh My GUI", done: "Reinstall complete", busy: "Reinstalling…" },
+  replace: { start: "Replace Oh My GUI", done: "Replacement complete", busy: "Replacing…" },
 } satisfies Record<InstallMode, { start: string; done: string; busy: string }>;
 
 export function DesktopInstaller() {
@@ -92,7 +92,7 @@ export function DesktopInstaller() {
   const mode = status?.mode ?? "install";
   const copy = installerCopy[mode];
   const freshInstall = mode === "install";
-  const launchLabel = freshInstall ? "Open setup" : "Open omp.";
+  const launchLabel = freshInstall ? "Open setup" : "Open Oh My GUI";
   const steps = INSTALL_STEPS.map(step => step.id === "complete" ? launchLabel : step.label);
 
   async function close() {
@@ -155,7 +155,7 @@ export function DesktopInstaller() {
           </h1>
           <p>
             {status?.installed
-              ? freshInstall ? "Continue to set up OMP and connect your providers." : "Your chats and settings are ready in omp."
+              ? freshInstall ? "Continue to set up OMP and connect your providers." : "Your chats and settings are ready in Oh My GUI."
               : freshInstall ? "Install for your account and bring the OMP runtime up to date."
                 : "Your chats and settings are kept. The OMP runtime will also be checked for updates."}
           </p>
@@ -254,7 +254,7 @@ export function DesktopInstaller() {
       </DesktopSetupFrame>
       <Dialog open={confirmAppClose && !confirmExit} onOpenChange={setConfirmAppClose}>
         <DialogContent className="desktop-installer-confirm" showCloseButton={false}>
-          <DialogTitle>Close omp. to continue?</DialogTitle>
+          <DialogTitle>Close Oh My GUI to continue?</DialogTitle>
           <DialogDescription>
             This will end your current session and stop any running work. Save any unsaved changes before continuing.
           </DialogDescription>
@@ -263,7 +263,7 @@ export function DesktopInstaller() {
             <Button onClick={() => {
               setConfirmAppClose(false);
               void action("install", true);
-            }}>Close omp. and continue</Button>
+            }}>Close Oh My GUI and continue</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -279,7 +279,7 @@ export function DesktopInstaller() {
             {busy
               ? "Installation is in progress. It will finish safely before the window closes. Setup will not open."
               : status?.installed
-                ? "omp. is installed. Close this window without opening setup?"
+                ? "Oh My GUI is installed. Close this window without opening setup?"
                 : "Exit the installer? You can run it again to retry."}
           </DialogDescription>
           <DialogFooter>

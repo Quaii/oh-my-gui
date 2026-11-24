@@ -29,8 +29,8 @@ function installedAppState(close: boolean): Promise<AppState> {
       { timeout: close ? 50_000 : 5000, windowsHide: true }, (error, stdout) => {
         const state = stdout.trim();
         if (error || (state !== "running" && state !== "draining" && state !== "closed")) {
-          reject(new Error(close ? "Could not close omp. Quit from its tray menu and retry here."
-            : "Could not check whether omp. is running. Retry here."));
+          reject(new Error(close ? "Could not close Oh My GUI. Quit from its tray menu and retry here."
+            : "Could not check whether Oh My GUI is running. Retry here."));
         } else {
           resolve(state);
         }
@@ -47,13 +47,13 @@ export async function prepareInstalledApp(
   if (state === "running") {
     if (!close) return false;
     state = await check(true);
-    if (state === "running") throw new Error("omp. is still running. Quit from its tray menu and retry here.");
+    if (state === "running") throw new Error("Oh My GUI is still running. Quit from its tray menu and retry here.");
   }
   for (let attempt = 0; state === "draining" && attempt < 20; attempt++) {
     await pause();
     state = await check(false);
   }
-  if (state === "draining") throw new Error("omp. is still shutting down. Wait a moment and retry here.");
+  if (state === "draining") throw new Error("Oh My GUI is still shutting down. Wait a moment and retry here.");
   return state === "closed";
 }
 
@@ -91,7 +91,7 @@ export async function installerManifest(payload: string) {
     return manifest as { version: string; sha256: string; buildSha256?: string };
   } catch {
     throw new Error(
-      "Installation files are missing or damaged. Close this copy and run the packaged omp. installer again.",
+      "Installation files are missing or damaged. Close this copy and run the packaged Oh My GUI installer again.",
     );
   }
 }
@@ -175,7 +175,7 @@ async function install(closeRunningApp: boolean): Promise<InstallResult> {
   installed = false;
   stage(
     "checks",
-    closeRunningApp ? "Closing omp. and waiting for its session to stop…"
+    closeRunningApp ? "Closing Oh My GUI and waiting for its session to stop…"
       : "Checking the destination, free disk space and running applications…",
   );
   process.stdout.write("OMP_DESKTOP_INSTALLING true\n");
@@ -239,7 +239,7 @@ async function install(closeRunningApp: boolean): Promise<InstallResult> {
           error
             ? reject(
                 new Error(
-                  "Installation did not finish. Close omp., check disk space and try again.",
+                  "Installation did not finish. Close Oh My GUI, check disk space and try again.",
                 ),
               )
             : resolve(),
@@ -301,7 +301,7 @@ async function install(closeRunningApp: boolean): Promise<InstallResult> {
     installed = true;
     stage("complete", mode === "install"
       ? "Installation verified. Continue to first-launch setup."
-      : "Installation verified. omp. is ready to open.");
+      : "Installation verified. Oh My GUI is ready to open.");
     progress.runtimeVersion = runtime.version;
     return "installed";
   } catch (error: any) {
@@ -333,7 +333,7 @@ export function desktopApplicationEnvironment(
 }
 
 export async function launchInstalledDesktop() {
-  if (!installed) throw new Error("Finish installation before opening omp.");
+  if (!installed) throw new Error("Finish installation before opening Oh My GUI.");
   await new Promise<void>((resolve, reject) => {
     const child = spawn(
       path.join(desktopInstallDirectory(), "omp-desktop.exe"),

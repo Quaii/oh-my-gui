@@ -1,4 +1,4 @@
-# omp. — Design guide
+# Oh My GUI — Design guide
 
 The current interface is a working agent workspace: a quiet navigation rail, an inset conversation
 panel, an optional peer editor, and floating controls above a continuous background. Typography,

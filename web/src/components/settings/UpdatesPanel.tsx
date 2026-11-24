@@ -8,7 +8,7 @@ export function AppVersion({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
       <span className="shrink-0 whitespace-nowrap text-right text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">omp.</span>{" "}
+        <span className="font-medium text-foreground">Oh My GUI</span>{" "}
         {data?.version ?? (error ? "Unavailable" : "…")}
       </span>
     );
@@ -16,7 +16,7 @@ export function AppVersion({ compact = false }: { compact?: boolean }) {
   return (
     <div className="mb-6 font-sans">
       <h2 className="settings-heading-title">
-        omp.{" "}
+        Oh My GUI{" "}
         {data ? (
           <span className="text-muted-foreground">{data.version}</span>
         ) : (

@@ -360,7 +360,7 @@ export function Sidebar(props: SidebarProps) {
         <Brand className="size-7 shrink-0" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-[16px] font-semibold tracking-[-0.04em]">omp<span className="text-primary">.</span></span>
+            <span className="text-[16px] font-semibold tracking-[-0.04em]">Oh My GUI</span>
           </div>
         </div>
         <Tooltip>

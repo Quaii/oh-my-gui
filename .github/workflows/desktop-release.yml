@@ -24,7 +24,7 @@ jobs:
       RELEASE_TAG: ${{ inputs.tag }}
       OMP_SIGNED_RELEASE: "true"
       OMP_UPDATE_PUBLIC_KEY: ${{ vars.OMP_UPDATE_PUBLIC_KEY }}
-      OMP_UPDATE_ENDPOINT: https://github.com/Quaii/omp-frontend/releases/latest/download/latest.json
+      OMP_UPDATE_ENDPOINT: https://github.com/Quaii/oh-my-gui/releases/latest/download/latest.json
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
@@ -84,5 +84,5 @@ jobs:
       - name: Create private draft for owner review
         shell: bash
         run: |
-          gh release create "$RELEASE_TAG" --verify-tag --draft --title "omp. $RELEASE_TAG" --notes-file .tmp/update-release/release-notes.md
+          gh release create "$RELEASE_TAG" --verify-tag --draft --title "Oh My GUI $RELEASE_TAG" --notes-file .tmp/update-release/release-notes.md
           find .tmp/update-release -maxdepth 1 -type f \( -name 'omp_*' -o -name 'latest.json' -o -name 'SHA256SUMS' \) -print0 | xargs -0 gh release upload "$RELEASE_TAG"

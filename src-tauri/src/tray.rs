@@ -6,7 +6,7 @@ use tauri::{
 
 fn native_update(app: &tauri::AppHandle, data: &serde_json::Value) -> tauri::Result<()> {
     let menu = Menu::new(app)?;
-    for (id, label) in [("show", "Open omp."), ("settings", "Settings")] {
+    for (id, label) in [("show", "Open Oh My GUI"), ("settings", "Settings")] {
         menu.append(&MenuItem::with_id(app, id, label, true, None::<&str>)?)?;
     }
     for (key, heading) in [("running", "Running sessions"), ("recent", "Recent chats")] {
@@ -40,7 +40,7 @@ fn native_update(app: &tauri::AppHandle, data: &serde_json::Value) -> tauri::Res
     menu.append(&MenuItem::with_id(
         app,
         "quit",
-        "Quit omp.…",
+        "Quit Oh My GUI…",
         true,
         None::<&str>,
     )?)?;
@@ -49,7 +49,7 @@ fn native_update(app: &tauri::AppHandle, data: &serde_json::Value) -> tauri::Res
     } else {
         let pixels = crate::native_icon::pixels("#bfcbd4").expect("valid accent");
         TrayIconBuilder::with_id("omp").icon(tauri::image::Image::new_owned(pixels,64,64))
-            .tooltip("omp.").menu(&menu).on_menu_event(|app,event| {
+            .tooltip("Oh My GUI").menu(&menu).on_menu_event(|app,event| {
                 if let Some(window)=app.get_webview_window("main") {
                     let _=window.show();let _=window.unminimize();let _=window.set_focus();
                     let id=event.id.as_ref();
@@ -90,7 +90,7 @@ pub fn prepare(app: &tauri::AppHandle, url: &str) -> tauri::Result<()> {
     app.manage(PopupState::default());
     let origin: tauri::Url = url.parse().expect("validated backend URL");
     let window = WebviewWindowBuilder::new(app, "tray", WebviewUrl::External(origin.clone()))
-        .title("omp. tray")
+        .title("Oh My GUI tray")
         .decorations(false)
         .shadow(true)
         .visible(false)
@@ -186,7 +186,7 @@ pub fn update(app: &tauri::AppHandle, data: &serde_json::Value) -> tauri::Result
         let pixels = crate::native_icon::pixels("#bfcbd4").expect("valid accent");
         TrayIconBuilder::with_id("omp")
             .icon(tauri::image::Image::new_owned(pixels, 64, 64))
-            .tooltip("omp.")
+            .tooltip("Oh My GUI")
             .show_menu_on_left_click(false)
             .on_tray_icon_event(|tray, event| {
                 use tauri::tray::{MouseButtonState, TrayIconEvent};

@@ -31,7 +31,7 @@ ManifestDPIAware true
 RequestExecutionLevel user
 SilentInstall silent
 SetCompressor /SOLID lzma
-Name "omp."
+Name "Oh My GUI"
 Icon "${quote(path.join(root, 'src-tauri/icons/icon.ico'))}"
 OutFile "${quote(output)}"
 Section

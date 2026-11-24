@@ -17,7 +17,7 @@ export function DesktopSetupFrame({ steps, current, busy, onCancel, children, al
   return <div className="desktop-setup-layout">
     {window.__OMP_CUSTOM_CHROME__ && <div className="desktop-setup-grab-area" aria-hidden="true" onMouseDown={startDrag} />}
     <aside className="desktop-setup-sidebar" aria-label="Setup progress">
-      <div className="desktop-setup-brand" onMouseDown={startDrag}><Brand /><div><strong>omp.</strong><span>Setup</span></div></div>
+      <div className="desktop-setup-brand" onMouseDown={startDrag}><Brand /><div><strong>Oh My GUI</strong><span>Setup</span></div></div>
       <ol role="list">{steps.map((label, index) => <li key={label} data-state={index < current ? 'complete' : index === current ? 'current' : 'pending'} aria-current={index === current ? 'step' : undefined}>
         <span className="desktop-setup-step-marker" aria-hidden="true" />
         <span className="desktop-setup-step-label">{label}</span>

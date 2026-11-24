@@ -76,7 +76,7 @@ navigation, theme selection and the corrected theme grid in dark/light appearanc
 installation or model requests were made. Automatic approval review rejected launching the custom
 installer as unrecognized software; explicit user confirmation is required for that native check.
 
-[Native package run 43836649167](https://github.com/Quaii/omp-frontend/actions/runs/43836649167) passed
+[Native package run 43836649167](https://github.com/Quaii/oh-my-gui/actions/runs/43836649167) passed
 all four jobs, including the 54 tests, package checksums and the bundled backend smoke check. Private
 artifacts contain the Windows custom installer/NSIS payload, both macOS DMGs and Linux deb/AppImage.
 The Intel DMG passed on this run without requiring the CI-only mount-failure recovery.

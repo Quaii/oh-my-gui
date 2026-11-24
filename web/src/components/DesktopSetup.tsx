@@ -62,7 +62,7 @@ export function DesktopSetup({ children }: { children: ReactNode }) {
     else void post('/api/desktop/window', { action: 'close' }).catch(error => setError(error.message));
   }}>
       {step === 0 && <section>
-        <h1 id="setup-title">Set up omp.</h1>
+        <h1 id="setup-title">Set up Oh My GUI</h1>
         <p>Connect your agent and choose your appearance.</p>
         <div className="desktop-setup-inset"><h2>Bring your work with you</h2><p>Existing OMP chats, providers and settings stay where they are. You can add a project from Home when you’re ready.</p></div>
       </section>}

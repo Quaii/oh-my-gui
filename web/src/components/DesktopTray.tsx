@@ -75,7 +75,7 @@ export function DesktopTray() {
     }
   }
   return (
-    <main className="desktop-tray" aria-label="omp. tray menu">
+    <main className="desktop-tray" aria-label="Oh My GUI tray menu">
       {error && (
         <div
           role="alert"
@@ -159,7 +159,7 @@ export function DesktopTray() {
           onClick={() => void action("quit")}
         >
           <LogOut className="size-4" />
-          Quit omp.…
+          Quit Oh My GUI…
         </Button>
       </footer>
     </main>

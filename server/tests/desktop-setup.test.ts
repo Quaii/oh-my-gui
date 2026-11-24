@@ -140,7 +140,7 @@ test('installer preflight rejects missing or damaged payloads before offering in
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'omp-installer-test-'));
   const payload = path.join(directory, 'install-payload.exe');
   try {
-    await assert.rejects(installerManifest(payload), /run the packaged omp/);
+    await assert.rejects(installerManifest(payload), /run the packaged Oh My GUI installer/);
     await fs.writeFile(payload, 'inert test fixture');
     await fs.writeFile(path.join(directory, 'installer-manifest.json'), '{"sha256":"wrong"}');
     await assert.rejects(installerManifest(payload), /missing or damaged/);

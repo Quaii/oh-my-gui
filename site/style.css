@@ -89,6 +89,7 @@ a { color: inherit; text-underline-offset: .24em; }
 }
 .brand { display: inline-flex; align-items: center; min-height: 44px; gap: 8px; font-size: 21px; font-weight: 700; letter-spacing: -.04em; text-decoration: none; }
 .brand img { background: var(--carbon); border-radius: var(--corner); padding: 5px; }
+.brand { white-space: nowrap; }
 .nav-links, .nav-actions { display: flex; align-items: center; gap: 8px; }
 .nav-links { margin-inline: auto; }
 .nav-links a, .source-link, .footer-links nav a {
@@ -379,6 +380,8 @@ code { font-family: "Cascadia Mono", Consolas, monospace; }
 }
 @media (max-width: 670px) {
   .nav-links, .nav-actions .source-link { display: none; }
+  .nav-bar { gap: 8px; }
+  .nav-bar .brand { font-size: 16px; }
   .nav-actions { gap: 4px; margin-inline-start: auto; }
   .mobile-navigation { display: block; }
   .mobile-navigation summary { display: grid; cursor: pointer; place-items: center; min-height: 44px; padding: 0 8px; font-size: 14px; }
