@@ -1,110 +1,81 @@
-# OMP Web Frontend
+<p align="center"><img src="site/assets/brand.svg" alt="" width="54" height="54"></p>
 
-Desktop packaging and first-launch setup are documented in [DESKTOP.md](DESKTOP.md). Windows has a
-custom React installer; native macOS/Linux packaging is configured through the private development build
-workflow. Platform acceptance and signing remain release requirements.
+<h1 align="center">omp.</h1>
 
-React interface for the local OMP harness, using `omp --mode rpc` over JSONL and SSE.
+<p align="center">A desktop and browser workspace for <a href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>.</p>
 
-Contributors: start with [AGENTS.md](AGENTS.md), the current [design guide](DESIGN.md), and the
-[project skills](.agents/skills/README.md). `CLAUDE.md` imports the same root instructions.
-Run `npm run docs:check` to validate local documentation links and skill discovery entries.
+<p align="center"><a href="#get-started">Get started</a> · <a href="#showcase">Screenshots</a> · <a href="DESKTOP.md">Desktop builds</a> · <a href="https://github.com/Quaii/omp-frontend/releases">Releases</a></p>
+
+Use your local OMP runtime through a graphical workspace. Keep coding conversations together by project, follow the agent’s current tasks, and review changed files alongside the chat.
+
+## Showcase
+
+<!-- Release gallery slot 1. Replace site/assets/workspace-overview.webp with a fresh 16:10 app capture when needed. Use demo data. -->
+![Workspace overview showing unfinished tasks, projects, and recent chats](site/assets/workspace-overview.webp)
+
+<!-- Release gallery slot 2. Replace site/assets/project-chat.webp with a matching 16:10 app capture when needed. Use demo data. -->
+<details>
+<summary>See a project conversation</summary>
+
+![Project conversation reviewing CSV import cases](site/assets/project-chat.webp)
+
+</details>
+
+## What you can do
+
+| Area | In omp. |
+| --- | --- |
+| Workspace | Resume running or unfinished work from Home. Pin chats, group them by project, and start a new project chat from a folder. |
+| Conversations | Watch the agent work, expand tool activity, queue and steer follow-ups, and revisit earlier turns. |
+| Files | Inspect changed files and open source beside the chat. Save with conflict detection for externally changed files. |
+| Runtime | Manage providers, models and role overrides, skills, MCP servers, prompts, personas, and extensions. |
+| Usage and appearance | See local token and cost estimates, check supported subscription quotas, and customize your theme and background. |
+
+## Get started
+
+### Desktop
+
+Check [GitHub Releases](https://github.com/Quaii/omp-frontend/releases) for available downloads. The Windows build uses a custom installer and first-launch setup that can offer to install or update OMP. macOS and Linux package builds and platform verification requirements are in the [desktop guide](DESKTOP.md).
+
+### Browser or source development
+
+Install Node.js 24 or newer and the [Oh My Pi runtime](https://github.com/can1357/oh-my-pi#install), then run:
 
 ```sh
-npm install
-npm run dev        # API :4317, frontend :5317
-# or
-npm run build
-npm start          # UI and API :4317
+git clone --branch tauri https://github.com/Quaii/omp-frontend.git
+cd omp-frontend
+npm ci
+npm run dev
 ```
 
-`OMP_BIN` selects the runtime. On Windows the server also checks `%LOCALAPPDATA%\omp\omp.exe`, then PATH. `PI_CODING_AGENT_DIR` defaults to `~/.omp/agent`; `PORT` and `HOST` select the local server address. `OMP_API_TARGET` can point Vite at a separate development API.
+Open [localhost:5317](http://localhost:5317). The API runs on port 4317. For a production browser build, run `npm run build` and `npm start`, then open [localhost:4317](http://localhost:4317).
 
-The server runs locally with the user's filesystem and OMP access. Keep it bound to loopback unless you add authentication and review the exposure.
+`OMP_BIN` selects a specific OMP executable. `PI_CODING_AGENT_DIR` selects the OMP agent directory, which defaults to `~/.omp/agent`. `OMP_API_TARGET` points Vite to a separate local API. `PORT` and `HOST` configure the server’s loopback address.
 
-## Interface
+## How it fits together
 
-Chat and Settings share the same sidebar geometry and floating main panel. Page changes use a short transition-kit fade, with reduced-motion support. Settings stays at the bottom of expanded and collapsed navigation. Task plans, GitHub projects, and active subagents appear as independent, dismissible floating cards under the toolbar when relevant. Workspace cards opens session statistics on demand. Sidebar New chat starts a workspace chat; each project has its own New chat action, and the breadcrumb offers Leave project. Context usage appears beside Send. Connection failures use one centered recovery panel.
+The React interface runs in a browser or the Tauri desktop shell. A local Node server bridges HTTP and server-sent events to OMP’s JSONL RPC. The app uses the local OMP installation for sessions, configuration, and native agent actions. Model requests still go through the providers you configure. See the [GUI coverage audit](CAPABILITIES.md) for native, host-managed, and terminal-only capabilities and their verification status.
 
-Settings and conversation loading use shadcn Skeleton shapes and Transitions.dev's reveal treatment, driven by actual request state. Empty/error states appear after the request settles. Conversation rows have ellipsis and thin scrollbars. Floating header and composer controls sit over continuous blur fades. Native tool iterations share one supplied Trace-based Agent activity disclosure per request; thinking blocks merge, and the final answer stays outside it. Fast mode requires an advertised priority tier and a provider route that realizes it; Rare UI response/status/search components use native stream and tool data.
+## Development
 
-Home is a single-view dashboard with the last three projects and chats, plus unfinished saved to-dos, goals, and live workflows. Registered project chats nest under their folder; ordinary chats remain in Chats. Create a folder or open an existing project. GitHub cards use the origin remote and an existing GitHub CLI or Git Credential Manager login. Credentials remain on the server and are sent only to GitHub’s API.
-
-## Components and provenance
-
-| Source | Used for |
+| Area | Start here |
 | --- | --- |
-| shadcn/ui | Buttons, inputs, switches, dialogs, sheets, menus, popovers, scroll areas, skeletons, command pickers |
-| [Rare UI](https://www.rareui.com/components) | Proximity Sidebar, Rail TOC, Task List, Theme Selector, Prompt Box, Streaming Response, AI Status, Grid Reveal, Web Search, Code Block, FAQ, GitHub Activity, Folder |
-| User-supplied shadcn.io examples | Canvas, Attachment, Artifact, Agent; Reasoning, Terminal, and Checkpoint patterns adapted to the existing primitives |
-| [23rd](https://www.23rd.dev/) | Actual Shader Gradient source; seven shader backgrounds, pause/reduced motion |
-| [React Bits](https://reactbits.dev/) | All 63 supplied backgrounds, lazy loaded individually; local rendered thumbnails, ambient motion without cursor tracking |
-| [Transitions.dev](https://transitions.dev/library.html) | Free P14 Skeleton Reveal and P16 Sliding Tabs, adapted to real loading and controlled state |
-| [Material Icon Theme](https://github.com/material-extensions/vscode-material-icon-theme) | File-type SVGs; license in `web/public/file-icons/LICENSE` |
-| Lucide / Phosphor | Selectable navigation icons |
-
-Rare UI attribution is available in Settings → About & credits. ObsidianUI and Oxygen were design references; their components have not been represented as installed. Provider icons use locally cached Lobe Icons company marks and verified company favicons; see [asset credits](ASSET-CREDITS.md).
-
-## OMP management
-
-- Runtime version, executable/config paths, credentials' signed-in state, live sessions, task limits, and message counts.
-- Native settings catalog, model roles, thinking selectors, fallback settings, custom/local API providers, MCP, skills with filters, prompts/project rules, extensions and marketplace actions.
-- Settings → Agent → MCP servers scans Codex, Claude Code and ZCode configuration files. Select entries to import into the matching user or registered project scope. Imports start disabled, preserve existing entries, omit detected inline credentials and leave the original configuration files alone.
-- Usage totals from `omp stats --json`, supplemented by read-only queries to the native stats database for per-model hourly trends, peak tokens, active session duration, and timezone-aware streaks. Stacked trends, a model donut, compact cost bars, and API-equivalent cost disclosure.
-- Host classifier routing: editable nodes/connections, model and thinking controls, test classification, saved configuration. Disabled until explicitly enabled.
-- In Settings → Agent → Personas, write or import a Markdown persona and choose it for one new chat. The session stores a snapshot from its first turn. Ordinary new chats have personas off. Prompts & Rules manages the user and project files OMP discovers separately.
-- Native goals and agent-owned task plans, branch navigation and labels, scoped HTML exports, subagent conversations and steering, and provider account management.
-- Composer voice/dictation and native word completion; separate side-question topics and history. Hardware/provider acceptance limits are recorded in the audit.
-- Guided native CLI operations with explicit execution, incremental logs, cancellation, profile/folder selection and native terminal handoffs for interactive or credential-bearing flows.
-- Advanced RPC diagnostics and an honest runtime capability check. See [CAPABILITIES.md](CAPABILITIES.md) for coverage and limitations.
-
-The [GUI coverage audit](CAPABILITIES.md) maps the installed OMP version's RPC commands, CLI,
-slash commands, settings, launch flags and built-in tools to actual GUI paths and remaining gaps.
-Its [machine-readable map](docs/omp-gui-coverage.json) distinguishes direct/integrated controls,
-guided CLI forms and explicit terminal handoffs. Read-probe success is not full feature acceptance. The audit
-includes isolated collection and regeneration commands; it sends no prompts or private project context.
-
-Host configuration is saved as `web-control.json` in the OMP agent directory. Native provider configuration stays in `models.yml`/`models.yaml`. File writes preserve unrelated configuration and make backups. Appearance includes twelve presets, 65 backgrounds plus None, six workspace icon sets and three independent editor icon styles, nine color overrides, contrast, UI/code/heading fonts, chat text size and line height, corner radius, shadows, background fade/blur/tint, independent menu and card glass, and sidebar translucency. Cards default to the solid sidebar color. The compact live color picker supports hex and tint opacity. The favicon follows the current accent. Version 2 theme exports include the selected background and animation preference. The tab is named `omp.`. Older exports gain safe defaults. Preferences and image data stay in browser storage.
-
-## Validation
+| Interface | [web/src](web/src) and [design guide](DESIGN.md) |
+| Local API and runtime bridge | [server/src](server/src) and [shared helpers](shared) |
+| Desktop shell and packaging | [src-tauri](src-tauri) and [desktop guide](DESKTOP.md) |
+| Contributing | [Project instructions](AGENTS.md), [agent skills](.agents/skills/README.md), and [asset credits](ASSET-CREDITS.md) |
 
 ```sh
 npm run typecheck
 npm test
-node scripts/check-chat.mjs --send
-node scripts/check-local-provider.mjs
-node scripts/check-routing-persona.mjs
-node scripts/check-management-writes.mjs
+npm run build
+npm run docs:check
 ```
 
-The supplied shadcn.io patterns also cover prompt suggestions, attachment chips, expandable changed-file folders, commit cards, package changes, reported test counts, error stacks, source-link previews, and local web previews. Reply regeneration uses OMP’s native tree; saved sibling versions can be compared and explicitly continued. Preview pages open only after a click in a sandboxed frame. Console capture from arbitrary dev servers is not implemented.
+The live chat and routing checks in [scripts](scripts) use a configured model and make disposable test requests. See [GUI coverage](CAPABILITIES.md) for the isolated audit commands.
 
-The chat and routing/persona checks expect a running API on :4318 and use an already configured model; they make disposable test requests. The write checks use isolated temporary files and project folders. `OMP_TEST_URL` overrides the chat check's API address.
+## Project website
 
-The backend is in `server/src`, the React UI in `web/src`, and shared host configuration types in `shared/control.ts`. There is no second agent runtime: native actions are forwarded to OMP, while features implemented by the web host are explicitly identified in the UI and audit.
+The [static landing page](site/index.html) shares the two showcase images above. To preview it, serve the `site/` directory with a local static HTTP server. The page has no build step and needs no runtime credentials.
 
-## Latest workspace refinements
-
-Home never mounts the floating Task plan, GitHub, Session, or Agents cards. They are available only inside chats. Task plans show unfinished work first, with completed tasks behind Show completed. Project suggestions appear immediately above the composer only when a registered project already has context. OMP's low-cost `@smol` role generates them without tools; unchanged context is cached for 30 minutes. Web sources use the installed Rare UI WebSearch component.
-
-The composer includes native approval defaults: Ask before changes, Ask and remember, Allow edits, and Full access. This changes OMP's global default, shared with terminal sessions; project, tool, restricted-folder and launch policies can still override it. The UI reports explicit approval launch flags instead of pretending to change them. Existing permissions are never changed merely by loading the UI.
-
-Changed-file names open a second floating file browser and CodeMirror editor. UTF-8 text files up to 2 MB are supported, with syntax highlighting, undo, search, Ctrl/Cmd+S, and an explicit Save action. Version checks reject stale saves. The browser is scoped to the chat's working folder and folders of successful native file operations; it resolves real paths before access. Inline message editing preserves the original branch via OMP's native tree. Standalone chats use the home folder by default (`OMP_WORKSPACE_CWD` can override it); project labels only appear for registered projects.
-
-## Finished file workspace
-
-Open Files is available from the chat toolbar and Ctrl/Cmd+Shift+E. The browser lazily expands folders, filters the selected root folder, switches between permitted roots, and paginates large directories with Show more. The file panel and tree have pointer and keyboard resize handles. Multiple file tabs retain their edits, selection and undo history; drafts stay in memory when Home, Settings, or another chat hides that workspace. No unsaved source content is persisted to browser storage. Dirty tab/panel closure offers Keep editing, Discard, or Save and close. Files changed externally fail the save with a conflict instead of overwriting the new version. The code editor responds to theme changes and displays a line/column position. Ordinary editor and list edges remain clear; blur fades are reserved for content passing behind floating controls.
-
-[Recent requests audit](RECENT-REQUESTS-AUDIT.md) records the last ten feature requests, their implementation evidence, and remaining native/runtime limits. The permission selector remains OMP's global default, not a per-chat override.
-
-The editor shares the workspace background and floating breadcrumb toolbar. Focus editor hides the chat without closing its draft or file tabs; Show chat restores the split. The resize grip preserves enough chat width for the composer controls, using an overlay when the window cannot fit both panes. Workspace icons offer Lucide, Phosphor, Tabler, Heroicons, Bootstrap, and Remix with live previews. Editor icons independently offer Material, Monochrome, and Minimal across the explorer, tabs, and changed files.
-
-Markdown files offer Source and Visual editing modes. Visual mode loads editorcn on demand, shares the current file draft and guarded Save action, and serializes Markdown through Tiptap. Merely opening Visual mode does not modify the file. Frontmatter and embedded HTML stay in Source mode to preserve source-only syntax. Standard headings, formatting, links, lists, tasks, images, tables, and fenced code are supported. Switching modes keeps the source editor mounted and its undo history. Source/Visual controls use transition-kit tabs with reduced-motion support.
-
-Transition-kit is the shared motion system for workspace/settings routes, settings sections, tabs, expandable sections, sidebar widths and filtered chat rows, editor tab/focus layout, and workspace cards. Theme switching uses a native View Transition adapter with the kit's fade treatment so all twelve themes remain available. Motion changes start only for deliberate interface updates; token streaming and resize dragging stay immediate. Reduced motion disables travel, and unsupported browsers keep normal state updates. Existing shadcn/Radix behavior, focus handling, and native OMP data remain in place.
-
-## Desktop shell
-
-The Tauri 2 desktop implementation lives on `tauri`; see [desktop development](DESKTOP.md) and the
-[implementation tasks](TAURI-TASKS.md). `npm run desktop:dev` runs the native debug app;
-`npm run desktop:build` creates the Windows release and installer. First-launch setup offers OMP installation when the runtime is missing.
+The [Pages workflow](.github/workflows/site-pages.yml) is manual. Once it is on the default branch and GitHub Pages is configured to use GitHub Actions, an owner can run **Publish project website** from the Actions tab. Review the site’s visibility before running it. The workflow deploys only `site/`. [GitHub Pages configuration guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
