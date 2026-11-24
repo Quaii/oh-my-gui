@@ -17,7 +17,7 @@ Steel tones and dot texture. The top navigation and carousel arrows use transluc
 live backdrop blur. Navigation labels adjust for the light hero and darker content. The project chat
 levels on scroll, and the workspace carousel fades at the viewport edges while keeping the inner
 part of each neighboring preview solid. Frosted arrows overlay the active screenshot on hover and
-keyboard focus and stay visible on touch devices.
+keyboard focus and stay visible on touch devices. Dots below the carousel mark the current preview.
 The theme slices form a display-only gallery. The app’s actual Settings page is visible below, locked
 to Appearance, where only the settings content scrolls. Motion respects reduced motion.
 The page scrollbar is a thin, trackless thumb that appears when the pointer nears the right edge.

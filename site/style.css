@@ -230,9 +230,29 @@ p { color: var(--muted); }
 .tour-stage figcaption span { color: var(--carbon-muted); }
 .tour-controls {
   margin: 12px auto 0;
-  text-align: center;
 }
-.tour-controls output { font-variant-numeric: tabular-nums; }
+.tour-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+.tour-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff55;
+}
+.tour-dots span[data-active] { background: #fff; }
+.tour-position {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .tour-arrows {
   position: absolute;
   inset: 4px var(--slide-inset) auto;

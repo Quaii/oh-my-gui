@@ -18,6 +18,8 @@ const controls = document.querySelector('.tour-controls');
 const previous = controls.querySelector('[data-tour-prev]');
 const next = controls.querySelector('[data-tour-next]');
 const position = controls.querySelector('output');
+const dots = slides.map(() => document.createElement('span'));
+controls.querySelector('.tour-dots').append(...dots);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let activeSlide = -1;
 let activeFrame = firstFrame;
@@ -39,7 +41,9 @@ function updateCarousel() {
   const closest = (activeFrame - firstFrame + slides.length) % slides.length;
   if (closest === activeSlide) return;
 
+  dots[activeSlide]?.removeAttribute('data-active');
   activeSlide = closest;
+  dots[activeSlide].setAttribute('data-active', '');
   position.value = (closest + 1) + ' / ' + slides.length;
   position.setAttribute('aria-label', 'Workspace preview ' + (closest + 1) + ' of ' + slides.length);
 }
