@@ -43,6 +43,7 @@ import {
   FolderPlus,
   House,
   Link2,
+  LoaderCircle,
   MessageSquarePlus,
   MessageSquare,
   MoreHorizontal,
@@ -206,11 +207,12 @@ export function Sidebar(props: SidebarProps) {
               setDropProject(null);
             }}
           >
-            {running && <span className="sidebar-chat-running"><span className="sr-only">Running: </span></span>}
+            {running && <span className="sr-only">Running: </span>}
             {meta.archived && <Archive className="size-3 shrink-0 text-muted-foreground" aria-label="Archived" />}
             <span className="truncate" title={title}>{title}</span>
           </button>
           <div className="session-row-actions">
+            {running && <LoaderCircle aria-hidden="true" className="sidebar-chat-running" />}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -333,9 +335,9 @@ export function Sidebar(props: SidebarProps) {
                 return <Tooltip key={session.path}>
                   <TooltipTrigger asChild>
                     <button onClick={() => props.onOpen(session)} aria-label={`Open chat: ${title}${running ? " (running)" : ""}`} aria-current={active ? "page" : undefined}
-                      className={`relative grid size-10 shrink-0 place-items-center rounded-lg transition-colors hover:bg-sidebar-accent ${active ? "bg-sidebar-accent text-primary" : "text-muted-foreground"}`}>
+                      className={`collapsed-chat relative grid size-10 shrink-0 place-items-center rounded-lg transition-colors hover:bg-sidebar-accent ${active ? "bg-sidebar-accent text-primary" : "text-muted-foreground"}`}>
                       {getSessionMeta(session.path).pinned ? <Pin className="size-4" /> : <MessageSquare className="size-4" />}
-                      {running && <span className="sidebar-chat-running absolute right-1.5 top-1.5" />}
+                      {running && <LoaderCircle aria-hidden="true" className="sidebar-chat-running" />}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="max-w-64">{title}{running && " · Running"}</TooltipContent>

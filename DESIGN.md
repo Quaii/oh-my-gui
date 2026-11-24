@@ -153,7 +153,7 @@ maintenance, all settings, raw config and capabilities. Opening an Advanced page
 its selection in the desktop sidebar. The compact picker exposes Advanced as a submenu.
 
 The workspace sidebar groups chats under Pinned, Projects, and Chats. Its single-line chat rows
-show a status dot during a running turn and reveal pin and menu actions on hover or focus.
+show a spinner on the right during a running turn. Hover or focus replaces it with the pin and menu actions.
 Drag a chat onto a project or use Move chat from its menu. Project moves organize the sidebar
 without changing the runtime's working folder. Pinned chats stay above Projects until unpinned.
 

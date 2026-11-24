@@ -1060,6 +1060,7 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 }
 .session-row[data-active=true] .session-open {font-weight:500;}
 .session-row-actions {
+  position:relative;
   display:flex;
   align-items:center;
   padding-inline-end:var(--space-1);
@@ -1078,13 +1079,23 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .session-row-action:hover {background:var(--accent);color:var(--accent-foreground);}
 .session-row-action[aria-pressed=true] {color:var(--primary);}
 .sidebar-chat-running {
+  position:absolute;
   flex:none;
-  width:7px;
-  height:7px;
-  border-radius:var(--radius-round);
-  background:var(--primary);
+  width:12px;
+  height:12px;
+  color:var(--muted-foreground);
+  pointer-events:none;
+  animation:spin 1s linear infinite;
 }
-@media (hover:none) {.session-row-action {opacity:1;}}
+.session-row-actions .sidebar-chat-running {inset-inline-end:calc(var(--space-1) + 6px);}
+.collapsed-chat .sidebar-chat-running {inset-block-start:var(--space-1);inset-inline-end:var(--space-1);width:10px;height:10px;}
+.session-row:is(:hover,:focus-within,:has(.session-row-action[data-state=open])) .sidebar-chat-running,
+.collapsed-chat:is(:hover,:focus-visible) .sidebar-chat-running {visibility:hidden;}
+@media (prefers-reduced-motion:reduce) {.sidebar-chat-running {animation:none;}}
+@media (hover:none) {
+  .session-row-action {opacity:1;}
+  .session-row-actions .sidebar-chat-running {position:static;margin-inline-end:var(--space-1);visibility:visible;}
+}
 [data-glass=true] .session-actions-menu {background:color-mix(in srgb,var(--background) 52%,transparent);backdrop-filter:blur(24px) saturate(1.2);}
 .workspace-main.is-home .transcript-region>div {height:100%;overflow:hidden;}
 .workspace-main.is-home .omp-skeleton-reveal,.workspace-main.is-home .t-skel-content {height:100%;min-height:0;}
