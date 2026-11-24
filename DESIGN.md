@@ -163,6 +163,8 @@ Home uses its own navigation selection and toolbar without the active chat's pro
 Continue work surfaces running chats first, then saved unfinished tasks and goals. The secondary
 column offers project chat shortcuts and recent conversations with previews. Narrow layouts stack
 these sections and keep the page scrollable.
+Skills installs user-wide Skillshare packages through OMP. Remove offers a confirmation for
+registry packages and standalone local skills. Local skill folders move out of discovery intact.
 
 Settings section headers show their names without numeric item-count labels. Space adjacent
 sidebar rows with the 4px token and separate groups with the 12px content gap.

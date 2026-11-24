@@ -20,7 +20,7 @@ import { readConfig, writeConfig } from "./config.ts";
 import { readSettings, setSetting, resetSetting } from "./settings.ts";
 import { readMcp, writeMcp, probeServer } from "./mcp.ts";
 import { discoverMcp, importMcp } from "./mcp-discovery.ts";
-import { listSkills, invalidateSkills, openSkillFolder } from "./skills.ts";
+import { installSkill, listManageableSkills, openSkillFolder, removeSkill } from "./skills.ts";
 import { listBuiltinTools } from "./tools.ts";
 import { runSlash } from "./slash.ts";
 import { openSessionFile, readChatSnapshot } from "./snapshot.ts";
@@ -696,22 +696,34 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
 
     /* ---------------- skills ---------------- */
 
-    if (p === "/api/skills/open-folder" && req.method === "POST") {
-      const body = await readBody(req, 16_384);
-      if (typeof body?.name !== "string" || typeof body.filePath !== "string") {
-        return json(res, 400, { error: "Choose a discovered skill to open." }), true;
+    const skillAction = req.method === "POST" && ["/api/skills/open-folder", "/api/skills/install", "/api/skills/remove"].includes(p);
+    if (skillAction || (p === "/api/skills" && req.method === "GET")) {
+      const cwd = url.searchParams.get("cwd");
+      const project = cwd && path.isAbsolute(cwd)
+        ? projectForSession({ cwd: path.resolve(cwd) }, (await readControl()).projects)?.path
+        : undefined;
+      if (!skillAction) {
+        const [skills, settings] = await Promise.all([listManageableSkills(project, url.searchParams.get("refresh") === "1"), readSettings()]);
+        const ignored = (settings.settings.find(s => s.key === "skills.ignoredSkills")?.value as string[] | undefined) ?? [];
+        json(res, 200, { skills, ignored });
+        return true;
       }
-      await openSkillFolder(body.name, body.filePath);
-      json(res, 200, { ok: true });
-      return true;
-    }
-
-    if (p === "/api/skills") {
-      const force = url.searchParams.get("refresh") === "1";
-      if (force) invalidateSkills();
-      const [skills, settings] = await Promise.all([listSkills(force), readSettings()]);
-      const ignored = (settings.settings.find((s) => s.key === "skills.ignoredSkills")?.value as string[] | undefined) ?? [];
-      json(res, 200, { skills, ignored });
+      const body = await readBody(req, 16_384);
+      if (p === "/api/skills/install") {
+        if (typeof body?.spec !== "string") return json(res, 400, { error: "Enter a Skillshare package." }), true;
+        await installSkill(body.spec.trim(), body.allowScripts === true, project);
+        json(res, 200, { ok: true });
+        return true;
+      }
+      if (typeof body?.name !== "string" || typeof body.filePath !== "string") {
+        return json(res, 400, { error: "Choose a discovered skill." }), true;
+      }
+      if (p === "/api/skills/remove") {
+        json(res, 200, { ok: true, ...await removeSkill(body.name, body.filePath, project) });
+      } else {
+        await openSkillFolder(body.name, body.filePath, project ?? os.homedir());
+        json(res, 200, { ok: true });
+      }
       return true;
     }
 

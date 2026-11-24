@@ -373,7 +373,7 @@ export function SettingsPage(props: SettingsPageProps) {
             ) : panel === "tools" ? (
               <ToolsPanel settingsLoading={loading && !payload} settings={settings} chatKey={chat.loaded ? chat.key : null} onSave={save} onReset={reset} />
             ) : panel === "skills" ? (
-              <SkillsPanel settingsLoading={loading && !payload} settings={settings} onSave={save} onReset={reset} />
+              <SkillsPanel cwd={info?.cwd ?? ""} settingsLoading={loading && !payload} settings={settings} onSave={save} onReset={reset} />
             ) : panel === "mcp" ? (
               <McpPanel cwd={info?.cwd ?? ""} projectPath={info?.projectPath} onRestart={onRestart} />
             ) : panel === "commands" ? (
