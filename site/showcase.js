@@ -49,3 +49,21 @@ function selectLinkedTab() {
 selectTab(0);
 selectLinkedTab();
 window.addEventListener('hashchange', selectLinkedTab);
+
+const spotlight = document.querySelector('[data-moment="cursor-spotlight"]');
+const spotlightMotion = matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+spotlight.addEventListener('pointermove', event => {
+  if (!spotlightMotion.matches || event.pointerType !== 'mouse') return;
+
+  const bounds = spotlight.getBoundingClientRect();
+  const x = (event.clientX - bounds.left) / bounds.width;
+  const y = (event.clientY - bounds.top) / bounds.height;
+  // Keep the light on the product side of the hero and travel only a few percent.
+  spotlight.style.setProperty('--spot-x', `${70 + x * 8}%`);
+  spotlight.style.setProperty('--spot-y', `${47 + y * 8}%`);
+});
+
+spotlight.addEventListener('pointerleave', () => {
+  spotlight.style.removeProperty('--spot-x');
+  spotlight.style.removeProperty('--spot-y');
+});

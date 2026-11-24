@@ -17,12 +17,13 @@
   <title>omp. · An interface for Oh My Pi</title>
   <link rel="icon" href="assets/brand.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.classList.add('m-enter')</script>
   <script src="showcase.js" defer></script>
 </head>
 <body>
   <header class="site-header nav">
-    <a class="skip-link" href="#main">Skip to content</a>
     <div class="wrap header-content">
+      <a class="skip-link" href="#main">Skip to content</a>
       <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="24" height="24">omp.</a>
       <nav aria-label="Main navigation">
         <a href="#workspace">Workspace</a>
@@ -33,7 +34,7 @@
   </header>
 
   <main id="main">
-    <section class="hero" aria-labelledby="hero-title" data-enter>
+    <section class="hero" aria-labelledby="hero-title" data-enter data-moment="cursor-spotlight">
       <div class="wrap">
         <div class="hero-layout hero-text">
           <div class="hero-copy">
@@ -127,26 +128,28 @@
 
   <footer id="get-started" class="closing" aria-labelledby="get-started-title">
     <div class="wrap">
-      <div class="closing-intro">
-        <h2 id="get-started-title">Run omp. locally.</h2>
-        <p>Install the desktop app or start the interface from the repository.</p>
-      </div>
-      <div class="start-layout">
-        <article class="start-option">
-          <h3>Desktop</h3>
-          <p>Find Windows installers in Releases. The build guide covers packaging for Windows, macOS, and Linux.</p>
-          <div class="actions">
-            <a class="button primary" href="https://github.com/Quaii/omp-frontend/releases">Get omp. <span aria-hidden="true">↗</span></a>
-            <a class="text-link" href="https://github.com/Quaii/omp-frontend/blob/tauri/DESKTOP.md">Read the build guide</a>
-          </div>
-        </article>
-        <article class="start-option">
-          <h3>Browser</h3>
-          <p><a href="https://github.com/Quaii/omp-frontend/tree/tauri">Clone the repository</a> and install Node.js 24+ and <a href="https://github.com/can1357/oh-my-pi#install">Oh My Pi</a>. From the repo, run:</p>
-          <pre><code>npm ci
-npm run dev</code></pre>
-          <p>Then open <a href="http://localhost:5317">localhost:5317</a>.</p>
-        </article>
+      <div class="closing-content">
+        <div class="closing-intro">
+          <h2 id="get-started-title">Run omp. locally.</h2>
+          <p>Install the desktop app or start the interface from the repository.</p>
+        </div>
+        <div class="start-layout">
+          <article class="start-option">
+            <h3>Desktop</h3>
+            <p>Find Windows installers in Releases. The build guide covers packaging for Windows, macOS, and Linux.</p>
+            <div class="actions">
+              <a class="button primary" href="https://github.com/Quaii/omp-frontend/releases">Get omp. <span aria-hidden="true">↗</span></a>
+              <a class="text-link" href="https://github.com/Quaii/omp-frontend/blob/tauri/DESKTOP.md">Read the build guide</a>
+            </div>
+          </article>
+          <article class="start-option">
+            <h3>Browser</h3>
+            <p><a href="https://github.com/Quaii/omp-frontend/tree/tauri">Clone the repository</a> and install Node.js 24+ and <a href="https://github.com/can1357/oh-my-pi#install">Oh My Pi</a>. From the repo, run:</p>
+            <pre><code>npm ci
+  npm run dev</code></pre>
+            <p>Then open <a href="http://localhost:5317">localhost:5317</a>.</p>
+          </article>
+        </div>
       </div>
       <div class="footer-links">
         <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="24" height="24">omp.</a>
