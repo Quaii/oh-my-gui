@@ -156,6 +156,8 @@ The workspace sidebar groups chats under Pinned, Projects, and Chats. Its single
 show a spinner on the right during a running turn. Hover or focus replaces it with the pin and menu actions.
 Drag a chat onto a project or use Move chat from its menu. Project moves organize the sidebar
 without changing the runtime's working folder. Pinned chats stay above Projects until unpinned.
+The expanded chat list scrolls to the window edge behind the three footer buttons. The buttons
+have individual surfaces and enough scroll clearance to reach the last chat above them.
 
 Settings section headers show their names without numeric item-count labels. Space adjacent
 sidebar rows with the 4px token and separate groups with the 12px content gap.

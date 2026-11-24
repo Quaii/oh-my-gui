@@ -468,7 +468,22 @@ export function Sidebar(props: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      <div className="mx-3 flex shrink-0 items-center gap-1 py-3"><Button variant="ghost" onClick={props.onOpenSettings} className="mr-auto h-9 justify-start gap-2 px-3 text-[13px] font-normal text-muted-foreground"><Settings2 className="size-4"/>Settings</Button>{NAV.filter(n=>n.key!=="settings").map(n=><Tooltip key={n.key}><TooltipTrigger asChild><Button variant="ghost" size="icon-sm" onClick={()=>nav(n.key)} aria-label={n.label} className="size-8 text-muted-foreground"><n.icon className="size-3.5"/></Button></TooltipTrigger><TooltipContent>{n.label}</TooltipContent></Tooltip>)}</div>
+      <div className="session-sidebar-footer">
+        <Button variant="ghost" onClick={props.onOpenSettings} className="session-sidebar-footer-button mr-auto justify-start gap-2 px-3 text-[13px] font-normal">
+          <Settings2 className="size-4" /> Settings
+        </Button>
+        {NAV.filter(item => item.key !== "settings").map(item => (
+          <Tooltip key={item.key}>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="session-sidebar-footer-button"
+                onClick={() => nav(item.key)} aria-label={item.label}>
+                <item.icon className="size-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{item.label}</TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
 
       {/* change directory */}
       <Dialog open={cwdOpen} onOpenChange={setCwdOpen}>
