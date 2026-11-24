@@ -1,6 +1,11 @@
 @import "../../web/src/index.css";
 @source "../../web/src";
 
+@media (min-width: 768px) {
+  /* Clip composited backgrounds and toolbar blur to the inset panel. */
+  .settings-main { clip-path: inset(0 round var(--radius-panel)); }
+}
+
 .settings-sidebar .settings-nav [data-slot="scroll-area-viewport"] {
   overflow: clip !important;
   scrollbar-gutter: auto;
