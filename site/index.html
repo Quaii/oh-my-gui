@@ -28,8 +28,8 @@
     <section id="workspace" class="workspace" aria-labelledby="workspace-title">
       <div class="workspace-intro">
         <div>
-          <h1 id="workspace-title">Oh My Pi, with a GUI</h1>
-          <p>Keep the <code>omp</code> CLI you already use. Get a desktop and browser workspace for your conversations, projects, and files.</p>
+          <h1 id="workspace-title">Oh My Pi, with a UI</h1>
+          <p>Use your existing <code>omp</code> setup in a desktop or browser workspace. Keep chats, task plans, and file changes together.</p>
         </div>
         <a class="button primary" href="#get-started">Get started</a>
       </div>
@@ -43,21 +43,30 @@
         <div class="product-content">
           <figure id="project-chat" class="product-view" data-panel>
             <a class="image-link" href="assets/project-chat.webp" aria-label="Open the full project chat screenshot">
-              <img src="assets/project-chat.webp" alt="A project chat in omp. reviewing CSV import cases, with the project sidebar and composer visible" width="1440" height="900" fetchpriority="high">
+              <picture>
+                <source media="(max-width: 540px)" srcset="assets/project-chat-narrow.webp" width="432" height="600">
+                <img src="assets/project-chat.webp" alt="A project chat in omp. reviewing CSV import cases" width="1440" height="900" fetchpriority="high">
+              </picture>
             </a>
-            <figcaption>Follow agent activity, inspect changed files, and keep working in the same project.</figcaption>
+            <figcaption>Follow agent activity and inspect changed files inside the conversation</figcaption>
           </figure>
           <figure id="home" class="product-view" data-panel>
             <a class="image-link" href="assets/workspace-overview.webp" aria-label="Open the full Home screenshot">
-              <img src="assets/workspace-overview.webp" alt="Home showing unfinished work, projects, and recent conversations" width="1440" height="900" loading="lazy">
+              <picture>
+                <source media="(max-width: 540px)" srcset="assets/workspace-overview-narrow.webp" width="432" height="600">
+                <img src="assets/workspace-overview.webp" alt="Home showing unfinished work and recent conversations" width="1440" height="900" loading="lazy">
+              </picture>
             </a>
-            <figcaption>Pick up unfinished work or open a new conversation in any project.</figcaption>
+            <figcaption>Pick up unfinished work or start a new project chat from Home</figcaption>
           </figure>
           <figure id="appearance-settings" class="product-view" data-panel>
             <a class="image-link" href="assets/appearance.webp" aria-label="Open the full Appearance settings screenshot">
-              <img src="assets/appearance.webp" alt="The Appearance settings page showing the theme picker and background options" width="1440" height="900" loading="lazy">
+              <picture>
+                <source media="(max-width: 540px)" srcset="assets/appearance-narrow.webp" width="432" height="600">
+                <img src="assets/appearance.webp" alt="The Appearance settings page and theme picker" width="1440" height="900" loading="lazy">
+              </picture>
             </a>
-            <figcaption>Choose your own colors, backgrounds, fonts, icons, and surfaces in Appearance.</figcaption>
+            <figcaption>Change how the workspace, chats, and controls look in Appearance</figcaption>
           </figure>
         </div>
       </div>
@@ -65,8 +74,7 @@
 
     <section id="appearance" class="appearance" aria-labelledby="appearance-title">
       <div class="appearance-copy">
-        <h2 id="appearance-title">Make it look like yours</h2>
-        <p>Start from a preset or change individual parts of the interface.</p>
+        <h2 id="appearance-title">Customize the workspace</h2>
         <dl>
           <div><dt>Color</dt><dd>Set the accent, workspace, sidebar, and message colors.</dd></div>
           <div><dt>Background</dt><dd>Choose a built-in background or use your own image. Adjust motion, blur, fade, and tint.</dd></div>
@@ -88,7 +96,7 @@
           <h3>Desktop</h3>
           <p>See available releases or build a package for your platform.</p>
           <div class="actions">
-            <a class="button primary" href="https://github.com/Quaii/omp-frontend/releases">GitHub Releases</a>
+            <a href="https://github.com/Quaii/omp-frontend/releases">GitHub Releases</a>
             <a href="https://github.com/Quaii/omp-frontend/blob/tauri/DESKTOP.md">Build guide</a>
           </div>
         </article>
