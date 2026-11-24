@@ -15,6 +15,8 @@
     <style>
       html, body { background: #202020; margin: 0; }
       html[data-theme="slate"], html[data-theme="slate"] body { background: #171b24; }
+      html[data-theme="ash"], html[data-theme="ash"] body { background: #20201f; }
+      html[data-theme="steel"], html[data-theme="steel"] body { background: #11171c; }
       html[data-theme="daylight"], html[data-theme="daylight"] body { background: #f7f8fa; }
       html:not(.dark), html:not(.dark) body { background:#f7f8fa; }
       #root:empty::after {content:"";position:fixed;inset:0;background:var(--boot-image,none) center/cover no-repeat;opacity:var(--background-opacity,.25);filter:blur(var(--background-blur,0px));mask-image:var(--background-mask,none);}
@@ -24,7 +26,7 @@
       (function () {
         try {
           var t = localStorage.getItem("ompfe.theme");
-          if (!["dark","slate","forest","plum","espresso","carbon","daylight","linen","sage","mist","rose","sand"].includes(t)) t = "dark";
+          if (!["dark","carbon","ash","steel","slate","forest","plum","espresso","daylight","linen","sage","mist","rose","sand"].includes(t)) t = "dark";
           document.documentElement.setAttribute("data-theme", t);
           document.documentElement.classList.toggle("dark", !["daylight","linen","sage","mist","rose","sand"].includes(t));
           var a=JSON.parse(localStorage.getItem("ompfe.custom-appearance")||"{}"),bg=localStorage.getItem("ompfe.ambience"),r=document.documentElement.style;

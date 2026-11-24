@@ -5,11 +5,13 @@ type WorkspaceTheme = ThemeOption & {mode:"light"|"dark";foreground:string;subtl
 function theme(value:string,label:string,mode:"light"|"dark",sidebar:string,panel:string,tile:string,border:string,strong:string,foreground:string,subtle:string):WorkspaceTheme {return {value,label,mode,foreground,subtle,colors:{sidebar,panel,tile,border,strong,muted:tile}};}
 export const APP_THEMES:WorkspaceTheme[] = [
  theme("dark","Graphite","dark","#1c1c1e","#111112","#232326","#343438","#ff5f2e","#f0f0f3","#a3a3ad"),
+ theme("carbon","Carbon","dark","#181818","#0b0b0b","#242424","#363636","#bfcbd4","#f3f3f3","#aaaeb2"),
+ theme("ash","Ash","dark","#2b2a28","#20201f","#353431","#454440","#d4cbbd","#f3f1ed","#b4afa6"),
+ theme("steel","Steel","dark","#1b2228","#11171c","#263039","#36434d","#9bbbd0","#edf2f5","#a8b6c0"),
  theme("slate","Midnight","dark","#0e1118","#131821","#222b3a","#303b4d","#a8b5ff","#e9edf6","#9da9bf"),
  theme("forest","Forest","dark","#151e1b","#101815","#202e27","#34453b","#9cbe9c","#e5eee6","#a0b3a6"),
  theme("plum","Plum","dark","#211c26","#18141d","#2e2735","#44394c","#d1a8cd","#f0e9f2","#b8a7be"),
  theme("espresso","Espresso","dark","#231e1b","#191613","#302823","#493d33","#d7b18e","#f1e8df","#b9a99b"),
- theme("carbon","Carbon","dark","#181818","#0b0b0b","#242424","#363636","#bfcbd4","#f3f3f3","#aaaeb2"),
  theme("daylight","Paper","light","#f1f3f6","#ffffff","#f5f6f8","#dce1e8","#906300","#20242c","#606975"),
  theme("linen","Linen","light","#eeeae5","#faf8f4","#f2ede6","#ded7cf","#a84b2f","#302923","#766b61"),
  theme("sage","Sage","light","#e7ede5","#f6f8f2","#ecf0e7","#d1dbcc","#426f4d","#233026","#617161"),

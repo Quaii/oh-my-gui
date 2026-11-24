@@ -33,8 +33,9 @@ bubble with a curved tail in the same material. Reuse the owning class for these
 
 ## Color is semantic
 
-[theme.ts](web/src/lib/theme.ts) defines twelve presets: Graphite, Midnight, Forest, Plum, Espresso,
-Carbon, Paper, Linen, Sage, Mist, Rose and Sand. Carbon (`carbon`) is the application default. The selected theme
+[theme.ts](web/src/lib/theme.ts) defines fourteen presets. The dark picker starts with Graphite,
+Carbon, Ash and Steel, with Midnight, Forest, Plum and Espresso below. The light presets are Paper,
+Linen, Sage, Mist, Rose and Sand. Carbon (`carbon`) is the application default. The selected theme
 and validated overrides feed semantic CSS variables through [appearance.ts](web/src/lib/appearance.ts).
 
 | Graphite reference palette | Hex | Semantic use |
