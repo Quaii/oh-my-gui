@@ -1,11 +1,27 @@
 const track = document.querySelector('.tour-stage');
 const slides = Array.from(track.querySelectorAll('figure'));
+function copySlide(slide) {
+  const copy = slide.cloneNode(true);
+  copy.removeAttribute('id');
+  copy.setAttribute('aria-hidden', 'true');
+  return copy;
+}
+
+const leading = slides.slice(-2).map(copySlide);
+const trailing = slides.slice(0, 2).map(copySlide);
+track.dataset.initializing = '';
+track.prepend(...leading);
+track.append(...trailing);
+const frames = [...leading, ...slides, ...trailing];
+const firstFrame = leading.length;
 const controls = document.querySelector('.tour-controls');
 const previous = controls.querySelector('[data-tour-prev]');
 const next = controls.querySelector('[data-tour-next]');
 const position = controls.querySelector('output');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let activeSlide = -1;
+let activeFrame = firstFrame;
+let settleTimer;
 let drag;
 
 function slideOffset(slide) {
@@ -15,34 +31,61 @@ function slideOffset(slide) {
 }
 
 function updateCarousel() {
-  const offsets = slides.map(slide => Math.abs(slideOffset(slide)));
-  const closest = offsets.indexOf(Math.min(...offsets));
+  const offsets = frames.map(slide => Math.abs(slideOffset(slide)));
+  activeFrame = offsets.indexOf(Math.min(...offsets));
+  const closest = (activeFrame - firstFrame + slides.length) % slides.length;
   if (closest === activeSlide) return;
 
   activeSlide = closest;
   position.value = (closest + 1) + ' / ' + slides.length;
   position.setAttribute('aria-label', 'Workspace preview ' + (closest + 1) + ' of ' + slides.length);
-  previous.setAttribute('aria-disabled', String(closest === 0));
-  next.setAttribute('aria-disabled', String(closest === slides.length - 1));
 }
 
-function moveTo(index) {
-  const slide = slides[index];
+function moveTo(index, behavior = reduceMotion.matches ? 'instant' : 'smooth') {
+  const slide = frames[index];
   if (!slide) return;
-  track.scrollBy({ left: slideOffset(slide), behavior: reduceMotion.matches ? 'instant' : 'smooth' });
+  track.scrollBy({ left: slideOffset(slide), behavior });
 }
 
+function settleCarousel() {
+  if (drag || (activeFrame >= firstFrame && activeFrame < firstFrame + slides.length)) return;
+  // The copied neighbors make this repositioning visually identical at either end.
+  const distance = slideOffset(slides[activeSlide]) - slideOffset(frames[activeFrame]);
+  track.scrollBy({ left: distance, behavior: 'instant' });
+  updateCarousel();
+}
+
+function step(direction) {
+  if (!frames[activeFrame + direction]) settleCarousel();
+  moveTo(activeFrame + direction);
+}
+
+moveTo(firstFrame, 'instant');
+delete track.dataset.initializing;
 controls.hidden = false;
 updateCarousel();
-track.addEventListener('scroll', updateCarousel, { passive: true });
-new ResizeObserver(updateCarousel).observe(track);
-previous.addEventListener('click', () => moveTo(activeSlide - 1));
-next.addEventListener('click', () => moveTo(activeSlide + 1));
+track.addEventListener('scroll', () => {
+  updateCarousel();
+  clearTimeout(settleTimer);
+  settleTimer = setTimeout(settleCarousel, 140);
+}, { passive: true });
+let trackWidth = track.clientWidth;
+new ResizeObserver(() => {
+  if (track.clientWidth === trackWidth) return;
+  trackWidth = track.clientWidth;
+  moveTo(firstFrame + activeSlide, 'instant');
+  updateCarousel();
+}).observe(track);
+previous.addEventListener('click', () => step(-1));
+next.addEventListener('click', () => step(1));
 track.addEventListener('keydown', event => {
-  const index = { ArrowLeft: activeSlide - 1, ArrowRight: activeSlide + 1, Home: 0, End: slides.length - 1 }[event.key];
-  if (index === undefined) return;
-  event.preventDefault();
-  moveTo(index);
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault();
+    step(event.key === 'ArrowLeft' ? -1 : 1);
+  } else if (event.key === 'Home' || event.key === 'End') {
+    event.preventDefault();
+    moveTo(firstFrame + (event.key === 'Home' ? 0 : slides.length - 1));
+  }
 });
 track.addEventListener('pointerdown', event => {
   if (event.pointerType === 'touch') {
@@ -54,7 +97,7 @@ track.addEventListener('pointerdown', event => {
   track.focus({ preventScroll: true });
   track.dataset.mouseDrag = '';
   track.scrollTo({ left: track.scrollLeft, behavior: 'instant' });
-  drag = { pointer: event.pointerId, start: event.clientX, scroll: track.scrollLeft, slide: activeSlide };
+  drag = { pointer: event.pointerId, start: event.clientX, scroll: track.scrollLeft, frame: activeFrame };
   track.setPointerCapture(event.pointerId);
 });
 track.addEventListener('pointermove', event => {
@@ -70,8 +113,8 @@ function finishDrag(event) {
     const distance = track.scrollLeft - drag.scroll;
     updateCarousel();
     const swipe = event.type === 'pointerup' && Math.abs(distance) > Math.min(90, track.clientWidth * .12);
-    const index = swipe && activeSlide === drag.slide ? drag.slide + Math.sign(distance) : activeSlide;
-    moveTo(Math.max(0, Math.min(slides.length - 1, index)));
+    const index = swipe && activeFrame === drag.frame ? drag.frame + Math.sign(distance) : activeFrame;
+    moveTo(Math.max(0, Math.min(frames.length - 1, index)));
   }
   track.classList.remove('is-dragging');
   drag = undefined;
@@ -83,7 +126,6 @@ track.addEventListener('lostpointercapture', finishDrag);
 const frame = document.querySelector('.appearance-frame');
 const fallback = document.querySelector('.appearance-fallback');
 const preview = document.querySelector('#appearance-preview');
-const demoToggle = document.querySelector('.demo-toggle');
 const themeLinks = Array.from(document.querySelectorAll('[data-theme]'));
 const demoUrl = new URL('demo/', location.href);
 let pendingTheme;
@@ -92,15 +134,6 @@ let demoReady = false;
 function sendTheme(theme) {
   if (!demoReady) return;
   frame.contentWindow.postMessage({ type: 'omp:appearance-demo-theme', theme }, demoUrl.origin);
-}
-
-function toggleDemo(open, scroll = false) {
-  demoToggle.setAttribute('aria-expanded', String(open));
-  preview.hidden = !open;
-  preview.classList.toggle('is-open', open);
-  if (!open) return;
-  if (!frame.hasAttribute('src')) frame.src = demoUrl.href;
-  if (scroll) preview.scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'instant' : 'smooth' });
 }
 
 window.addEventListener('message', event => {
@@ -122,17 +155,15 @@ fetch(new URL('ready.json', demoUrl))
   .then(response => response.ok && response.json())
   .then(status => {
     if (!status?.appearanceDemo) return;
+    frame.src = demoUrl.href;
     frame.hidden = false;
     fallback.hidden = true;
-    demoToggle.hidden = false;
-    toggleDemo(location.hash === '#appearance-preview');
-    demoToggle.addEventListener('click', () => toggleDemo(preview.hidden, preview.hidden));
     for (const link of themeLinks) {
       link.addEventListener('click', event => {
         event.preventDefault();
         if (demoReady) sendTheme(link.dataset.theme);
         else pendingTheme = link.dataset.theme;
-        toggleDemo(true, true);
+        preview.scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'instant' : 'smooth' });
       });
     }
   })
