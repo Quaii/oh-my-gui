@@ -420,8 +420,9 @@ removal or completion toggles. Models show the default first, with workload over
 Advanced disclosure. Custom-provider configuration uses the same frosted menu glass as Appearance,
 with no horizontal overflow.
 
-Provider cards use the rightmost slot for the sign-in button or signed-in status. Hover or keyboard
-focus reveals account management to its left. Touch screens keep the action visible.
+Provider cards use the rightmost slot for the sign-in button or signed-in status. Both share the
+same corner radius. Hover or keyboard focus reveals account management to its left. Touch screens
+keep the action visible.
 Custom providers prefer the favicon declared by their public website.
 Accounts expand inside their card. Keep browser launch and manual sign-in completion in the same
 dialog when the runtime requests a callback.

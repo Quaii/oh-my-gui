@@ -88,7 +88,7 @@ export function ProviderAccounts({
             </CollapsibleTrigger>
           )}
           <div className="flex min-w-17 justify-end">
-            {provider.authenticated ? <Badge>{signingIn ? "Signing in…" : "Signed in"}</Badge>
+            {provider.authenticated ? <Badge className="rounded-md">{signingIn ? "Signing in…" : "Signed in"}</Badge>
               : provider.available && (
                 <Button size="xs" variant="outline" onClick={() => void signIn()} disabled={loginBusy || signingIn}>
                   {signingIn ? "Signing in…" : "Sign in"}
