@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#111920">
+  <meta name="theme-color" content="#e5edf4">
   <meta name="page-type" content="software">
   <meta name="site-kind" content="software">
   <meta name="description" content="A desktop and browser interface for your local Oh My Pi CLI, with project chats, task plans, and files in one workspace.">
@@ -20,11 +20,12 @@
   <script src="showcase.js" defer></script>
 </head>
 <body>
-  <header class="nav">
+  <div class="nav">
     <div class="wrap nav-bar">
       <a class="skip-link" href="#main">Skip to content</a>
       <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="30" height="30">omp.</a>
       <nav class="nav-links" aria-label="Main navigation">
+        <a href="#frontend">Overview</a>
         <a href="#workspace">Workspace</a>
         <a href="#appearance">Appearance</a>
       </nav>
@@ -33,6 +34,7 @@
         <details class="mobile-navigation">
           <summary>Menu</summary>
           <nav aria-label="Main navigation">
+            <a href="#frontend">Overview</a>
             <a href="#workspace">Workspace</a>
             <a href="#appearance">Appearance</a>
             <a href="https://github.com/Quaii/omp-frontend">GitHub <span aria-hidden="true">↗</span></a>
@@ -41,7 +43,7 @@
         <a class="button" href="#get-started">Get omp. <span aria-hidden="true">↓</span></a>
       </div>
     </div>
-  </header>
+  </div>
 
   <main id="main">
     <section class="hero" aria-labelledby="hero-title" data-enter>
@@ -49,20 +51,30 @@
       <div class="wrap">
         <div class="hero-text">
           <div class="hero-head">
-            <h1 id="hero-title"><span>A workspace</span><span>for Oh My Pi.</span></h1>
-            <p>Your local Oh My Pi setup in a desktop and browser app. Follow the agent, organize project chats, and open files beside the conversation.</p>
-            <a class="hero-link" href="#workspace">Explore the workspace <span aria-hidden="true">↓</span></a>
+            <h1 id="hero-title"><span>The AI harness you know.</span><span>Reimagined for desktop.</span></h1>
+            <p>omp. brings Oh My Pi to the desktop, with project chats, live agent activity, and your files in one window.</p>
+            <a class="hero-link" href="https://github.com/Quaii/omp-frontend/releases">Download omp. <span aria-hidden="true">↗</span></a>
           </div>
           <div class="hero-window">
             <figure id="project-chat" class="hero-stage">
-              <a class="image-link" href="assets/project-chat.webp" aria-label="Open the full project chat screenshot">
+              <div class="image-link">
                 <picture>
                   <source media="(max-width: 540px)" srcset="assets/project-chat-narrow.webp" width="432" height="600">
                   <img src="assets/project-chat.webp" alt="omp. showing a CSV import conversation next to its project sidebar" width="1440" height="900" fetchpriority="high">
                 </picture>
-              </a>
+              </div>
             </figure>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="frontend" class="frontend" aria-labelledby="frontend-title">
+      <div class="wrap frontend-layout">
+        <h2 id="frontend-title">A frontend for<br>Oh My Pi.</h2>
+        <div>
+          <p>omp. connects to your local Oh My Pi runtime. Your providers, models, and tools still run through the CLI setup you already use.</p>
+          <p>The interface puts your projects, conversations, and agent activity alongside the files you’re working on. Use the desktop app or open the same interface in your browser.</p>
         </div>
       </div>
     </section>
@@ -73,13 +85,8 @@
           <h2 id="workspace-title">Inside the workspace</h2>
           <p>Everything starts with your project folder.</p>
         </div>
-        <div class="tour" data-showcase>
-          <nav class="tour-sidebar" aria-label="Workspace tour" data-showcase-nav>
-            <a href="#home" data-view><strong>Resume your work</strong><span>Find running chats and unfinished tasks on Home.</span></a>
-            <a href="#tour-chat" data-view><strong>Follow the agent</strong><span>Open activity, see what ran, and steer the conversation.</span></a>
-            <a href="#tour-files" data-view><strong>Review the project</strong><span>Open source files and inspect changes beside the chat.</span></a>
-          </nav>
-          <div class="tour-stage">
+        <div class="tour" aria-label="Workspace tour">
+          <div class="tour-stage" tabindex="0" aria-label="Workspace previews">
             <figure id="home">
               <a class="image-link" href="assets/workspace-overview.webp" aria-label="Open the full Home screenshot">
                 <picture>
@@ -87,6 +94,7 @@
                   <img src="assets/workspace-overview.webp" alt="Home showing what is running, unfinished tasks, and recent conversations" width="1440" height="900" loading="lazy">
                 </picture>
               </a>
+              <figcaption><strong>Resume your work</strong><span>Find running chats and unfinished tasks on Home.</span></figcaption>
             </figure>
             <figure id="tour-chat">
               <a class="image-link" href="assets/project-activity.webp" aria-label="Open the full agent activity screenshot">
@@ -95,6 +103,7 @@
                   <img src="assets/project-activity.webp" alt="Agent activity expanded in the Atlas chat, showing the files read before the reply" width="1440" height="900" loading="lazy">
                 </picture>
               </a>
+              <figcaption><strong>Follow the agent</strong><span>Open activity, see what ran, and steer the conversation.</span></figcaption>
             </figure>
             <figure id="tour-files">
               <a class="image-link" href="assets/project-files.webp" aria-label="Open the full file explorer screenshot">
@@ -103,7 +112,13 @@
                   <img src="assets/project-files.webp" alt="The Atlas project file editor with import.ts open" width="1440" height="900" loading="lazy">
                 </picture>
               </a>
+              <figcaption><strong>Review the project</strong><span>Open source files beside the conversation.</span></figcaption>
             </figure>
+          </div>
+          <div class="tour-controls" hidden>
+            <button type="button" data-tour-prev aria-label="Previous workspace preview">←</button>
+            <output aria-live="polite"></output>
+            <button type="button" data-tour-next aria-label="Next workspace preview">→</button>
           </div>
         </div>
       </div>
@@ -112,40 +127,21 @@
     <section id="appearance" class="appearance" aria-labelledby="appearance-title">
       <div class="wrap">
         <div class="section-head">
-          <h2 id="appearance-title">Your workspace,<br>your appearance.</h2>
-          <p>Switch the whole theme or adjust the accent, messages, typing scale, icons, and glass individually. Use a built-in background or bring your own.</p>
+          <h2 id="appearance-title">Try the appearance controls.</h2>
+          <p>Pick a theme, then try the app’s Appearance controls below. Backgrounds, fonts, icons, accents, and glass effects update the sample workspace as you go.</p>
         </div>
-        <figure class="theme-study">
-          <a class="image-link" href="assets/theme-study.webp" aria-label="Open the full theme sampler">
-            <img src="assets/theme-study.webp" alt="The same workspace shown with different light and dark themes and backgrounds" width="1440" height="600" loading="lazy">
-          </a>
-        </figure>
-        <div class="gallery" data-showcase>
-          <nav class="gallery-tabs" aria-label="Appearance previews" data-showcase-nav>
-            <a href="#appearance-settings" data-view>Appearance controls</a>
-            <a href="#appearance-steel" data-view><span class="swatch steel" aria-hidden="true"></span>Steel</a>
-            <a href="#appearance-paper" data-view><span class="swatch paper" aria-hidden="true"></span>Paper</a>
-          </nav>
-          <div class="gallery-stage">
-            <figure id="appearance-settings">
-              <a class="image-link" href="assets/appearance.webp" aria-label="Open the full Appearance settings screenshot">
-                <picture>
-                  <source media="(max-width: 540px)" srcset="assets/appearance-narrow.webp" width="432" height="600">
-                  <img src="assets/appearance.webp" alt="Appearance settings showing themes and background choices" width="1440" height="900" loading="lazy">
-                </picture>
-              </a>
-            </figure>
-            <figure id="appearance-steel">
-              <a class="image-link" href="assets/workspace-steel.webp" aria-label="Open the full Steel screenshot">
-                <img src="assets/workspace-steel.webp" alt="Home in Steel with the Tide background" width="1440" height="900" loading="lazy">
-              </a>
-            </figure>
-            <figure id="appearance-paper">
-              <a class="image-link" href="assets/workspace-paper.webp" aria-label="Open the full Paper screenshot">
-                <img src="assets/workspace-paper.webp" alt="Home in Paper with the Silver background" width="1440" height="900" loading="lazy">
-              </a>
-            </figure>
-          </div>
+        <div class="theme-strip" aria-label="Sample themes">
+          <a class="theme-slice theme-carbon" href="assets/workspace-overview.webp" data-theme="carbon"><span><img src="assets/workspace-overview.webp" alt="" loading="lazy"></span><b>Carbon</b></a>
+          <a class="theme-slice theme-ash" href="assets/theme-ash.webp" data-theme="ash"><span><img src="assets/theme-ash.webp" alt="" loading="lazy"></span><b>Ash</b></a>
+          <a class="theme-slice theme-steel" href="assets/workspace-steel.webp" data-theme="steel"><span><img src="assets/workspace-steel.webp" alt="" loading="lazy"></span><b>Steel</b></a>
+          <a class="theme-slice theme-forest" href="assets/theme-forest.webp" data-theme="forest"><span><img src="assets/theme-forest.webp" alt="" loading="lazy"></span><b>Forest</b></a>
+          <a class="theme-slice theme-midnight" href="assets/theme-midnight.webp" data-theme="slate"><span><img src="assets/theme-midnight.webp" alt="" loading="lazy"></span><b>Midnight</b></a>
+          <a class="theme-slice theme-plum" href="assets/theme-plum.webp" data-theme="plum"><span><img src="assets/theme-plum.webp" alt="" loading="lazy"></span><b>Plum</b></a>
+          <a class="theme-slice theme-paper" href="assets/workspace-paper.webp" data-theme="daylight"><span><img src="assets/workspace-paper.webp" alt="" loading="lazy"></span><b>Paper</b></a>
+        </div>
+        <div id="appearance-preview">
+          <iframe class="appearance-frame" title="Interactive omp. Appearance settings" loading="lazy" hidden></iframe>
+          <p class="appearance-fallback">The interactive preview is available in the built site.</p>
         </div>
       </div>
     </section>

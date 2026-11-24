@@ -81,6 +81,6 @@ The live chat and routing checks in [scripts](scripts) use a configured model an
 
 ## Project website
 
-The [static landing page](site/index.html) uses the shared showcase assets in `site/assets/`. Open it locally or serve the `site/` directory with a static HTTP server. The page has no build step and needs no runtime credentials.
+Run `npm run site:build` and `npm run site:preview` to see the [project website](site/index.html) and its interactive Appearance demo at [localhost:57102](http://localhost:57102). The demo shares the app’s Appearance panel and renders a sample workspace without an OMP runtime or credentials.
 
-The [Pages workflow](.github/workflows/site-pages.yml) is manual. Once it is on the default branch and GitHub Pages is configured to use GitHub Actions, an owner can run **Publish project website** from the Actions tab. Review the site’s visibility before running it. The workflow deploys only `site/`. [GitHub Pages configuration guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+The [Pages workflow](.github/workflows/site-pages.yml) is manual. Once it is on the default branch and GitHub Pages is configured to use GitHub Actions, an owner can run **Publish project website** from the Actions tab. Review the site’s visibility before running it. The workflow builds and deploys `dist/site/`. [GitHub Pages configuration guide](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)

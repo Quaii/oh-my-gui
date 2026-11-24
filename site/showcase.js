@@ -1,69 +1,98 @@
-for (const showcase of document.querySelectorAll('[data-showcase]')) {
-  const navigation = showcase.querySelector('[data-showcase-nav]');
-  const tabs = Array.from(navigation.querySelectorAll('[data-view]'));
-  const panels = tabs.map(tab => document.getElementById(tab.hash.slice(1)));
-  const mobile = matchMedia('(max-width: 760px)');
-  const vertical = () => navigation.classList.contains('tour-sidebar') && !mobile.matches;
+const track = document.querySelector('.tour-stage');
+const slides = Array.from(track.querySelectorAll('figure'));
+const controls = document.querySelector('.tour-controls');
+const previous = controls.querySelector('[data-tour-prev]');
+const next = controls.querySelector('[data-tour-next]');
+const position = controls.querySelector('output');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let activeSlide = -1;
 
-  function selectTab(activeIndex, focus = false) {
-    tabs.forEach((tab, index) => {
-      const selected = index === activeIndex;
-      tab.setAttribute('aria-selected', String(selected));
-      tab.tabIndex = selected ? 0 : -1;
-      panels[index].hidden = !selected;
-    });
-
-    if (focus) tabs[activeIndex].focus();
-  }
-
-  function updateOrientation() {
-    navigation.setAttribute('aria-orientation', vertical() ? 'vertical' : 'horizontal');
-  }
-
-  function selectLinkedTab() {
-    const linkedTab = panels.findIndex(panel => '#' + panel.id === location.hash);
-    if (linkedTab >= 0) selectTab(linkedTab);
-  }
-
-  navigation.setAttribute('role', 'tablist');
-  updateOrientation();
-  mobile.addEventListener('change', updateOrientation);
-
-  tabs.forEach((tab, index) => {
-    const panel = panels[index];
-    tab.id = 'preview-' + panel.id;
-    tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-controls', panel.id);
-    panel.setAttribute('role', 'tabpanel');
-    panel.setAttribute('aria-labelledby', tab.id);
-
-    tab.addEventListener('click', event => {
-      event.preventDefault();
-      selectTab(index);
-    });
-
-    tab.addEventListener('keydown', event => {
-      const previous = vertical() ? 'ArrowUp' : 'ArrowLeft';
-      const next = vertical() ? 'ArrowDown' : 'ArrowRight';
-      const target = {
-        [previous]: (index - 1 + tabs.length) % tabs.length,
-        [next]: (index + 1) % tabs.length,
-        Home: 0,
-        End: tabs.length - 1,
-      }[event.key];
-      if (target === undefined) return;
-      event.preventDefault();
-      selectTab(target, true);
-    });
-  });
-
-  selectTab(0);
-  selectLinkedTab();
-  window.addEventListener('hashchange', selectLinkedTab);
+function slideOffset(slide) {
+  const viewport = track.getBoundingClientRect();
+  const bounds = slide.getBoundingClientRect();
+  return bounds.left - viewport.left - (track.clientWidth - bounds.width) / 2;
 }
 
+function updateCarousel() {
+  const offsets = slides.map(slide => Math.abs(slideOffset(slide)));
+  const closest = offsets.indexOf(Math.min(...offsets));
+  if (closest === activeSlide) return;
+
+  activeSlide = closest;
+  position.value = (closest + 1) + ' / ' + slides.length;
+  position.setAttribute('aria-label', 'Workspace preview ' + (closest + 1) + ' of ' + slides.length);
+  previous.setAttribute('aria-disabled', String(closest === 0));
+  next.setAttribute('aria-disabled', String(closest === slides.length - 1));
+}
+
+function moveTo(index) {
+  const slide = slides[index];
+  if (!slide) return;
+  track.scrollBy({ left: slideOffset(slide), behavior: reduceMotion.matches ? 'instant' : 'smooth' });
+}
+
+controls.hidden = false;
+updateCarousel();
+track.addEventListener('scroll', updateCarousel, { passive: true });
+new ResizeObserver(updateCarousel).observe(track);
+previous.addEventListener('click', () => moveTo(activeSlide - 1));
+next.addEventListener('click', () => moveTo(activeSlide + 1));
+track.addEventListener('keydown', event => {
+  const index = { ArrowLeft: activeSlide - 1, ArrowRight: activeSlide + 1, Home: 0, End: slides.length - 1 }[event.key];
+  if (index === undefined) return;
+  event.preventDefault();
+  moveTo(index);
+});
+
+const frame = document.querySelector('.appearance-frame');
+const fallback = document.querySelector('.appearance-fallback');
+const themeLinks = Array.from(document.querySelectorAll('[data-theme]'));
+const demoUrl = new URL('demo/', location.href);
+let pendingTheme;
+let demoReady = false;
+
+function sendTheme(theme) {
+  if (!demoReady) return;
+  frame.contentWindow.postMessage({ type: 'omp:appearance-demo-theme', theme }, demoUrl.origin);
+}
+
+window.addEventListener('message', event => {
+  if (event.origin !== demoUrl.origin || event.source !== frame.contentWindow) return;
+  if (event.data?.type !== 'omp:appearance-demo-current') return;
+
+  demoReady = true;
+  for (const link of themeLinks) {
+    if (link.dataset.theme === event.data.theme) link.setAttribute('aria-current', 'true');
+    else link.removeAttribute('aria-current');
+  }
+  if (pendingTheme) {
+    sendTheme(pendingTheme);
+    pendingTheme = undefined;
+  }
+});
+
+fetch(new URL('ready.json', demoUrl))
+  .then(response => response.ok && response.json())
+  .then(status => {
+    if (!status?.appearanceDemo) return;
+    frame.src = demoUrl.href;
+    frame.hidden = false;
+    fallback.hidden = true;
+    for (const link of themeLinks) {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        if (demoReady) sendTheme(link.dataset.theme);
+        else pendingTheme = link.dataset.theme;
+        document.querySelector('#appearance-preview').scrollIntoView({ block: 'start' });
+      });
+    }
+  })
+  .catch(() => {
+    // The HTML-only preview can still show the screenshots.
+  });
+
 const pageLinks = Array.from(document.querySelectorAll('.nav a[href^="#"]'))
-  .filter(link => ['#workspace', '#appearance', '#get-started'].includes(link.hash));
+  .filter(link => ['#frontend', '#workspace', '#appearance', '#get-started'].includes(link.hash));
 
 function updateNavigation() {
   const id = location.hash.slice(1);
@@ -75,7 +104,11 @@ function updateNavigation() {
 }
 
 updateNavigation();
-window.addEventListener('hashchange', updateNavigation);
+window.addEventListener('hashchange', () => {
+  updateNavigation();
+  const target = document.getElementById(location.hash.slice(1));
+  if (target) requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
+});
 
 const menu = document.querySelector('.mobile-navigation');
 const menuTrigger = menu.querySelector('summary');

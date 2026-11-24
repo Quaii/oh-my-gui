@@ -12,12 +12,11 @@ Do not copy an early rule or a third-party component's stock styling as the prod
 
 ## Project website
 
-The [project website](site/index.html) uses the app's Carbon, Steel and Paper palettes. The floating
-navigation borrows the app's tinted glass treatment. The project chat enters over a Steel-toned
-background and levels as the visitor scrolls. The Carbon workspace tour has a vertical
-navigation rail on desktop and a horizontal row on narrow screens. The appearance section groups
-the theme sampler and settings gallery. Use narrow app captures where available on phones. Keep
-setup links and commands together. Motion is brief and respects reduced motion.
+The [project website](site/index.html) uses the app's Carbon, Steel and Paper palettes. Its bottom
+dock uses a translucent backdrop blur. The project chat levels as the visitor scrolls through the
+light-to-dark hero. The workspace tour is a manual carousel with narrow captures on phones. The
+angled theme slices lead into a standalone preview built with the app's Appearance controls. Keep
+setup links and commands together. Motion respects reduced motion.
 
 ## The material hierarchy
 

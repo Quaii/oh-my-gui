@@ -12,6 +12,8 @@
     "dev:server": "node --watch server/src/index.ts",
     "dev:web": "vite --config web/vite.config.ts",
     "build": "vite build --config web/vite.config.ts",
+    "site:build": "node scripts/build-site.mjs",
+    "site:preview": "vite preview --host 127.0.0.1 --port 57102 --strictPort --outDir dist/site",
     "start": "node server/src/index.ts",
     "serve": "npm run build && npm start",
     "test": "node --test server/tests/*.test.ts",
