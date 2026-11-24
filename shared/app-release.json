@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "0.1.2",
+      "title": "Oh My GUI public preview",
+      "changes": [
+        "Oh My GUI branding across the desktop app, installer, setup, and tray.",
+        "Project chats, agent activity, and file editing in a shared desktop workspace.",
+        "Installer detects an existing Oh My Pi runtime and can install or update it during setup."
+      ]
+    },
+    {
       "version": "0.1.0",
       "title": "Desktop preview",
       "changes": [

@@ -65,7 +65,7 @@ try{
   assert.ok(Array.isArray(tray.recent)&&tray.recent.length<=3);
   assert.ok(Array.isArray(tray.running));
   const html=await (await fetch(base+'/',{headers})).text();
-  assert.match(html,/<title>omp\.<\/title>/);
+  assert.match(html,/<title>Oh My GUI<\/title>/);
   const asset=html.match(/src="(\/assets\/[^\"]+\.js)"/);
   assert.ok(asset,'Built application entry is present');
   assert.equal((await fetch(base+asset[1],{headers})).status,200);
