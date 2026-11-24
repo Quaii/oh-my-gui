@@ -3,91 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#111214">
-  <meta name="description" content="A desktop and browser workspace for Oh My Pi. Manage coding conversations, projects, tasks, and settings through your local OMP runtime.">
-  <title>omp. — A workspace for Oh My Pi</title>
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f5f2eb">
+  <meta name="description" content="The Oh My Pi CLI in a desktop and browser workspace. See the interface, explore seven themes, and get started locally.">
+  <title>omp. — Oh My Pi, with a UI</title>
   <link rel="icon" href="assets/brand.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header shell">
-    <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="30" height="30">omp<span>.</span></a>
+    <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="28" height="28"><span>omp.</span></a>
     <nav aria-label="Main navigation">
       <a href="#workspace">Workspace</a>
       <a href="#get-started">Get started</a>
-      <a href="https://github.com/Quaii/omp-frontend">GitHub <span aria-hidden="true">↗</span></a>
+      <a href="https://github.com/Quaii/omp-frontend">GitHub</a>
     </nav>
   </header>
+
   <main id="main">
     <section class="hero shell" aria-labelledby="hero-title">
-      <div class="hero-content">
-        <h1 id="hero-title">A workspace<br><span>for Oh My Pi.</span></h1>
-        <div class="hero-details">
-          <p>Run coding chats, follow your agent’s work, and manage projects on your machine. Use the desktop app or open the same interface in your browser.</p>
-          <div class="actions">
-            <a class="button primary" href="#get-started">Get started</a>
-            <a class="button secondary" href="https://github.com/Quaii/omp-frontend">View on GitHub <span aria-hidden="true">↗</span></a>
-          </div>
+      <div class="hero-copy">
+        <h1 id="hero-title">Oh My Pi,<br>with a UI</h1>
+        <p>The CLI you already use, in a desktop and browser workspace for your chats, projects, and files.</p>
+        <div class="actions">
+          <a class="button" href="#get-started">Get started</a>
+          <a class="text-link" href="#workspace">See the workspace</a>
         </div>
       </div>
       <figure class="hero-shot">
-        <img src="assets/workspace-overview.webp" alt="omp. workspace overview with unfinished tasks, projects, and recent conversations" width="1440" height="900" fetchpriority="high">
-        <figcaption>Workspace overview with demo project data.</figcaption>
+        <a class="image-link" href="assets/workspace-overview.webp" aria-label="Open the full Home screenshot">
+          <img src="assets/workspace-overview.webp" alt="omp. Home in Carbon, showing unfinished tasks, projects, and recent chats" width="1440" height="900" fetchpriority="high">
+        </a>
+        <figcaption><span>Home</span><span>Carbon / Pattern Waves</span></figcaption>
       </figure>
     </section>
 
-    <section id="workspace" class="features shell" aria-labelledby="workspace-title">
-      <div class="section-intro">
-        <h2 id="workspace-title">Follow the work from chat to files</h2>
-        <p>Projects, activity, and the local tools you use to finish a task are in the same workspace.</p>
+    <section id="workspace" class="showcase shell" aria-labelledby="workspace-title">
+      <div class="section-heading">
+        <h2 id="workspace-title">Same workspace, seven ways</h2>
+        <p>From Carbon with Pattern Waves to Paper with Silver. Theme and background are yours to pair.</p>
       </div>
-      <div class="feature-layout">
+      <figure class="theme-study">
+        <a class="image-link" href="assets/theme-study.webp" aria-label="Open the seven-theme gallery at full size">
+          <img src="assets/theme-study.webp" alt="Seven slices of omp. Home in Carbon, Ash, Steel, Forest, Midnight, Plum, and Paper with different backgrounds" width="1440" height="600" loading="lazy">
+        </a>
+        <figcaption><a class="text-link" href="assets/theme-study.webp">View full size</a><a class="text-link" href="assets/appearance.webp">Appearance settings</a></figcaption>
+      </figure>
+
+      <div class="project-spread">
         <figure class="chat-shot">
-          <a href="assets/project-chat.webp" aria-label="Open the full project chat screenshot">
-            <img src="assets/project-chat.webp" alt="A project chat in omp. reviewing CSV import cases" width="1440" height="900" loading="lazy">
+          <a class="image-link" href="assets/project-chat.webp" aria-label="Open the full project chat screenshot">
+            <img src="assets/project-chat.webp" alt="An omp. project chat reviewing CSV import cases" width="1440" height="900" loading="lazy">
           </a>
-          <figcaption>Project conversation with a sample response.</figcaption>
+          <figcaption><span>Project chat</span><span>Sample conversation</span></figcaption>
         </figure>
-        <div class="feature-list">
-          <article><h3>Pick up where you left off</h3><p>See running chats and unfinished tasks from Home. Pin conversations or group them into projects as your work changes.</p></article>
-          <article><h3>Review changes in context</h3><p>Expand agent activity, inspect changed files, and open source alongside the conversation.</p></article>
-          <article><h3>Configure your runtime</h3><p>Manage models, provider accounts, skills, MCP servers, and appearance from Settings.</p></article>
+        <div class="project-copy">
+          <h2>Inside a project</h2>
+          <p>Pick up an unfinished task, expand agent activity, or open the changed files alongside the conversation.</p>
+          <p>Manage models, providers, skills, and MCP servers from Settings. Your local <code>omp</code> runtime does the work.</p>
         </div>
       </div>
     </section>
 
     <section id="get-started" class="getting-started shell" aria-labelledby="get-started-title">
-      <div class="section-intro">
-        <h2 id="get-started-title">Get started locally</h2>
-        <p>omp. connects to the Oh My Pi runtime on your machine. The browser interface is served on loopback.</p>
+      <div class="section-heading">
+        <h2 id="get-started-title">Run it locally</h2>
+        <p>omp. uses your installation of <a class="text-link" href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>.</p>
       </div>
       <div class="start-layout">
-        <article class="start-card">
+        <article class="start-option">
           <h3>Desktop</h3>
-          <p>Check GitHub Releases for desktop downloads, or follow the build guide to make a package for your platform.</p>
+          <p>Check GitHub for available desktop downloads or build a package for your platform.</p>
           <div class="actions">
-            <a class="button primary" href="https://github.com/Quaii/omp-frontend/releases">GitHub Releases <span aria-hidden="true">↗</span></a>
-            <a class="text-link" href="https://github.com/Quaii/omp-frontend/blob/tauri/DESKTOP.md">Desktop build guide</a>
+            <a class="button" href="https://github.com/Quaii/omp-frontend/releases">GitHub Releases</a>
+            <a class="text-link" href="https://github.com/Quaii/omp-frontend/blob/tauri/DESKTOP.md">Build guide</a>
           </div>
         </article>
-        <article class="start-card">
+        <article class="start-option">
           <h3>Browser</h3>
-          <p>Clone the repository, install Node.js 24+ and <a class="text-link" href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>, then run these commands in the checkout.</p>
+          <p>Clone the repository, install Node.js 24+, and run these commands in the checkout.</p>
           <pre><code>npm ci
 npm run dev</code></pre>
-          <p>Open <code>localhost:5317</code> once the development server is ready.</p>
+          <p>Open <code>localhost:5317</code> once the server is ready.</p>
         </article>
       </div>
     </section>
   </main>
+
   <footer class="site-footer shell">
-    <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="26" height="26">omp<span>.</span></a>
+    <a class="brand" href="#main" aria-label="omp. home"><img src="assets/brand.svg" alt="" width="24" height="24"><span>omp.</span></a>
     <nav aria-label="Project links">
       <a href="https://github.com/Quaii/omp-frontend/issues">Issues</a>
       <a href="https://github.com/Quaii/omp-frontend/blob/tauri/ASSET-CREDITS.md">Credits</a>
-      <a href="https://github.com/can1357/oh-my-pi">Oh My Pi <span aria-hidden="true">↗</span></a>
+      <a href="https://github.com/can1357/oh-my-pi">Oh My Pi</a>
     </nav>
   </footer>
 </body>
