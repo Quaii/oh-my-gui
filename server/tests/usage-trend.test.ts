@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {buildModelTrend} from "../../web/src/lib/usage.ts";
+import {buildModelTrend, modelSliceCorners} from "../../web/src/lib/usage.ts";
 test("model token trends preserve provider identity and fill idle buckets with zero",()=>{
  const models=[{provider:"a",model:"same",totalInputTokens:100},{provider:"b",model:"same",totalInputTokens:50}];
  const {models:keys,points}=buildModelTrend([{timestamp:0,provider:"a",model:"same",tokens:100},{timestamp:7_200_000,provider:"b",model:"same",tokens:50}],models,"tokens");
@@ -24,4 +24,18 @@ test("multi-day trends sum by local date and retain idle dates across daylight s
   "2026-10-24","2026-10-25","2026-10-26","2026-10-27",
  ]);
  assert.deepEqual(points.map(point=>point.m0),[18,0,0,5]);
+});
+
+test("donut corners stay rounded next to tiny slices without swallowing them", () => {
+ const angles = [200, 120, 39.97, 0.03];
+ const corners = angles.map(sweep => modelSliceCorners(sweep, angles.length, 65, 88));
+ for (const [index, corner] of corners.entries()) {
+  assert.ok(corner.cornerRadius > 0);
+  assert.ok(2 * corner.inset <= angles[index] / 4);
+ }
+ assert.equal(corners[0].cornerRadius, 5);
+ assert.equal(corners[0].inset, 1);
+ assert.equal(corners[2].inset, 1);
+ assert.ok(corners[3].cornerRadius < 0.02);
+ assert.deepEqual(modelSliceCorners(360, 1, 65, 88), { inset: 0, cornerRadius: 0 });
 });

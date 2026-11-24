@@ -1,6 +1,6 @@
 import { PanelSkeleton } from "@/components/ui/loading-shapes";
 import { useId, useMemo, useState } from "react";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Sector, type PieSectorShapeProps } from "recharts";
+import { Area, AreaChart, Curve, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Sector, type AreaRevealShapeProps, type PieSectorShapeProps } from "recharts";
 import { Button } from "@/components/ui/button";
 import { SkeletonReveal } from "@/components/ui/skeleton-reveal";
 import { SlidingTabs } from "@/components/ui/sliding-tabs";
@@ -9,7 +9,7 @@ import { ProviderIcon } from "../ProviderIcon";
 import { useRemote, Notice } from "./ManagementShared";
 import { SettingsHeading } from "./SettingsHeading";
 import { money } from "@/lib/api";
-import { buildModelTrend,modelKey,modelTokens,USAGE_COLORS } from "@/lib/usage";
+import { buildModelTrend, modelKey, modelSliceCorners, modelTokens, USAGE_COLORS } from "@/lib/usage";
 import type { usagePricing } from "../../../../server/src/usage-pricing";
 
 const number=(n:number)=>Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});
@@ -28,18 +28,52 @@ function DonutTooltip({active,payload,metric}:{active?:boolean;payload?:readonly
  return <div className="chart-tooltip rounded-xl border border-border px-4 py-3 text-[13px] text-foreground shadow-lg"><p className="font-medium">{point.model}</p><p className="mt-1 text-xs text-muted-foreground">{point.provider}</p><p className="mt-2 tabular-nums">{number(point.value)} {metric}</p></div>;
 }
 
-function renderModelShareSector({ startAngle, endAngle, index, ...sector }: PieSectorShapeProps, angles: number[]) {
-  const count = angles.length;
-  // Only separate arcs wide enough to show a visible slice beside the gap.
-  const canSeparate = (neighbor: number) => count > 1 && angles[index] >= 4 && angles[neighbor] >= 4;
-  const inset = Math.min(1, 15 / count);
-  const startInset = canSeparate((index + count - 1) % count) ? inset : 0;
-  const endInset = canSeparate((index + 1) % count) ? inset : 0;
+const TREND_FADE_STEPS = 64;
+const trendFade = Array.from({ length: TREND_FADE_STEPS }, (_, index) => {
+  const opacity = (step: number) => 0.96 * (step / TREND_FADE_STEPS) ** 1.6;
+  const previous = opacity(index);
+  return {
+    depth: 1 - (index + 0.5) / TREND_FADE_STEPS,
+    opacity: (opacity(index + 1) - previous) / (1 - previous),
+  };
+});
+
+function UsageTrendArea({ points, baseLine, stroke }: AreaRevealShapeProps) {
+  const clipId = useId();
+  if (!points?.length || baseLine === undefined) return null;
+  const baselineY = (index: number) => typeof baseLine === "number" ? baseLine : baseLine[index]?.y;
+  if (!points.some(({ y }, index) => y != null && y !== baselineY(index))) return null;
+
+  // Interpolate from the line to its stacked baseline at each point. A short
+  // band gets the full fade just like a tall band in the same series.
+  return <g>
+    <defs>
+      <clipPath id={clipId}>
+        <Curve type="monotoneX" points={points} baseLine={baseLine} />
+      </clipPath>
+    </defs>
+    <g clipPath={`url(#${clipId})`}>
+      {trendFade.map(({ depth, opacity }) => {
+        const fadeBase = points.map(({ x, y }, index) => {
+          const bottom = baselineY(index);
+          return { x, y: y == null || bottom == null ? null : y + (bottom - y) * depth };
+        });
+        return <Curve key={depth} type="monotoneX" points={points} baseLine={fadeBase} fill={stroke} fillOpacity={opacity} stroke="none" />;
+      })}
+      <Curve type="monotoneX" points={points} fill="none" stroke={stroke} strokeWidth={3} />
+    </g>
+  </g>;
+}
+
+function renderModelShareSector({ startAngle, endAngle, innerRadius, outerRadius, ...sector }: PieSectorShapeProps, count: number) {
+  const { inset, cornerRadius } = modelSliceCorners(Math.abs(endAngle - startAngle), count, innerRadius, outerRadius);
   const direction = Math.sign(endAngle - startAngle);
   return <Sector {...sector}
-    startAngle={startAngle + direction * startInset}
-    endAngle={endAngle - direction * endInset}
-    cornerRadius={startInset && endInset ? 5 : 0}
+    innerRadius={innerRadius}
+    outerRadius={outerRadius}
+    startAngle={startAngle + direction * inset}
+    endAngle={endAngle - direction * inset}
+    cornerRadius={cornerRadius}
   />;
 }
 
@@ -89,7 +123,6 @@ export default function UsagePanel({ title, description }: { title: string; desc
  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
  const {data,loading,error,refresh}=useRemote(`/api/usage?tz=${encodeURIComponent(tz)}`);
  const [metric,setMetric]=useState<Metric>("tokens"),[shareMetric,setShareMetric]=useState("tokens");
- const gradientId = useId().replace(/[^\w-]/g, "");
  const total=data?.overall,activity=data?.activity;
  const models=useMemo(()=>[...(data?.byModel||[])].sort((a:any,b:any)=>modelTokens(b)-modelTokens(a)),[data]);
  const colors = useMemo(() => new Map(models.map((model, i) => [modelKey(model), USAGE_COLORS[i % USAGE_COLORS.length]])), [models]);
@@ -102,7 +135,6 @@ export default function UsagePanel({ title, description }: { title: string; desc
  })).filter(model => Number.isFinite(model.value) && model.value > 0).sort((a, b) => b.value - a.value), [models, colors, shareMetric]);
  const tokens = total ? modelTokens(total) : 0;
  const shareTotal = shares.reduce((sum, model) => sum + model.value, 0);
- const shareAngles = shares.map(model => 360 * (model.value / shareTotal));
  const maxCost = Number(ranking[0]?.totalCost || 0);
  const stats=[{label:"Total tokens",value:compact(tokens),hint:"Including cache reads & writes"},{label:"Peak tokens",value:activity?compact(activity.peakHourlyTokens):"—",hint:"Highest hourly usage"},{label:"Longest session",value:activity?duration(activity.longestSessionMs):"—",hint:"Active model time · main sessions"},{label:"Current streak",value:activity?`${activity.currentStreak} ${activity.currentStreak===1?"day":"days"}`:"—",hint:"Active today or yesterday"},{label:"Longest streak",value:activity?`${activity.longestStreak} ${activity.longestStreak===1?"day":"days"}`:"—",hint:"Consecutive active days"}];
  return <>
@@ -114,16 +146,10 @@ export default function UsagePanel({ title, description }: { title: string; desc
     <div className="usage-chart-grid">
      <section className="settings-card"><SettingsHeading title="Usage over time" description={<> {metric==="tokens"?"Tokens by model":metric==="requests"?"Requests by model":"API-equivalent cost by model"} · {trend.daily?"Daily":"Hourly"}</>} action={<SlidingTabs tabs={[{id:"tokens",label:"Tokens"},{id:"requests",label:"Requests"},{id:"cost",label:"Cost"}]} value={metric} onChange={v=>setMetric(v as Metric)} label="Usage metric" controls="usage-chart"/>} />
       <div id="usage-chart" role="tabpanel" aria-label={`${metric} by model over time`} className="h-[260px] w-full">{trend.points.length?<ResponsiveContainer width="100%" height="100%"><AreaChart data={trend.points} margin={{left:0,right:8,top:8,bottom:0}}>
-      <defs>
-        {trend.models.map(m => <linearGradient key={m.id} id={`${gradientId}-${m.key}`} x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={m.color} stopOpacity={0.72}/>
-          <stop offset="100%" stopColor={m.color} stopOpacity={0}/>
-        </linearGradient>)}
-      </defs>
-      <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 5"/><XAxis dataKey="timestamp" tickFormatter={v=>chartDate(v,trend.daily)} tick={{fontSize:10,fill:"var(--muted-foreground)"}} axisLine={false} tickLine={false} minTickGap={42}/><YAxis tick={{fontSize:10,fill:"var(--muted-foreground)"}} axisLine={false} tickLine={false} tickFormatter={v=>metric==="cost"?`$${compact(v)}`:compact(v)} width={48}/><Tooltip cursor={{stroke:"var(--muted-foreground)",strokeOpacity:.25}} content={props=><TrendTooltip {...props} metric={metric} daily={trend.daily}/>}/>{trend.models.map(m=><Area key={m.id} name={m.provider?`${m.model} · ${m.provider}`:m.model} type="monotone" dataKey={m.key} stackId="models" stroke={m.color} fill={`url(#${gradientId}-${m.key})`} fillOpacity={1} strokeWidth={2} isAnimationActive={false}/>)}</AreaChart></ResponsiveContainer>:<div className="grid h-full place-items-center text-sm text-muted-foreground">{data.detailStatus==="unavailable"?"Detailed history is unavailable for this runtime.":"No recorded usage yet."}</div>}</div>
+      <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 5"/><XAxis dataKey="timestamp" tickFormatter={v=>chartDate(v,trend.daily)} tick={{fontSize:10,fill:"var(--muted-foreground)"}} axisLine={false} tickLine={false} minTickGap={42}/><YAxis tick={{fontSize:10,fill:"var(--muted-foreground)"}} axisLine={false} tickLine={false} tickFormatter={v=>metric==="cost"?`$${compact(v)}`:compact(v)} width={48}/><Tooltip cursor={{stroke:"var(--muted-foreground)",strokeOpacity:.25}} content={props=><TrendTooltip {...props} metric={metric} daily={trend.daily}/>}/>{trend.models.map(m=><Area key={m.id} name={m.provider?`${m.model} · ${m.provider}`:m.model} type="monotone" dataKey={m.key} stackId="models" stroke={m.color} fill={m.color} shape={UsageTrendArea} isAnimationActive={false}/>)}</AreaChart></ResponsiveContainer>:<div className="grid h-full place-items-center text-sm text-muted-foreground">{data.detailStatus==="unavailable"?"Detailed history is unavailable for this runtime.":"No recorded usage yet."}</div>}</div>
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">{trend.models.map(m=><span className="inline-flex items-center gap-2 text-xs text-muted-foreground" key={m.id} title={m.provider}><span className="size-2 rounded-full" style={{background:m.color}}/>{m.model}</span>)}</div>
      </section>
-     <section className="settings-card"><SettingsHeading title="Model usage" action={<SlidingTabs tabs={[{id:"tokens",label:"Tokens"},{id:"requests",label:"Requests"}]} value={shareMetric} onChange={setShareMetric} label="Model usage metric" controls="model-usage-chart"/>} /><div id="model-usage-chart" role="tabpanel" aria-label={`Model share by ${shareMetric}`} className="relative isolate mb-3 h-[210px]">{shareTotal>0?<><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={shares} dataKey="value" nameKey="model" cx="50%" cy="50%" innerRadius={65} outerRadius={88} stroke="none" isAnimationActive={false} shape={sector => renderModelShareSector(sector, shareAngles)}>{shares.map(m => <Cell key={modelKey(m)} fill={m.color}/>)}</Pie><Tooltip wrapperStyle={{zIndex:1}} content={props=><DonutTooltip {...props} metric={shareMetric}/>}/></PieChart></ResponsiveContainer><div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><span className="text-2xl font-semibold tracking-tight tabular-nums">{compact(shareTotal)}</span><span className="mt-1 text-xs text-muted-foreground">{shareMetric}</span></div></>:<div className="grid h-full place-items-center text-sm text-muted-foreground">No recorded usage yet.</div>}</div>
+     <section className="settings-card"><SettingsHeading title="Model usage" action={<SlidingTabs tabs={[{id:"tokens",label:"Tokens"},{id:"requests",label:"Requests"}]} value={shareMetric} onChange={setShareMetric} label="Model usage metric" controls="model-usage-chart"/>} /><div id="model-usage-chart" role="tabpanel" aria-label={`Model share by ${shareMetric}`} className="relative isolate mb-3 h-[210px]">{shareTotal>0?<><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={shares} dataKey="value" nameKey="model" cx="50%" cy="50%" innerRadius={65} outerRadius={88} stroke="none" isAnimationActive={false} shape={sector => renderModelShareSector(sector, shares.length)}>{shares.map(m => <Cell key={modelKey(m)} fill={m.color}/>)}</Pie><Tooltip wrapperStyle={{zIndex:1}} content={props=><DonutTooltip {...props} metric={shareMetric}/>}/></PieChart></ResponsiveContainer><div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><span className="text-2xl font-semibold tracking-tight tabular-nums">{compact(shareTotal)}</span><span className="mt-1 text-xs text-muted-foreground">{shareMetric}</span></div></>:<div className="grid h-full place-items-center text-sm text-muted-foreground">No recorded usage yet.</div>}</div>
       <ScrollArea className="usage-model-list--share" viewportClassName="usage-model-list-viewport" role="region" aria-label="Model usage breakdown" viewportTabIndex={shares.length > 4 ? 0 : undefined}>
         {shares.map(m=>{
           const share = m.value/shareTotal*100;

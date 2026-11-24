@@ -1,6 +1,17 @@
 export const USAGE_COLORS=["var(--primary)","#6ea8ad","#a597c7","#d3ab70","#83a48c","#ad7f91"];
 export const modelKey=(m:{provider:string;model:string})=>`${m.provider}/${m.model}`;
 export const modelTokens=(m:any)=>Number(m.totalInputTokens||0)+Number(m.totalOutputTokens||0)+Number(m.totalCacheReadTokens||0)+Number(m.totalCacheWriteTokens||0);
+
+export function modelSliceCorners(sweep: number, count: number, innerRadius: number, outerRadius: number) {
+  if (count <= 1) return { inset: 0, cornerRadius: 0 };
+
+  const inset = Math.min(1, 15 / count, sweep / 8);
+  const visibleSweep = sweep - 2 * inset;
+  // The two rounded ends must fit inside the angular span at the inner edge.
+  const cornerRadius = Math.min(5, (outerRadius - innerRadius) / 2, innerRadius * visibleSweep * Math.PI / 540);
+  return { inset, cornerRadius };
+}
+
 export function buildModelTrend(rows:any[],models:any[],metric:"tokens"|"requests"|"cost",timeZone="UTC") {
  const ranked=[...models].sort((a,b)=>modelTokens(b)-modelTokens(a));
  const shown=ranked.slice(0,5).map((m,i)=>({...m,id:modelKey(m),key:`m${i}`,color:USAGE_COLORS[i]}));

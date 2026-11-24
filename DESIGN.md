@@ -440,10 +440,12 @@ continues to discover user and project rules independently.
 Web search results use the site's favicon when available and keep the letter badge when a site
 has no usable icon.
 In Usage, multi-day trends group activity by local calendar day. Trend lines share the donut's
-model palette, with fills that fade to transparent beneath each line. Cost by model and the donut
+model palette. Each band starts with its line color and fades to transparent across its own height.
+Cost by model and the donut
 breakdown show up to four rows before scrolling, using the same scrollbar as Settings navigation.
 Chart headings and tabs start at the card inset. Cards in a two-column row share a height.
-The donut omits zero-usage models and keeps very small slices proportional without adding gaps around them.
+The donut omits zero-usage models and rounds both ends of each slice. Corner radius and spacing shrink
+with narrow slices so they retain their proportions.
 The usage note has its own card. Published-price checks compare OMP's estimate with current
 public token rates and identify models without a comparable rate.
 
