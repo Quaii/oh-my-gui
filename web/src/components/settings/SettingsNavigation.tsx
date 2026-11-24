@@ -114,7 +114,7 @@ export function SettingsNavigation({panel,onSelect,collapsed,onToggle,onBack,loc
   <div className={`flex shrink-0 ${collapsed ? "px-2" : "px-3"}`}>
     {collapsed ? <Tooltip><TooltipTrigger asChild>{back}</TooltipTrigger><TooltipContent side="right">Back to workspace</TooltipContent></Tooltip> : back}
   </div>
-  <nav ref={navRef} className="settings-nav min-h-0 flex-1" aria-label="Settings sections">
+  <nav ref={locked ? undefined : navRef} className="settings-nav min-h-0 flex-1" aria-label="Settings sections">
     <ScrollArea className="h-full">
       <div className={collapsed?"px-2 py-2":"px-3 pb-5 pt-3"}>
         {SETTINGS_GROUPS.map((group, index) => <div key={group.section} className="settings-nav-group">

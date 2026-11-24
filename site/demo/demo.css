@@ -1,2 +1,8 @@
 @import "../../web/src/index.css";
 @source "../../web/src";
+
+.settings-sidebar .settings-nav [data-slot="scroll-area-viewport"] {
+  overflow: clip !important;
+  scrollbar-gutter: auto;
+}
+.settings-sidebar .settings-nav [data-slot="scroll-area-scrollbar"] { display: none; }
