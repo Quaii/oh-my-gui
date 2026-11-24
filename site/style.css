@@ -65,6 +65,11 @@ a { color: inherit; text-underline-offset: .24em; }
   color: #eff3f7;
   pointer-events: none;
 }
+.nav-bar, .tour-arrows button {
+  background: #182532b0;
+  box-shadow: 0 8px 32px #0c141d35, inset 0 1px #ffffff1c;
+  backdrop-filter: blur(20px) saturate(140%);
+}
 .nav-bar {
   position: relative;
   display: flex;
@@ -74,9 +79,6 @@ a { color: inherit; text-underline-offset: .24em; }
   gap: clamp(12px, 3vw, 36px);
   padding: 5px 6px 5px 12px;
   border-radius: 15px;
-  background: #182532b0;
-  box-shadow: 0 8px 32px #0c141d35, inset 0 1px #ffffff1c;
-  backdrop-filter: blur(20px) saturate(140%);
   pointer-events: auto;
 }
 .brand { display: inline-flex; align-items: center; min-height: 44px; gap: 8px; font-size: 21px; font-weight: 700; letter-spacing: -.04em; text-decoration: none; }
@@ -189,6 +191,7 @@ p { color: var(--muted); }
 .tour {
   --slide-width: min(calc(86% - var(--page-inset) * 1.72), 963.2px);
   --slide-inset: calc((100% - var(--slide-width)) / 2);
+  --edge-fade: calc(var(--slide-inset) * .68);
   --slide-ratio: 1440 / 900;
   position: relative;
   margin-block-start: 32px;
@@ -204,7 +207,7 @@ p { color: var(--muted); }
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   padding-block: 4px 8px;
-  mask-image: linear-gradient(to right, transparent, #000 var(--slide-inset), #000 calc(100% - var(--slide-inset)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--edge-fade), #000 calc(100% - var(--edge-fade)), transparent);
 }
 .tour-stage::-webkit-scrollbar { display: none; }
 .tour-stage[data-initializing] { scroll-snap-type: none; }
@@ -235,19 +238,28 @@ p { color: var(--muted); }
   pointer-events: none;
 }
 .tour-arrows button {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
+  padding: 0;
   border: 0;
-  border-radius: 50%;
-  background: #252a32cc;
-  backdrop-filter: blur(12px);
+  border-radius: var(--corner);
   color: inherit;
-  font: inherit;
   cursor: pointer;
   pointer-events: auto;
   transition: opacity 160ms, background-color 160ms;
 }
-.tour-arrows button:hover { background: #414956; }
+.tour-arrows svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tour-arrows button:hover { background: #334657bb; }
 @media (hover: hover) and (pointer: fine) {
   .tour:not(:has(figure[data-active] .image-link:hover, .tour-arrows button:hover, .tour-arrows button:focus-visible, .tour-stage:focus-visible)) .tour-arrows button {
     opacity: 0;
