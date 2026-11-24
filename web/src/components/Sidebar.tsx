@@ -68,6 +68,7 @@ export interface SidebarProps {
   cwd: string;
   sessions: any[];
   activeSessionPath: string | null;
+  homeActive?: boolean;
   busy: boolean;
   runningPaths?: ReadonlySet<string>;
   connected: boolean;
@@ -179,7 +180,7 @@ export function Sidebar(props: SidebarProps) {
   function renderSession(session: any) {
     const { path } = session;
     const title = session.name || session.preview || session.id || "Untitled chat";
-    const active = path === props.activeSessionPath;
+    const active = !props.homeActive && path === props.activeSessionPath;
     const running = chatRunning(path);
     const meta = getSessionMeta(path);
     const projects = props.projects ?? [];
@@ -307,7 +308,7 @@ export function Sidebar(props: SidebarProps) {
           <TooltipContent side="right">New session</TooltipContent>
         </Tooltip>
 
-        <div className="mt-3 flex flex-col gap-0.5"><Button variant="ghost" size="icon" onClick={props.onHome} aria-label="Home"><House className="size-4"/></Button><Button variant="ghost" size="icon" onClick={props.onNewProject} aria-label="New project"><FolderPlus className="size-4"/></Button>
+        <div className="mt-3 flex flex-col gap-0.5"><Button variant="ghost" size="icon" onClick={props.onHome} aria-label="Home" aria-current={props.homeActive ? "page" : undefined} className="sidebar-home-link"><House className="size-4"/></Button><Button variant="ghost" size="icon" onClick={props.onNewProject} aria-label="New project"><FolderPlus className="size-4"/></Button>
           {NAV.filter(n => n.key !== "settings").map((n) => (
             <Tooltip key={n.key}>
               <TooltipTrigger asChild>
@@ -330,7 +331,7 @@ export function Sidebar(props: SidebarProps) {
             <div className="flex flex-col items-center gap-1 px-2 pb-2">
               {groups.flatMap(group => group.items).map(session => {
                 const title = session.name || session.preview || "Untitled chat";
-                const active = props.activeSessionPath === session.path;
+                const active = !props.homeActive && props.activeSessionPath === session.path;
                 const running = chatRunning(session.path);
                 return <Tooltip key={session.path}>
                   <TooltipTrigger asChild>
@@ -389,7 +390,7 @@ export function Sidebar(props: SidebarProps) {
         />
       </div>
 
-      <div className="px-3"><Button variant="ghost" onClick={props.onHome} className="mb-1 h-9 w-full justify-start gap-2 text-[13px] font-normal text-muted-foreground"><House className="size-3.5"/>Home</Button>
+      <div className="px-3"><Button variant="ghost" onClick={props.onHome} aria-current={props.homeActive ? "page" : undefined} className="sidebar-home-link mb-1 h-9 w-full justify-start gap-2 text-[13px] font-normal text-muted-foreground"><House className="size-3.5"/>Home</Button>
         <Button
           onClick={props.onNew}
           variant="outline"

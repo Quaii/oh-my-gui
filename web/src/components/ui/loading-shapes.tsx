@@ -9,7 +9,20 @@ export function ModelsSkeleton(){return <div className="divide-y divide-border/5
 export function EditorSkeleton(){return <div className="space-y-5"><Skeleton className="h-9 w-full rounded-lg"/><Skeleton className="h-2.5 w-3/4"/><Skeleton className="h-64 w-full rounded-xl"/><Skeleton className="h-9 w-32 rounded-lg"/></div>}
 export function RoutingSkeleton(){return <div className="space-y-5"><Skeleton className="h-4 w-4/5"/><Skeleton className="h-16 w-full rounded-xl"/><div className="relative flex h-[570px] items-center justify-between gap-8 overflow-hidden rounded-xl bg-card/40 p-6"><Skeleton className="h-36 w-1/4 rounded-xl"/><div className="flex w-1/4 flex-col gap-8">{[0,1,2].map(i=><Skeleton key={i} className="h-32 w-full rounded-xl"/>)}</div><div className="flex w-1/4 flex-col gap-8">{[0,1,2].map(i=><Skeleton key={i} className="h-32 w-full rounded-xl"/>)}</div></div><EditorSkeleton/></div>}
 export function ChatSkeleton(){return <div className="space-y-10 py-6"><Skeleton className="ml-auto h-14 w-3/5 rounded-xl"/>{[0,1].map(i=><div className="space-y-3" key={i}><Skeleton className="mb-5 h-3 w-24"/><Skeleton className="h-3 w-full"/><Skeleton className="h-3 w-11/12"/><Skeleton className="h-3 w-4/5"/>{i===0&&<Skeleton className="mt-6 h-28 w-full rounded-xl"/>}</div>)}</div>}
-export function HomeSkeleton(){return <div className="home-dashboard"><div className="home-heading"><div className="space-y-3"><Skeleton className="h-8 w-64 max-w-full"/><Skeleton className="h-3 w-80 max-w-full"/></div><Skeleton className="h-8 w-28 rounded-lg"/></div>{[0,1,2].map(section=><div className="home-section" key={section}><Skeleton className="mb-3 h-3 w-28"/><div className="home-card-grid">{[0,1,2].map(i=><div className="home-chat-card" key={i}><Skeleton className="size-5 shrink-0 rounded"/><div className="w-full space-y-3"><Skeleton className="h-4 w-4/5"/><Skeleton className="h-3 w-1/2"/></div></div>)}</div></div>)}</div>}
+export function HomeSkeleton() {
+  return <div className="home-dashboard">
+    <div className="home-heading"><Skeleton className="h-8 w-52" /><Skeleton className="h-9 w-48" /></div>
+    <div className="home-layout">
+      <div className="home-section">
+        <Skeleton className="h-5 w-28" />
+        {[0, 1].map(index => <div className="home-work-card" key={index}><Skeleton className="h-4 w-2/3" /><Skeleton className="h-12 w-full" /></div>)}
+      </div>
+      <div className="home-side">
+        {[0, 1].map(index => <div className="home-section" key={index}><Skeleton className="h-5 w-24" /><div className="home-list-card"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div></div>)}
+      </div>
+    </div>
+  </div>;
+}
 
 export function SkillsSkeleton(){return <div className="space-y-1.5">{Array.from({length:5},(_,i)=><div key={i} className="flex items-start gap-4 rounded-xl border border-border/60 bg-card/50 p-4"><Skeleton className="size-9 shrink-0 rounded-lg"/><div className="min-w-0 flex-1 space-y-2"><div className="flex gap-3"><Skeleton className="h-4 w-40"/><Skeleton className="h-4 w-14 rounded-full"/></div><Skeleton className="h-3 w-full"/><Skeleton className="h-3 w-4/5"/><Skeleton className="h-2.5 w-3/5"/></div><Skeleton className="mt-1 h-5 w-9 shrink-0 rounded-full"/></div>)}</div>}
 export function ToolsSkeleton(){return <div><Skeleton className="mb-3 h-4 w-28"/><div className="rounded-xl border bg-card/40 px-4">{Array.from({length:6},(_,i)=><div key={i} className="flex items-start gap-3 border-b border-border/50 py-4 last:border-0"><div className="flex-1 space-y-2"><Skeleton className="h-3 w-24"/><Skeleton className="h-3 w-4/5"/></div><Skeleton className="h-5 w-9 rounded-full"/></div>)}</div></div>}

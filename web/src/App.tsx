@@ -15,7 +15,8 @@ import { ChatSkeleton, HomeSkeleton, PanelSkeleton } from "@/components/ui/loadi
 import { conversationRestoreTargets } from "./lib/conversation-actions";
 import { FilesChanged } from "./components/FilesChanged";
 import { fileChangeSummaries } from "./lib/file-changes";
-import { HomeOverview, ProjectDialog } from "./components/Projects";
+import { ProjectDialog } from "./components/Projects";
+import { HomeOverview } from "./components/HomeOverview";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, get, post, del, subscribeEvents } from "./lib/api";
 import { chatReducer, initialChat, dismissToast, type ChatState } from "./lib/store";
@@ -453,7 +454,16 @@ export default function App() {
     setBoot((current: any) => current ? { ...current, control } : current);
   };
   const newProjectChat=(path:string)=>{localStorage.setItem(LS_CWD,path);setBoot((b:any)=>({...b,cwd:path}));navigate("/");setHome(false);attach(`new:${Date.now()}`,undefined,path);};
-  const openSession = (s: any) => { navigate("/");setHome(false);if(s.cwd){localStorage.setItem(LS_CWD,s.cwd);setBoot((b:any)=>({...b,cwd:s.cwd}));}attach(`s:${s.path}`,s.path,s.cwd); };
+  const openSession = (s: any) => {
+    navigate("/");
+    setHome(false);
+    if (home && activePath === s.path && chat.loaded && connected) return;
+    if (s.cwd) {
+      localStorage.setItem(LS_CWD, s.cwd);
+      setBoot((b: any) => ({ ...b, cwd: s.cwd }));
+    }
+    void attach(`s:${s.path}`, s.path, s.cwd);
+  };
   useEffect(() => {
     const handle = (event: Event) => {
       const detail = (event as CustomEvent).detail;
@@ -611,6 +621,7 @@ export default function App() {
           projects={boot?.control?.projects || []}
           sessions={boot?.allSessions ?? boot?.sessions ?? []}
           activeSessionPath={activePath}
+          homeActive={home}
           busy={running}
           runningPaths={runningPaths}
           connected={connected}
@@ -641,6 +652,7 @@ export default function App() {
             projects={boot?.control?.projects || []}
             sessions={boot?.allSessions ?? boot?.sessions ?? []}
             activeSessionPath={activePath}
+            homeActive={home}
             busy={running}
             runningPaths={runningPaths}
             connected={connected}
@@ -675,6 +687,7 @@ export default function App() {
       <main className={`workspace-main relative isolate flex min-w-0 flex-1 flex-col ${home?"is-home":empty?"is-empty":""}`}>
 
         <TopBar
+          home={home}
           chatKey={chat.key ?? undefined}
           showWindowControls={!fileRequest || home}
           title={home ? "Home" : chat.title || boot?.sessions?.find((s:any)=>s.path===activePath)?.name || (chat.messages.length ? "Untitled session" : "New session")}
@@ -698,7 +711,12 @@ export default function App() {
 
         <div className="transcript-region relative min-h-0 flex-1">
           <div ref={scrollRef} className="h-full overflow-y-auto">
-          {home ? <SkeletonReveal loading={!boot} skeleton={<HomeSkeleton/>} label="Loading workspace"><HomeOverview projects={boot?.control?.projects || []} sessions={boot?.allSessions || boot?.sessions || []} onCreate={()=>setProjectDialog(true)} onProject={changeCwd} onSession={openSession}/></SkeletonReveal> : <>
+          {home ? <SkeletonReveal loading={!boot} skeleton={<HomeSkeleton />} label="Loading workspace">
+            <HomeOverview projects={boot?.control?.projects ?? []} sessions={boot?.allSessions ?? boot?.sessions ?? []}
+              runningPaths={runningPaths} activePath={activePath} running={running}
+              onCreate={() => setProjectDialog(true)} onProject={changeCwd} onProjectChat={newProjectChat}
+              onSession={openSession} onNewChat={newSession} />
+          </SkeletonReveal> : <>
             <div className="transcript-content mx-auto w-full max-w-[800px] py-8">
               {false && chat.error && (
                 <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-[12.5px] text-destructive">

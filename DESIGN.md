@@ -159,6 +159,10 @@ Drag a chat onto a project or use Move chat from its menu. Project moves organiz
 without changing the runtime's working folder. Pinned chats stay above Projects until unpinned.
 The expanded chat list scrolls to the window edge behind the three footer buttons. The buttons
 have individual surfaces and enough scroll clearance to reach the last chat above them.
+Home uses its own navigation selection and toolbar without the active chat's project or plan usage.
+Continue work surfaces running chats first, then saved unfinished tasks and goals. The secondary
+column offers project chat shortcuts and recent conversations with previews. Narrow layouts stack
+these sections and keep the page scrollable.
 
 Settings section headers show their names without numeric item-count labels. Space adjacent
 sidebar rows with the 4px token and separate groups with the 12px content gap.
