@@ -52,31 +52,30 @@ type ProximitySidebarProps = {
 }
 
 const RADIUS = 38
-const MAX_DASH_WIDTH = 38
 const SCROLL_IDLE_RESET_DELAY = 80
 
 const DASH_PRESETS: Record<SectionKind, DashPreset> = {
   title: {
     base: 12,
-    bump: 24,
+    bump: 17,
     thickness: 2,
     className: "bg-foreground",
   },
   subtitle: {
     base: 11,
-    bump: 24,
+    bump: 17,
     thickness: 2,
     className: "bg-foreground",
   },
   section: {
     base: 10,
-    bump: 24,
+    bump: 17,
     thickness: 2,
     className: "bg-muted-foreground/40",
   },
   body: {
     base: 8,
-    bump: 24,
+    bump: 17,
     thickness: 2,
     className: "bg-muted-foreground/40",
   },
@@ -144,22 +143,23 @@ const Dash = ({
     return y - (rect.top + rect.height / 2)
   })
 
-  const targetScaleX = useTransform(
+  const targetWidth = useTransform(
     distance,
     [-RADIUS, 0, RADIUS],
     [
-      preset.base / MAX_DASH_WIDTH,
-      activeWidth / MAX_DASH_WIDTH,
-      preset.base / MAX_DASH_WIDTH,
+      preset.base,
+      activeWidth,
+      preset.base,
     ],
     { clamp: true }
   )
 
-  const scaleX = useSpring(targetScaleX, {
+  const springWidth = useSpring(targetWidth, {
     stiffness: 320,
     damping: 34,
     mass: 0.7,
   })
+  const width = useTransform(reducedMotion ? targetWidth : springWidth, value => Math.round(value))
 
   return (
     <Tooltip delayDuration={130}>
@@ -176,9 +176,7 @@ const Dash = ({
         className={`conversation-timeline-dash ${preset.className}`}
         style={{
           height: preset.thickness,
-          scaleX: reducedMotion ? targetScaleX : scaleX,
-          transformOrigin: side === "left" ? "left center" : "right center",
-          width: MAX_DASH_WIDTH,
+          width,
         }}
       />
       </button>

@@ -188,7 +188,9 @@ and outputs in their details. Adjacent notes and thinking fragments stay grouped
 native message indices for restore, branches, and file summaries.
 The conversation timeline uses short ticks that extend near the pointer. Hover or keyboard
 focus opens a theme-aware preview of the user message and the available reply excerpt.
-Selecting a tick goes to the original user message. Long timelines scroll within the rail.
+The hovered or focused tick takes the highlight while the preview is open. Selecting a tick goes to
+the original user message. Long timelines scroll within the rail. The Latest control appears only
+when the transcript can scroll down.
 
 Normal transcript siblings have 24px separation; continuation rows use 8px and note boundaries 12px.
 Avoid combining these margins with another wrapper's vertical padding. Assistant response actions

@@ -74,7 +74,7 @@ export default function App() {
   const [focusedEditor,setFocusedEditor]=useState<string|null>(null);
   const [fileWorkspaces,setFileWorkspaces]=useState<Record<string,{cwd:string;request:{path?:string;n:number}}>>({});
   const [connected, setConnected] = useState(false);
-  const [atBottom, setAtBottom] = useState(true);
+  const [canScrollDown, setCanScrollDown] = useState(false);
   const [seed, setSeed] = useState<{ text: string; n: number } | null>(null);
   const [railOpen, setRailOpen] = useState<boolean>(() => localStorage.getItem(LS_RAIL) === "1");
   const [mobileNav, setMobileNav] = useState(false);
@@ -101,6 +101,7 @@ export default function App() {
   const attachVersion = useRef(0);
   const unsubRef = useRef<(() => void) | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const transcriptListRef = useRef<HTMLDivElement>(null);
   const stickRef = useRef(true);
 
   const cwd = boot?.cwd ?? localStorage.getItem(LS_CWD) ?? "";
@@ -367,16 +368,31 @@ export default function App() {
   }, [home,inSettings]);
 
   useEffect(() => {
-    if (inSettings) return;
+    if (home || inSettings) {
+      setCanScrollDown(false);
+      return;
+    }
     const el = scrollRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const near = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-      stickRef.current = near;
-      setAtBottom(near);
+    const content = transcriptListRef.current;
+    if (!el || !content) return;
+    const remaining = () => el.scrollHeight - el.clientHeight - el.scrollTop;
+    const updateVisibility = () => {
+      const viewportBottom = el.getBoundingClientRect().top + el.clientHeight;
+      setCanScrollDown(remaining() > 2 && content.getBoundingClientRect().bottom - viewportBottom > 2);
     };
+    const onScroll = () => {
+      stickRef.current = remaining() < 120;
+      updateVisibility();
+    };
+    const observer = new ResizeObserver(updateVisibility);
+    observer.observe(el);
+    observer.observe(content);
+    updateVisibility();
     el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
+    return () => {
+      observer.disconnect();
+      el.removeEventListener("scroll", onScroll);
+    };
   }, [home,inSettings]);
 
   useEffect(() => {
@@ -693,7 +709,7 @@ export default function App() {
                 <EmptyState cwd={projectForSession<{path:string;name:string}>({cwd},boot?.control?.projects||[])?.name||""} onPick={(text) => void onSend(text,[])} />
               )}
               <SkeletonReveal loading={!chat.loaded} skeleton={<ChatSkeleton/>} label="Loading conversation history">
-              <div className="transcript-list">
+              <div ref={transcriptListRef} className="transcript-list">
                 {renderedMessages.map(({ message, index, firstIndex, streaming, continuation }, position) => {
                   const working = running && position === renderedMessages.length - 1;
                   const assistant = message.role === "assistant";
@@ -734,7 +750,7 @@ export default function App() {
           </>}
           </div>
 
-          {!home && !atBottom && visibleMessages.length > 0 && (
+          {!home && canScrollDown && visibleMessages.length > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
