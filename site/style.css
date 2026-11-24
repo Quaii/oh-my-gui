@@ -378,7 +378,7 @@ code { font-family: "Cascadia Mono", Consolas, monospace; }
   .frontend-layout { grid-template-columns: 1fr; gap: 14px; }
   .appearance-frame { height: 820px; }
 }
-@media (max-width: 670px) {
+@media (max-width: 760px) {
   .nav-links, .nav-actions .source-link { display: none; }
   .nav-bar { gap: 8px; }
   .nav-bar .brand { font-size: 16px; }
@@ -398,6 +398,8 @@ code { font-family: "Cascadia Mono", Consolas, monospace; }
   }
   .mobile-navigation nav a { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: var(--corner); text-decoration: none; }
   .mobile-navigation nav a:hover { background: #ffffff18; }
+}
+@media (max-width: 670px) {
   .hero-window { width: min(100%, 312px); }
   .start-layout { grid-template-columns: 1fr; gap: 20px; }
 }
