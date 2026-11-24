@@ -44,13 +44,16 @@ export function ConfigList({ settings, query = "", onSave, onReset, hideAdvanced
 
   return (
     <div className="settings-stack">
-      {grouped.map(([group, list]) => (
-        <Group key={group} title={group}>
-          {list.map((s) => (
-            <SettingRow key={s.key} setting={s} onSave={(v) => onSave(s.key, v)} onReset={() => onReset(s.key)} />
-          ))}
-        </Group>
-      ))}
+      {grouped.map(([group, list]) => {
+        const rows = list.map(setting => <SettingRow key={setting.key} setting={setting}
+          onSave={value => onSave(setting.key, value)} onReset={() => onReset(setting.key)} />);
+        return group.startsWith("Advanced") ? (
+          <details key={group} className="settings-card settings-card-list">
+            <summary className="cursor-pointer py-3 text-sm font-medium">{group}</summary>
+            {rows}
+          </details>
+        ) : <Group key={group} title={group}>{rows}</Group>;
+      })}
     </div>
   );
 }

@@ -96,9 +96,8 @@ export function SettingsMobileNavigation({ panel, onSelect }: SettingsSelection)
 
 export function SettingsNavigation({panel,onSelect,collapsed,onToggle,onBack}: SettingsSelection & {collapsed:boolean;onToggle:()=>void;onBack:()=>void}) {
  const navRef=useRef<HTMLElement|null>(null);useSmoothWheel(navRef,'[data-slot=scroll-area-viewport]');
- const showingAdvanced = advanced.items.some(item => item.id === panel);
- const [advancedOpen, setAdvancedOpen] = useState(showingAdvanced);
- useEffect(() => { if (showingAdvanced) setAdvancedOpen(true); }, [panel, showingAdvanced]);
+ const [advancedOpen, setAdvancedOpen] = useState(false);
+ useEffect(() => { setAdvancedOpen(false); }, [panel]);
 
  function renderItem(item: PanelItem) {
    const button=<button key={item.id} aria-label={collapsed?item.label:undefined} aria-current={panel===item.id?"page":undefined} onClick={()=>onSelect(item.id)} className={`settings-nav-item flex items-center rounded-lg text-left text-[13px] transition-colors ${collapsed?"mx-auto size-10 justify-center":"ml-3 w-[calc(100%-12px)] gap-2.5 px-3 py-1.5"}`}><item.icon className="size-4 shrink-0" strokeWidth={1.5}/>{!collapsed&&<span className="truncate whitespace-nowrap">{item.label}</span>}</button>;

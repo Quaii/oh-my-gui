@@ -148,9 +148,9 @@ actions sit immediately **before** the right-aligned control and reveal on row h
 discoverable keyboard and touch alternatives. Existing mobile navigation switches to a sheet/compact
 section picker; do not force desktop widths into narrow windows. Settings groups are Application,
 Models & providers, Agent, Customize the agent, System, and Advanced. System includes installation,
-updates, and credits. Advanced opens on demand and contains runtime
-maintenance, all settings, raw config and capabilities. Opening an Advanced page directly reveals
-its selection in the desktop sidebar. The compact picker exposes Advanced as a submenu.
+updates, and credits. Advanced opens on demand and contains runtime maintenance, all settings, raw
+config and capabilities. It collapses when moving to another Settings page. Advanced groups within
+pages also start collapsed. The compact picker exposes Advanced as a submenu.
 
 The workspace sidebar groups chats under Pinned, Projects, and Chats. Its single-line chat rows
 show a spinner on the right during a running turn. Hover or focus replaces it with the pin and menu actions.
