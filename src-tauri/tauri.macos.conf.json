@@ -1,4 +1,5 @@
 {
+  "productName": "Oh My GUI",
   "bundle": {
     "targets": ["app", "dmg"],
     "icon": ["icons/icon.icns", "icons/128x128.png"],

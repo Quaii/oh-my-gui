@@ -64,7 +64,7 @@ jobs:
           path: |
             src-tauri/target/release/bundle/custom/*.exe
             src-tauri/target/release/bundle/nsis/*-setup.exe
-            src-tauri/target/release/bundle/dmg/omp_*.dmg
+            src-tauri/target/release/bundle/dmg/Oh My GUI_*.dmg
             src-tauri/target/release/bundle/deb/*.deb
             src-tauri/target/release/bundle/appimage/*.AppImage
             src-tauri/target/release/bundle/SHA256SUMS

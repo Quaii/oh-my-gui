@@ -105,6 +105,20 @@ fn start_backend(
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
+    #[cfg(target_os = "macos")]
+    {
+        // Finder launches do not inherit shell startup paths. Preserve PATH order.
+        let path = std::env::var_os("PATH").unwrap_or_default();
+        let extra = [
+            app.path().home_dir()?.join(".bun/bin"),
+            PathBuf::from("/opt/homebrew/bin"),
+            PathBuf::from("/usr/local/bin"),
+        ];
+        command.env(
+            "PATH",
+            std::env::join_paths(std::env::split_paths(&path).chain(extra))?,
+        );
+    }
     // Normal launches may originate from an older installer; enforce mode here too.
     clear_installer_environment(&mut command);
     if installer {
@@ -337,9 +351,10 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     app.manage(updates::Updates::default());
     let (backend, url) = start_backend(app.handle(), installer)?;
     app.manage(backend);
+    let custom_chrome = cfg!(any(windows, target_os = "macos"));
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
         .title(if installer { "Install Oh My GUI" } else { "Oh My GUI" })
-        .decorations(!cfg!(windows))
+        .decorations(!custom_chrome)
         .shadow(!cfg!(windows))
         .visible(false)
         .inner_size(680.0, 460.0)
@@ -349,7 +364,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
         .disable_drag_drop_handler()
         .initialization_script(if installer {
             "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;window.__OMP_INSTALLER__=true;"
-        } else if cfg!(windows) {
+        } else if custom_chrome {
             "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;"
         } else {
             "window.__OMP_DESKTOP__=true;"

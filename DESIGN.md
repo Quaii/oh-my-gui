@@ -333,9 +333,9 @@ Confirm equal padding, legible materials, no toolbar overlap, natural text propo
 editor drafts after Home/Settings navigation. Capture meaningful evidence without committing personal
 chat screenshots. Change this guide only for an intentional design decision, not to bless a regression.
 
-## Windows custom title bar
+## Desktop custom chrome
 
-The Windows desktop host disables native decorations and uses the existing floating panel toolbar
+The Windows and macOS desktop hosts disable native decorations and use the existing floating panel toolbar
 for minimize, maximize/restore and close. The three 36px buttons sit flush on one rounded toolbar
 surface. Each button has its own hover and focus state, with a red hover on Close. The group lives
 on the rightmost visible workspace/editor panel and in the Settings toolbar.
@@ -354,7 +354,7 @@ requires confirmation and also removes its registrations from the OMP catalog.
 
 Free header space supports native dragging and double-click maximize/restore; buttons, fields,
 menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
-Browser and non-Windows chrome are unchanged. Window actions remain authenticated and allowlisted.
+Window actions remain authenticated and allowlisted.
 The Windows app and installer use a 12 DIP rounded window region, applied before showing and
 refreshed on resize or display-DPI changes. The workspace, Settings and setup panels use the same
 12 DIP radius, compensated for content zoom. This overrides the panel-radius preference in Windows

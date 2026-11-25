@@ -3,7 +3,7 @@ import { createInterface } from 'node:readline';
 import { appRelease, desktopUpdates } from './desktop-updates.ts';
 import { projectFolders, pickDesktopFolder, receiveDesktopFolder, folderChooserOpen } from './folder-picker.ts';
 import {desktopAccess} from "./desktop.ts";
-import { desktopSetupStatus, completeDesktopSetup, installDesktopOmp } from './desktop-setup.ts';
+import { desktopSetupStatus, completeDesktopSetup, desktopSetupInstallStatus, startDesktopSetupInstall } from './desktop-setup.ts';
 import { desktopInstallerStatus, installDesktopApplication, launchInstalledDesktop } from './desktop-installer.ts';
 import os from "node:os";
 import {listEditorFiles,readEditorFile,saveEditorFile,reportedFileRoots} from "./editor.ts";
@@ -261,7 +261,8 @@ async function handleApi(req: http.IncomingMessage, res: http.ServerResponse, ur
       if (!process.env.OMP_DESKTOP_TOKEN || !process.env.OMP_DESKTOP_DATA) {
         json(res, 404, { error: 'Desktop setup is unavailable.' }); return true;
       }
-      if (p.endsWith('/install') && req.method === 'POST') json(res, 200, await installDesktopOmp());
+      if (p.endsWith('/install') && req.method === 'POST') json(res, 202, startDesktopSetupInstall());
+      else if (p.endsWith('/install') && req.method === 'GET') json(res, 200, desktopSetupInstallStatus());
       else if (p.endsWith('/install')) json(res, 405, { error: 'Method not allowed' });
       else if (req.method === 'GET') json(res, 200, await desktopSetupStatus());
       else if (req.method === 'POST') { await completeDesktopSetup(); json(res, 200, { completed: true }); }

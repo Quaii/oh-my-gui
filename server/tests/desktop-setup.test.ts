@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, installDesktopOmp, needsStableOmp } from '../src/desktop-setup.ts';
+import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, desktopSetupInstallStatus, startDesktopSetupInstall, installDesktopOmp, needsStableOmp } from '../src/desktop-setup.ts';
+import { setTimeout as delay } from 'node:timers/promises';
 import { desktopInstallDirectory, installerManifest, desktopApplicationEnvironment, installerMode, prepareInstalledApp } from '../src/desktop-installer.ts';
 import { desktopBuildHash } from '../src/desktop-build.ts';
 import { OMP_BINARY, selectOmpBinary } from '../src/omp.ts';
@@ -18,9 +19,46 @@ test('installer-to-app handoff removes installer mode and stale native session s
 test('desktop OMP installation selects the host binary and rejects unsupported targets', () => {
   assert.equal(ompTarget('win32', 'x64'), 'windows-x86_64');
   assert.equal(ompTarget('darwin', 'arm64'), 'macos-arm64');
+  assert.equal(ompTarget('darwin', 'x64'), 'macos-x86_64');
   assert.equal(ompTarget('linux', 'x64'), 'linux-x86_64');
   assert.throws(() => ompTarget('linux', 'ia32'));
   assert.throws(() => ompTarget('freebsd', 'x64'));
+});
+
+test('setup keeps an installation error available to polling clients and can retry', async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'omp-setup-progress-'));
+  const savedData = process.env.OMP_DESKTOP_DATA;
+  const savedOverride = process.env.OMP_BIN;
+  const savedBinary = OMP_BINARY;
+  async function waitForResult() {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const state = desktopSetupInstallStatus();
+      if (!state.running) return state;
+      await delay(20);
+    }
+    throw new Error('Installation state never settled');
+  }
+  try {
+    process.env.OMP_DESKTOP_DATA = directory;
+    process.env.OMP_BIN = path.join(directory, 'missing-runtime');
+    selectOmpBinary(process.env.OMP_BIN);
+    const start = startDesktopSetupInstall();
+    assert.equal(start.running, true);
+    assert.equal(startDesktopSetupInstall(), start);
+    assert.match((await waitForResult()).error ?? '', /OMP_BIN cannot start/);
+    assert.deepEqual(await fs.readdir(directory), []);
+
+    process.env.OMP_BIN = process.execPath;
+    assert.equal(startDesktopSetupInstall().running, true);
+    assert.equal((await waitForResult()).status?.available, true);
+  } finally {
+    if (savedData === undefined) delete process.env.OMP_DESKTOP_DATA;
+    else process.env.OMP_DESKTOP_DATA = savedData;
+    if (savedOverride === undefined) delete process.env.OMP_BIN;
+    else process.env.OMP_BIN = savedOverride;
+    selectOmpBinary(savedBinary);
+    await fs.rm(directory, { recursive: true, force: true });
+  }
 });
 
 test('OMP build metadata requires a release version, checksum and credential-free HTTPS download', () => {

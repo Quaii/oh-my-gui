@@ -22,6 +22,7 @@ export function DesktopLifecycle() {
         })
         .catch(() => {});
     const close = () => {
+      if (document.documentElement.dataset.desktopSetup === "true") return;
       setOpen(true);
       setError("");
       void refresh();

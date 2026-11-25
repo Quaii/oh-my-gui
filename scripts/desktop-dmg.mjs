@@ -13,16 +13,16 @@ export function isDmgMountFailure(output) {
 export async function createDevelopmentDmg(root) {
   const version = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8')).version;
   if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version)) throw new Error('Invalid DMG package version.');
-  const app = path.join(root, 'src-tauri/target/release/bundle/macos/omp.app');
+  const app = path.join(root, 'src-tauri/target/release/bundle/macos/Oh My GUI.app');
   await fs.access(path.join(app, 'Contents/MacOS/omp-desktop'));
   const folder = path.join(root, 'src-tauri/target/release/bundle/dmg');
-  const destination = path.join(folder, `omp_${version}_${process.arch === 'arm64' ? 'aarch64' : 'x64'}.dmg`);
+  const destination = path.join(folder, `Oh My GUI_${version}_${process.arch === 'arm64' ? 'aarch64' : 'x64'}.dmg`);
   const temporaryRoot = path.join(root, '.tmp');
   await fs.mkdir(temporaryRoot, { recursive: true });
   await fs.mkdir(folder, { recursive: true });
   const staging = await fs.mkdtemp(path.join(temporaryRoot, 'dmg-'));
   try {
-    await fs.cp(app, path.join(staging, 'omp.app'), { recursive: true, verbatimSymlinks: true });
+    await fs.cp(app, path.join(staging, path.basename(app)), { recursive: true, verbatimSymlinks: true });
     await fs.symlink('/Applications', path.join(staging, 'Applications'));
     execFileSync('hdiutil', ['create', '-ov', '-volname', 'Oh My GUI', '-srcfolder', staging, '-format', 'UDZO', destination], { stdio: 'inherit', timeout: 180000 });
     execFileSync('hdiutil', ['verify', destination], { stdio: 'inherit', timeout: 60000 });

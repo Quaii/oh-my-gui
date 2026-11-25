@@ -117,7 +117,10 @@ request is performed automatically. Existing OMP configuration is reused. Setup 
 Settings → Installation without unmounting the workspace or discarding editor drafts.
 
 Completion is versioned in the native app data directory, independently of browser storage. A missing
-runtime reopens setup even after completion. The optional OMP download follows the official stable
+runtime reopens setup even after completion. On macOS, setup checks Homebrew, the standalone
+installer and Bun paths even when launched from Finder, and uses the physical CPU architecture
+on Apple Silicon if the app is running under Rosetta. Setup polls for download progress and
+keeps failures visible beside its navigation. The optional OMP download follows the official stable
 build-service target/metadata format, streams into a uniquely named temporary executable, verifies the
 published SHA-256 and runs `--version` before moving it into the app-managed runtime directory.
 No shell install script is executed and PATH is not modified. Existing working installations are
@@ -128,7 +131,8 @@ reused. Failed downloads never replace the selected runtime. Linux packages targ
 `.github/workflows/desktop-build.yml` builds Windows x64, macOS arm64/x64 and Linux
 x64 on their respective native runners. It uploads development artifacts to the private repository;
 it does not create tags, publish releases or change repository visibility. Platform-specific Tauri
-configuration chooses NSIS/custom, DMG/app or deb/AppImage. The matching host Node executable is
+configuration chooses NSIS/custom, DMG/app or deb/AppImage. The Mac disk image contains
+`Oh My GUI.app`. The matching host Node executable is
 packaged, including its license and Unix executable permissions; do not cross-package a Windows Node
 binary into a macOS or Linux build. Apple signing/notarization and Windows signing require owner keys.
 These workflows establish build coverage only after their actual jobs pass, not native UI acceptance.
