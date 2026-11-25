@@ -134,8 +134,8 @@ reused. Failed downloads never replace the selected runtime. Linux packages targ
 x64 on their respective native runners. It uploads development artifacts to the private repository;
 it does not create tags, publish releases or change repository visibility. Platform-specific Tauri
 configuration chooses NSIS/custom, DMG/app or deb/AppImage. The Mac disk image contains
-`Oh My GUI.app`. The matching host Node executable is
-packaged, including its license and Unix executable permissions; do not cross-package a Windows Node
+`Oh My GUI.app`. Linux packages and their launcher use the Oh My GUI name. The matching host Node
+executable is packaged with its license and Unix executable permissions. Do not cross-package a Windows Node
 binary into a macOS or Linux build. Apple signing/notarization and Windows signing require owner keys.
 These workflows establish build coverage only after their actual jobs pass, not native UI acceptance.
 Packaging changes pushed to `tauri` trigger builds. Manual dispatch is also declared; GitHub exposes
