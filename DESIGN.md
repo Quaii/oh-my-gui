@@ -201,7 +201,8 @@ an entry is unavailable before the user tries to import it.
 ## Conversation and composer
 
 The composer's trailing controls run left to right: context usage, microphone, then Send/Stop.
-Context usage and microphone controls share the same hit area.
+They share a 36px control height. Context usage fits its icon and percentage, and the microphone
+uses a square button. Fast mode uses a filled bolt and a tinted surface when enabled.
 The chat model picker has an inline visibility mode with individual switches and bulk controls.
 It shares its saved visibility preferences with Models settings and preserves the selected model.
 The Stop square is centered and fills over half of the icon's canvas.

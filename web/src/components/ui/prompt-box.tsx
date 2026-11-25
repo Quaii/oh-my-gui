@@ -468,7 +468,7 @@ function PromptBox({
                 )}
             </div>
 
-            <div className="flex items-center gap-2 px-3 pt-3 pb-3">
+            <div data-slot="prompt-box-toolbar" className="flex items-center gap-2 px-3 pt-3 pb-3">
                 <div data-slot="prompt-box-actions" className="flex min-w-0 flex-1 items-center gap-1">
                     {actions}
                 </div>
@@ -477,7 +477,7 @@ function PromptBox({
                 <span aria-live="polite" className="sr-only">
                     {charging ? effort.label : ''}
                 </span>
-                <span aria-hidden className="relative hidden text-[13px] font-medium whitespace-nowrap xl:grid">
+                <span aria-hidden className="relative hidden text-[13px] font-medium whitespace-nowrap xl:grid empty:hidden">
                     {/* the span collapses once its only child pops out, so a left anchor would fling the exit over the button */}
                     <AnimatePresence initial={false} mode="popLayout" anchorX="right">
                         {charging ? (

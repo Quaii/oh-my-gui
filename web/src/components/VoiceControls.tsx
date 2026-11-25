@@ -223,7 +223,7 @@ export function VoiceControls({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button type="button" variant="ghost" className="composer-trailing-control" aria-label="Voice and dictation">
+        <Button type="button" variant="ghost" size="icon" className="composer-trailing-control" aria-label="Voice and dictation">
           <Mic className="size-3.5" />
         </Button>
       </PopoverTrigger>
