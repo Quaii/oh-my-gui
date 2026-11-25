@@ -206,6 +206,7 @@ uses a square button. Fast mode uses a filled bolt and a tinted surface when ena
 The chat model picker has an inline visibility mode with individual switches and bulk controls.
 It shares its saved visibility preferences with Models settings and preserves the selected model.
 The Stop square is centered and fills over half of the icon's canvas.
+Completed replies show the reported cost beside a coin icon in the action bar.
 
 User messages are compact right-aligned surfaces; assistant replies remain text on the canvas.
 Progress updates, tool calls, reasoning, and system notes share one activity disclosure per turn.

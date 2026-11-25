@@ -11,7 +11,7 @@ import { StreamingResponse } from "@/components/ui/streaming-response";
 import { GridReveal } from "@/components/ui/grid-reveal";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, ChevronRight, Copy, Pencil, RefreshCw, Sparkles, ListChecks, Undo2 } from "lucide-react";
+import { Check, ChevronRight, CircleDollarSign, Copy, Pencil, RefreshCw, Sparkles, ListChecks, Undo2 } from "lucide-react";
 
 /** tables are the one thing the streaming renderer does not parse */
 function hasTable(text: string) {
@@ -237,11 +237,11 @@ export function AssistantMessage({ message, tools, results, streaming, running, 
               <RefreshCw className="size-3" />
             </ActionButton>
           )}
-          {usage && usage.totalTokens > 0 && (
-            <span className="message-usage font-mono text-[10.5px] text-muted-foreground">
-              {usage.input ?? 0} in · {usage.output ?? 0} out
-              {usage.cacheRead ? ` · ${usage.cacheRead} cached` : ""}
-              {usage.cost?.total ? ` · $${usage.cost.total.toFixed(4)}` : ""}
+          {usage?.cost?.total > 0 && (
+            <span className="message-usage inline-flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
+              <CircleDollarSign aria-hidden="true" className="size-3.5 shrink-0" />
+              <span className="sr-only">Cost in US dollars </span>
+              {usage.cost.total.toFixed(4)}
             </span>
           )}
         </ActionBar>
