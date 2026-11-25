@@ -148,6 +148,8 @@ Mac previews use ad-hoc signing. The preview workflow builds the app with Tauri 
 Finder session. The resulting disk image has the app, an Applications link, and the install
 instructions on its background. Local Tauri images can also have a hidden `.VolumeIcon.icns`
 file for the mounted disk's icon.
+The [disk image artwork](src-tauri/dmg/artwork.html) uses the website stylesheet. Render it at
+640×340 for the standard image and at 640×410 with `?preview` for the preview image.
 
 After dragging the app into Applications, open **Open Preview** from the mounted preview disk
 image if macOS blocks first launch. The helper verifies the installed app's signature and checks

@@ -37,4 +37,4 @@
 
 - smol-toml (BSD-3-Clause): https://github.com/squirrelchat/smol-toml . The server uses it to read Codex configuration. Desktop bundles include its license.
 
-- The macOS disk image background is original Oh My GUI artwork. dmgbuild (MIT) configures the Finder layout in the Mac preview workflow. https://github.com/dmgbuild/dmgbuild
+- The macOS disk image artwork renders the Oh My GUI website's gradient and dot pattern. dmgbuild (MIT) configures the Finder layout in the Mac preview workflow. https://github.com/dmgbuild/dmgbuild

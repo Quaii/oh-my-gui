@@ -31,12 +31,13 @@ html::-webkit-scrollbar-thumb { background: var(--page-thumb); }
 *::-webkit-scrollbar-track { background: transparent; }
 html { scroll-padding-block: calc(var(--nav-height) + 18px) 24px; }
 body {
+  --background-unit: 1px;
   position: relative;
   isolation: isolate;
   margin: 0;
   background:
-    radial-gradient(ellipse 75% 480px at 50% 0, #f6fafe99, transparent 100%),
-    linear-gradient(180deg, #e8f0f6 0, #c9d8e5 490px, #6e8ba3 820px, #314354 1240px, #242e37 max(45%, 1400px), #191b1e 100%);
+    radial-gradient(ellipse 75% calc(480 * var(--background-unit)) at 50% 0, #f6fafe99, transparent 100%),
+    linear-gradient(180deg, #e8f0f6 0, #c9d8e5 calc(490 * var(--background-unit)), #6e8ba3 calc(820 * var(--background-unit)), #314354 calc(1240 * var(--background-unit)), #242e37 max(45%, calc(1400 * var(--background-unit))), #191b1e 100%);
   color: var(--carbon-text);
 }
 body::before {
@@ -46,7 +47,7 @@ body::before {
   content: '';
   pointer-events: none;
   background: radial-gradient(circle, #d9e8f134 1px, transparent 1.6px) 0 0 / 10px 10px;
-  mask-image: linear-gradient(transparent 240px, #0007 520px, #000a 26%, #0005 82%, #0002),
+  mask-image: linear-gradient(transparent calc(240 * var(--background-unit)), #0007 calc(520 * var(--background-unit)), #000a 26%, #0005 82%, #0002),
     radial-gradient(ellipse 100% 70% at 50% 40%, #000 24%, #0007 80%, #0004);
   mask-composite: intersect;
 }

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Oh My GUI disk image artwork</title>
+<link rel="stylesheet" href="../../site/style.css">
+<style>
+  body {
+    --background-unit: 0.23px;
+    min-height: 100vh;
+    text-align: center;
+  }
+
+  header {
+    padding-top: 39px;
+    color: #182530;
+  }
+
+  h1 {
+    font-size: 34px;
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -.045em;
+  }
+
+  header p {
+    margin-top: 8px;
+    color: #304656;
+    font-size: 16px;
+  }
+
+  .arrow {
+    position: absolute;
+    top: 205px;
+    left: 50%;
+    width: 50px;
+    height: 2px;
+    transform: translate(-50%, -50%);
+    background: #f6fafe;
+  }
+
+  .arrow::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 15px;
+    height: 15px;
+    border-left: 2px solid #f6fafe;
+    border-bottom: 2px solid #f6fafe;
+    content: "";
+    transform: translateY(-50%) rotate(45deg);
+  }
+
+  .preview-note {
+    position: absolute;
+    right: 0;
+    bottom: 18px;
+    left: 0;
+    color: #e8f0f6;
+    font-size: 13px;
+  }
+</style>
+<body>
+  <header>
+    <h1>Install Oh My GUI</h1>
+    <p>Drag Oh My GUI into Applications.</p>
+  </header>
+  <div class="arrow" aria-hidden="true"></div>
+  <p class="preview-note" hidden>If macOS blocks first launch, use Open Preview.</p>
+  <script>
+    document.querySelector('.preview-note').hidden = !new URLSearchParams(location.search).has('preview');
+  </script>
+</body>
+</html>
