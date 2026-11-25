@@ -274,7 +274,6 @@ export function Composer(props: ComposerProps) {
   }
 
   const chip = "composer-chip";
-  const chipOn = "text-primary [&_svg]:text-primary";
   const menu =
     "composer-menus absolute bottom-full left-0 z-40 mb-2 overflow-hidden rounded-xl border border-border bg-popover elevate";
 
@@ -388,14 +387,16 @@ export function Composer(props: ComposerProps) {
               <TooltipTrigger asChild>
                 <button
                   onClick={props.onToggleFast}
-                  className={`${chip} ${st?.fastModeEnabled ? chipOn : ""}`}
+                  className={`${chip} composer-fast-control`}
                   aria-pressed={!!st?.fastModeEnabled}
                   aria-label="Fast mode"
                 >
                   <Zap className="size-3" /><span className="hidden sm:inline">Fast</span>
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="top">Priority tier when the provider offers one</TooltipContent>
+              <TooltipContent side="top">
+                {st?.fastModeEnabled ? "Fast mode on · Priority tier" : "Fast mode off"}
+              </TooltipContent>
             </Tooltip>
             )}
 
