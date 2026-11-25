@@ -285,7 +285,7 @@ in [WorkspaceIcons.tsx](web/src/components/WorkspaceIcons.tsx) and adaptive expo
 settings/tools; do not repeat a generic wrench or power icon down an entire page. Remix and Bootstrap
 glyphs draw smaller within the same spacing to balance their visual weight.
 
-Editor icons are independently selectable: Material, Monochrome, Minimal. The shared
+Editor icons are independently selectable: Material, Monochrome, Minimal, Tabler, Heroicons and Phosphor. The shared
 [FileIcon](web/src/components/FileIcon.tsx) is used in the explorer, tabs and changed files. Preview
 choices accurately; do not recolor provider/company logos as if they were interface glyphs.
 
