@@ -376,7 +376,7 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
         .title(if installer { "Install Oh My GUI" } else { "Oh My GUI" })
         .decorations(!custom_chrome)
-        .shadow(!cfg!(windows))
+        .shadow(true)
         .visible(false)
         .inner_size(680.0, 460.0)
         .min_inner_size(640.0, 440.0)

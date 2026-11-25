@@ -1,20 +1,15 @@
-/// Clip the actual app/installer frame, including the opaque WebView, to 12 DIP.
+/// Ask Windows to composite corners, with a region fallback for older versions.
 pub fn apply(window: &tauri::WebviewWindow) {
     #[cfg(windows)]
     if let Ok(handle) = window.hwnd() {
         use windows_sys::Win32::Graphics::Dwm::{
             DwmSetWindowAttribute, DWMWA_BORDER_COLOR, DWMWA_WINDOW_CORNER_PREFERENCE,
-            DWMWCP_DONOTROUND, DWMWCP_ROUND,
+            DWMWCP_ROUND,
         };
-        let corners = if window.label() == "main" {
-            DWMWCP_DONOTROUND
-        } else {
-            DWMWCP_ROUND
-        };
-        // The main window owns its exact clipping; only the tray uses DWM rounding.
+        let corners = DWMWCP_ROUND;
         let border: u32 = 0xfffffffe; // DWMWA_COLOR_NONE
-        unsafe {
-            let _ = DwmSetWindowAttribute(
+        let rounds_with_dwm = unsafe {
+            let corner_result = DwmSetWindowAttribute(
                 handle.0,
                 DWMWA_WINDOW_CORNER_PREFERENCE as u32,
                 std::ptr::from_ref(&corners).cast(),
@@ -26,8 +21,10 @@ pub fn apply(window: &tauri::WebviewWindow) {
                 (&border as *const u32).cast(),
                 std::mem::size_of_val(&border) as u32,
             );
-        }
-        if window.label() == "main" {
+            corner_result >= 0
+        };
+        if window.label() == "main" && !rounds_with_dwm {
+            let _ = window.set_shadow(false);
             apply_region(window, handle.0);
         }
     }

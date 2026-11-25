@@ -360,14 +360,13 @@ requires confirmation and also removes its registrations from the OMP catalog.
 Free header space supports native dragging and double-click maximize/restore; buttons, fields,
 menus and workspace cards keep their normal interaction. Maximize state follows native resize events.
 Window actions remain authenticated and allowlisted.
-The Windows app and installer use a 12 DIP rounded window region, applied before showing and
-refreshed on resize or display-DPI changes. The workspace, Settings and setup panels use the same
-12 DIP radius, compensated for content zoom. This overrides the panel-radius preference in Windows
-custom chrome; browser and other platform panels retain their existing radius settings.
-Maximized/fullscreen windows clear the region to fill the display. The tray retains native DWM
-rounding. The Windows app and installer disable the native shadow so no second frame extends
-beyond the custom region. The region follows client-area bounds, excluding hidden resize borders.
-The native light border is suppressed to match the dark custom chrome.
+The Windows app and installer use DWM's antialiased corners on Windows 11. Older Windows versions
+use a 12 DIP client-area region, refreshed on resize or DPI change. Maximized and fullscreen
+windows fill their available display area. The DWM border is hidden. Workspace, Settings and
+setup panels retain the 12 DIP inset radius in Windows custom chrome.
+
+Text selection is enabled in conversations, editable fields and copyable output. Interface
+labels and navigation remain steady during pointer drags.
 
 ## Desktop installation and setup
 

@@ -846,6 +846,8 @@
 }
 :root[data-contrast=high] { --muted-foreground:color-mix(in srgb,var(--foreground) 80%,var(--background)); --border:color-mix(in srgb,var(--foreground) 35%,var(--background)); --input:var(--border); --sidebar-border:var(--border); }
 body {font-family:var(--workspace-ui-font,var(--font-sans));}
+body {user-select:none;}
+:where(input,textarea,[contenteditable]:not([contenteditable="false"]),.chat-text,pre) {user-select:text;}
 h1,h2,h3 {font-family:var(--workspace-heading-font,var(--font-sans));}
 code,pre,.font-mono {font-family:var(--workspace-code-font,var(--font-mono));}
 .workspace-main {border-radius:var(--radius-panel);box-shadow:var(--workspace-shadow);}
@@ -885,10 +887,10 @@ code,pre,.font-mono {font-family:var(--workspace-code-font,var(--font-mono));}
 .appearance-color-control input[type=color]::-moz-color-swatch {border:0;border-radius:var(--radius-item);}
 .icon-theme-card {border-radius:var(--radius-card);background:color-mix(in srgb,var(--card) 45%,transparent);padding:var(--space-5);text-align:left;transition:background 160ms;}
 .icon-theme-card:hover,.icon-theme-card[aria-pressed=true] {background:var(--secondary);}
-.settings-main [data-slot=toggle-group] {gap:var(--space-1);padding:var(--space-1);border:0;border-radius:var(--radius-control);background:var(--secondary);}
-.settings-main [data-slot=toggle-group-item] {min-height:32px;border:0;border-radius:var(--radius-item)!important;box-shadow:none;}
 svg[data-icon-set=remix] {scale:.84;}
 svg[data-icon-set=bootstrap] {scale:.88;}
+.settings-main [data-slot=toggle-group] {gap:var(--space-1);padding:var(--space-1);border:0;border-radius:var(--radius-control);background:var(--secondary);}
+.settings-main [data-slot=toggle-group-item] {min-height:32px;border:0;border-radius:var(--radius-item)!important;box-shadow:none;}
 .settings-main [data-slot=toggle-group-item][data-state=on] {background:var(--background);color:var(--foreground);box-shadow:0 1px 3px #0001;}
 .project-dialog [data-slot=tabs-list] {height:48px;padding:var(--space-1);}
 .project-dialog [data-slot=tabs-trigger] {height:40px;}
