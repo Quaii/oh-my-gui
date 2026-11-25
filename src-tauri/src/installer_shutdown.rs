@@ -108,27 +108,49 @@ fn installed_processes(executable: &Path) -> io::Result<Vec<RM_UNIQUE_PROCESS>> 
 pub fn run(close: bool) -> io::Result<&'static str> {
     let local_data = std::env::var_os("LOCALAPPDATA")
         .ok_or_else(|| io::Error::other("Local application data is unavailable."))?;
-    let target = PathBuf::from(local_data)
-        .join("Programs")
-        .join("omp")
-        .join("omp-desktop.exe");
-    if !target.is_absolute() {
+    let programs = PathBuf::from(local_data).join("Programs");
+    if !programs.is_absolute() {
         return Err(io::Error::other(
             "Local application data must be an absolute path.",
         ));
     }
-    let executable = match dunce::canonicalize(&target) {
+    let preferred = programs.join("Oh My GUI");
+    let legacy = programs.join("omp");
+    for target in [
+        preferred.join("OhMyGUI.exe"),
+        legacy.join("OhMyGUI.exe"),
+        legacy.join("omp-desktop.exe"),
+    ] {
+        if !stop_installed_app(&target, close)? {
+            return Ok("running");
+        }
+    }
+
+    // Wait for either bundled backend to release its executable.
+    for directory in [preferred, legacy] {
+        match dunce::canonicalize(directory.join("runtime").join("node.exe")) {
+            Ok(path) if !installed_processes(&path)?.is_empty() => return Ok("draining"),
+            Ok(_) => (),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => (),
+            Err(error) => return Err(error),
+        }
+    }
+    Ok("closed")
+}
+
+fn stop_installed_app(target: &Path, close: bool) -> io::Result<bool> {
+    let executable = match dunce::canonicalize(target) {
         Ok(path) => path,
-        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok("closed"),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(true),
         Err(error) => return Err(error),
     };
     let processes = installed_processes(&executable)?;
     if !processes.is_empty() {
         if !close {
-            return Ok("running");
+            return Ok(false);
         }
 
-        // Register only verified omp. process identities, never other file holders.
+        // Register only processes verified against the installed desktop executable.
         let session = RestartSession::start()?;
         checked(unsafe {
             RmRegisterResources(
@@ -144,16 +166,8 @@ pub fn run(close: bool) -> io::Result<&'static str> {
         let result = unsafe { RmShutdown(session.0, RmForceShutdown as u32, None) };
         if !installed_processes(&executable)?.is_empty() {
             checked(result)?;
-            return Ok("running");
+            return Ok(false);
         }
     }
-
-    // Wait for the bundled backend to release its executable after the host closes its pipe.
-    let backend = target.with_file_name("runtime").join("node.exe");
-    match dunce::canonicalize(backend) {
-        Ok(path) if !installed_processes(&path)?.is_empty() => Ok("draining"),
-        Ok(_) => Ok("closed"),
-        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok("closed"),
-        Err(error) => Err(error),
-    }
+    Ok(true)
 }

@@ -81,11 +81,13 @@ Official references: [Tauri resources](https://v2.tauri.app/develop/resources/),
 
 ## Installation and initial setup
 
-The user-facing Windows package is `src-tauri/target/release/bundle/custom/omp_0.1.0_x64.exe`.
+The user-facing Windows package is `src-tauri/target/release/bundle/custom/Oh My GUI_<version>_x64.exe`.
 It silently extracts a temporary copy of the shared Tauri host, Node backend and React assets. This
 opens `DesktopInstaller` rather than a standard installer wizard. No installation begins until the
-user clicks Install. The fixed per-user destination is `%LOCALAPPDATA%/Programs/omp`; the embedded
-NSIS payload manages files, shortcuts, upgrade detection and Windows uninstall registration silently.
+user clicks Install. New installations use `%LOCALAPPDATA%/Programs/Oh My GUI` and `OhMyGUI.exe`.
+Upgrades of a desktop app in `%LOCALAPPDATA%/Programs/omp` keep that folder and install the renamed
+executable and Windows registration there. The embedded NSIS payload manages files, shortcuts,
+and uninstall registration. The application identifier retains the same app data.
 Its SHA-256 is checked against the packaged manifest before execution. Both layers remain unsigned;
 this integrity check is not a substitute for code signing. The native host blocks closing while the
 installation engine is active. When the installed app is running, the installer asks before ending

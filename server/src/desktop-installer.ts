@@ -16,14 +16,37 @@ import {
 export function desktopInstallDirectory(localData = process.env.LOCALAPPDATA) {
   if (!localData || !path.isAbsolute(localData))
     throw new Error("The user installation directory is unavailable.");
-  return path.join(localData, "Programs", "omp");
+  return path.join(localData, "Programs", "Oh My GUI");
+}
+
+const appExecutable = "OhMyGUI.exe";
+const legacyExecutable = "omp-desktop.exe";
+const uninstallBase = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
+const uninstallKey = uninstallBase + "Oh My GUI";
+const legacyUninstallKey = uninstallBase + "omp";
+
+export async function findDesktopInstallation(localData = process.env.LOCALAPPDATA) {
+  const preferred = desktopInstallDirectory(localData);
+  const legacy = path.join(path.dirname(preferred), "omp");
+  for (const [destination, executable] of [
+    [preferred, appExecutable],
+    [legacy, appExecutable],
+    [legacy, legacyExecutable],
+  ]) {
+    const file = await fs.stat(path.join(destination, executable)).catch(error => {
+      if (error.code !== "ENOENT") throw error;
+      return undefined;
+    });
+    if (file?.isFile()) return { destination, executable };
+  }
+  return { destination: preferred };
 }
 
 type AppState = "running" | "draining" | "closed";
 type InstallResult = "installed" | "app-close-required";
 
 function installedAppState(close: boolean): Promise<AppState> {
-  const executable = path.join(path.dirname(process.env.OMP_INSTALLER_PAYLOAD!), "omp-installer.exe");
+  const executable = path.join(path.dirname(process.env.OMP_INSTALLER_PAYLOAD!), "OhMyGUI-Installer.exe");
   return new Promise((resolve, reject) => {
     execFile(executable, [close ? "--installer-close-app" : "--installer-check-app"],
       { timeout: close ? 50_000 : 5000, windowsHide: true }, (error, stdout) => {
@@ -59,8 +82,7 @@ export async function prepareInstalledApp(
 
 let installed = false;
 let installing: Promise<InstallResult> | undefined;
-const uninstallKey = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\omp";
-let existingInstallation: Promise<{ mode: InstallMode; previousVersion?: string }> | undefined;
+let existingInstallation: ReturnType<typeof detectExistingInstallation> | undefined;
 let progress: InstallProgress = {
   stage: "checks",
   detail: "Ready to check this installation.",
@@ -109,34 +131,30 @@ export function installerMode(existing: boolean, previousVersion: string | undef
   return next[firstDifference] > previous[firstDifference] ? "update" : "replace";
 }
 
-async function detectExistingInstallation(destination: string, version: string, buildSha256?: string) {
-  const executable = await fs.stat(path.join(destination, "omp-desktop.exe")).catch(error => {
-    if (error.code !== "ENOENT") throw error;
-    return undefined;
-  });
-  if (!executable?.isFile()) return { mode: "install" as const };
+async function detectExistingInstallation(version: string, buildSha256?: string) {
+  const { destination, executable } = await findDesktopInstallation();
+  if (!executable) return { destination, mode: "install" as const };
   const [previousVersion, installedBuild] = await Promise.all([
     new Promise<string | undefined>(resolve => {
-      execFile("reg.exe", ["query", uninstallKey, "/v", "DisplayVersion"], { timeout: 3000, windowsHide: true },
+      const key = executable === legacyExecutable ? legacyUninstallKey : uninstallKey;
+      execFile("reg.exe", ["query", key, "/v", "DisplayVersion"], { timeout: 3000, windowsHide: true },
         (error, stdout) => resolve(error ? undefined : /^\s*DisplayVersion[ \t]+REG_SZ[ \t]+([^\r\n]+)/mi.exec(stdout)?.[1].trim()));
     }),
-    buildSha256 ? desktopBuildHash(path.join(destination, "omp-desktop.exe"), path.join(destination, "runtime")).catch(() => undefined) : undefined,
+    buildSha256 ? desktopBuildHash(path.join(destination, executable), path.join(destination, "runtime")).catch(() => undefined) : undefined,
   ]);
   const sameBuild = installedBuild ? installedBuild === buildSha256 : undefined;
-  return { mode: installerMode(true, previousVersion, version, sameBuild), previousVersion };
+  return { destination, mode: installerMode(true, previousVersion, version, sameBuild), previousVersion };
 }
 
 export async function desktopInstallerStatus() {
   if (!process.env.OMP_INSTALLER_PAYLOAD || process.platform !== "win32")
     throw new Error("Installer mode is unavailable.");
   const { version, buildSha256 } = await installerManifest(process.env.OMP_INSTALLER_PAYLOAD);
-  const destination = desktopInstallDirectory();
-  const initial = await (existingInstallation ??= detectExistingInstallation(destination, version, buildSha256).catch(error => {
+  const initial = await (existingInstallation ??= detectExistingInstallation(version, buildSha256).catch(error => {
     existingInstallation = undefined;
     throw error;
   }));
   return {
-    destination,
     version,
     ...initial,
     installed,
@@ -256,7 +274,7 @@ async function install(closeRunningApp: boolean): Promise<InstallResult> {
       "Checking installed app files, the uninstaller and bundled runtime…",
     );
     for (const file of [
-      "omp-desktop.exe",
+      appExecutable,
       "uninstall.exe",
       "runtime/node.exe",
       "runtime/server/src/index.mjs",
@@ -334,9 +352,10 @@ export function desktopApplicationEnvironment(
 
 export async function launchInstalledDesktop() {
   if (!installed) throw new Error("Finish installation before opening Oh My GUI.");
+  const { destination } = await desktopInstallerStatus();
   await new Promise<void>((resolve, reject) => {
     const child = spawn(
-      path.join(desktopInstallDirectory(), "omp-desktop.exe"),
+      path.join(destination, appExecutable),
       [],
       {
         detached: true,

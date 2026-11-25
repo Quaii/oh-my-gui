@@ -81,8 +81,8 @@ jobs:
           name: omp-${{ matrix.label }}-unsigned
           if-no-files-found: error
           path: |
-            src-tauri/target/release/bundle/custom/*.exe
-            src-tauri/target/release/bundle/nsis/*-setup.exe
+            src-tauri/target/release/bundle/custom/Oh My GUI_*.exe
+            src-tauri/target/release/bundle/nsis/Oh My GUI_*-setup.exe
             src-tauri/target/release/bundle/dmg/Oh My GUI_*.dmg
             src-tauri/target/release/bundle/deb/*.deb
             src-tauri/target/release/bundle/appimage/*.AppImage

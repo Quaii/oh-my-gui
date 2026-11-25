@@ -11,7 +11,7 @@ const cargo=await fs.readFile(path.join(root,'src-tauri/Cargo.toml'),'utf8');
 if(config.version!==pkg.version||cargo.match(/^version = "([^"]+)"/m)?.[1]!==pkg.version)throw Error('Desktop, Cargo and package versions must match.');
 const folder=path.join(root,'src-tauri/target/release/bundle');
 const extensions=process.platform==='win32'?['custom/.exe','nsis/.exe']:process.platform==='darwin'?['dmg/.dmg']:['deb/.deb','appimage/.AppImage'];
-const product = process.platform === 'win32' ? 'omp' : 'Oh My GUI';
+const product = 'Oh My GUI';
 const artifacts=[];
 for(const specification of extensions){
   const [directory,extension]=specification.split('/');

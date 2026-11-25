@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, desktopSetupInstallStatus, startDesktopSetupInstall, installDesktopOmp, needsStableOmp, setupRuntimeCandidates } from '../src/desktop-setup.ts';
 import { setTimeout as delay } from 'node:timers/promises';
-import { desktopInstallDirectory, installerManifest, desktopApplicationEnvironment, installerMode, prepareInstalledApp } from '../src/desktop-installer.ts';
+import { desktopInstallDirectory, findDesktopInstallation, installerManifest, desktopApplicationEnvironment, installerMode, prepareInstalledApp } from '../src/desktop-installer.ts';
 import { desktopBuildHash } from '../src/desktop-build.ts';
 import { OMP_BINARY, selectOmpBinary } from '../src/omp.ts';
 import { promises as fs } from 'node:fs';
@@ -131,7 +131,26 @@ test('installer checks a working runtime against stable and leaves it available 
 
 test('the installer destination is derived from an absolute user directory, never request input', () => {
   assert.throws(() => desktopInstallDirectory('relative/path'));
-  assert.ok(desktopInstallDirectory(process.cwd()).endsWith('omp'));
+  assert.equal(desktopInstallDirectory(process.cwd()), path.join(process.cwd(), 'Programs', 'Oh My GUI'));
+});
+
+test('the branded installer upgrades old copies in place and uses a branded folder for fresh installs', async t => {
+  const localData = await fs.mkdtemp(path.join(os.tmpdir(), 'oh-my-gui-install-test-'));
+  t.after(() => fs.rm(localData, { recursive: true, force: true }));
+  const legacy = path.join(localData, 'Programs', 'omp');
+  const branded = path.join(localData, 'Programs', 'Oh My GUI');
+
+  assert.deepEqual(await findDesktopInstallation(localData), { destination: branded });
+  await fs.mkdir(legacy, { recursive: true });
+  await fs.writeFile(path.join(legacy, 'omp.exe'), 'Unrelated OMP runtime');
+  assert.deepEqual(await findDesktopInstallation(localData), { destination: branded });
+  await fs.writeFile(path.join(legacy, 'omp-desktop.exe'), 'Legacy desktop executable fixture');
+  assert.deepEqual(await findDesktopInstallation(localData), { destination: legacy, executable: 'omp-desktop.exe' });
+  await fs.writeFile(path.join(legacy, 'OhMyGUI.exe'), 'Migrated desktop executable fixture');
+  assert.deepEqual(await findDesktopInstallation(localData), { destination: legacy, executable: 'OhMyGUI.exe' });
+  await fs.mkdir(branded, { recursive: true });
+  await fs.writeFile(path.join(branded, 'OhMyGUI.exe'), 'Branded desktop executable fixture');
+  assert.deepEqual(await findDesktopInstallation(localData), { destination: branded, executable: 'OhMyGUI.exe' });
 });
 
 test('installer mode distinguishes fresh, newer and same-version packages', () => {

@@ -75,7 +75,7 @@ async function main() {
     );
     const sums = [];
     for (const name of (await fs.readdir(folder)).filter((name) =>
-      name.startsWith("omp_"),
+      name.startsWith("omp_") || name.startsWith("oh-my-gui_"),
     )) {
       sums.push(
         createHash("sha256")
@@ -116,7 +116,8 @@ async function main() {
   if (!release)
     throw Error("Add release notes for this version before packaging.");
   const target = `${platform}-${arch}`;
-  const name = `omp_${pkg.version}_${target}${process.platform === "win32" ? ".exe" : extension}`;
+  const brand = process.platform === "win32" ? "oh-my-gui" : "omp";
+  const name = `${brand}_${pkg.version}_${target}${process.platform === "win32" ? ".exe" : extension}`;
   await fs.mkdir(folder, { recursive: true });
   await fs.copyFile(source, path.join(folder, name));
   // Keep the branded first-install package separate from the engine used for upgrades.
@@ -141,7 +142,7 @@ async function main() {
     path.join(bundle, initialDirectory, initialFiles[0]),
     path.join(
       folder,
-      `omp_${pkg.version}_${target}_installer${initialExtension}`,
+      `${brand}_${pkg.version}_${target}_installer${initialExtension}`,
     ),
   );
   await fs.writeFile(path.join(folder, name + ".sig"), signature + "\n");
