@@ -57,16 +57,21 @@ export async function probeExecutable(executable: string): Promise<string | null
   }
 }
 
-async function findRuntime() {
-  const home = os.homedir();
-  const candidates = process.env.OMP_BIN ? [process.env.OMP_BIN] : [
-    OMP_BINARY,
-    ...(process.platform === 'darwin' ? [
-      '/opt/homebrew/bin/omp', '/usr/local/bin/omp',
-      path.join(home, '.local/bin/omp'), path.join(home, '.bun/bin/omp'), 'omp',
-    ] : []),
+export function setupRuntimeCandidates(platform: NodeJS.Platform, home: string, selected: string, override?: string) {
+  if (override) return [override];
+  if (platform !== 'darwin' && platform !== 'linux') return [selected];
+  const brew = platform === 'darwin' ? ['/opt/homebrew/bin/omp'] : [
+    '/home/linuxbrew/.linuxbrew/bin/omp', path.posix.join(home, '.linuxbrew/bin/omp'),
   ];
-  for (const executable of new Set(candidates)) {
+  return [...new Set([
+    selected, ...brew, '/usr/local/bin/omp',
+    path.posix.join(home, '.local/bin/omp'), path.posix.join(home, '.bun/bin/omp'), 'omp',
+  ])];
+}
+
+async function findRuntime() {
+  const candidates = setupRuntimeCandidates(process.platform, os.homedir(), OMP_BINARY, process.env.OMP_BIN);
+  for (const executable of candidates) {
     const version = await probeExecutable(executable);
     if (version) {
       selectOmpBinary(executable);

@@ -119,11 +119,13 @@ Settings → Installation without unmounting the workspace or discarding editor 
 Completion is versioned in the native app data directory, independently of browser storage. A missing
 runtime reopens setup even after completion. On macOS, setup checks Homebrew, the standalone
 installer and Bun paths even when launched from Finder, and uses the physical CPU architecture
-on Apple Silicon if the app is running under Rosetta. Setup polls for download progress and
-keeps failures visible beside its navigation. The optional OMP download follows the official stable
+on Apple Silicon if the app is running under Rosetta. Linux setup checks system and per-user
+Linuxbrew paths, the standalone installer and Bun even when launched from the application menu.
+Setup polls for download progress and keeps failures visible beside its navigation. The optional
+OMP download follows the official stable
 build-service target/metadata format, streams into a uniquely named temporary executable, verifies the
 published SHA-256 and runs `--version` before moving it into the app-managed runtime directory.
-No shell install script is executed and PATH is not modified. Existing working installations are
+The app leaves the system and shell configuration intact. Existing working installations are
 reused. Failed downloads never replace the selected runtime. Linux packages target glibc hosts.
 
 ## Native platform builds

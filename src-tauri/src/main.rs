@@ -105,15 +105,23 @@ fn start_backend(
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::inherit());
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     {
-        // Finder launches do not inherit shell startup paths. Preserve PATH order.
+        // Desktop launchers may omit shell startup paths. Preserve PATH order.
         let path = std::env::var_os("PATH").unwrap_or_default();
-        let extra = [
-            app.path().home_dir()?.join(".bun/bin"),
-            PathBuf::from("/opt/homebrew/bin"),
+        let home = app.path().home_dir()?;
+        let mut extra = vec![
+            home.join(".bun/bin"),
             PathBuf::from("/usr/local/bin"),
         ];
+        #[cfg(target_os = "macos")]
+        extra.insert(1, PathBuf::from("/opt/homebrew/bin"));
+        #[cfg(target_os = "linux")]
+        extra.extend([
+            home.join(".local/bin"),
+            PathBuf::from("/home/linuxbrew/.linuxbrew/bin"),
+            home.join(".linuxbrew/bin"),
+        ]);
         command.env(
             "PATH",
             std::env::join_paths(std::env::split_paths(&path).chain(extra))?,

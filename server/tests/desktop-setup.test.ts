@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, desktopSetupInstallStatus, startDesktopSetupInstall, installDesktopOmp, needsStableOmp } from '../src/desktop-setup.ts';
+import { ompTarget, validateOmpBuild, desktopSetupStatus, completeDesktopSetup, desktopSetupInstallStatus, startDesktopSetupInstall, installDesktopOmp, needsStableOmp, setupRuntimeCandidates } from '../src/desktop-setup.ts';
 import { setTimeout as delay } from 'node:timers/promises';
 import { desktopInstallDirectory, installerManifest, desktopApplicationEnvironment, installerMode, prepareInstalledApp } from '../src/desktop-installer.ts';
 import { desktopBuildHash } from '../src/desktop-build.ts';
@@ -8,6 +8,21 @@ import { OMP_BINARY, selectOmpBinary } from '../src/omp.ts';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+
+test('Linux setup can rediscover runtimes installed outside the launcher PATH', () => {
+  const home = '/home/test';
+  const managed = '/app-data/runtime/omp';
+  assert.deepEqual(setupRuntimeCandidates('linux', home, managed), [
+    managed,
+    '/home/linuxbrew/.linuxbrew/bin/omp',
+    '/home/test/.linuxbrew/bin/omp',
+    '/usr/local/bin/omp',
+    '/home/test/.local/bin/omp',
+    '/home/test/.bun/bin/omp',
+    'omp',
+  ]);
+  assert.deepEqual(setupRuntimeCandidates('linux', home, managed, '/custom/omp'), ['/custom/omp']);
+});
 
 test('installer-to-app handoff removes installer mode and stale native session state',()=>{
   const source={PATH:'fixture-path',OMP_BIN:'user-selected-runtime',OMP_INSTALLER_PAYLOAD:'old-installer.exe',OMP_INSTALL_PROGRESS:'old.log',OMP_DESKTOP_TOKEN:'old-session',OMP_DESKTOP_DATA:'old-data',OMP_UPDATES_CONFIGURED:'false',OMP_APP_VERSION:'old-version'};
@@ -21,6 +36,7 @@ test('desktop OMP installation selects the host binary and rejects unsupported t
   assert.equal(ompTarget('darwin', 'arm64'), 'macos-arm64');
   assert.equal(ompTarget('darwin', 'x64'), 'macos-x86_64');
   assert.equal(ompTarget('linux', 'x64'), 'linux-x86_64');
+  assert.equal(ompTarget('linux', 'arm64'), 'linux-arm64');
   assert.throws(() => ompTarget('linux', 'ia32'));
   assert.throws(() => ompTarget('freebsd', 'x64'));
 });
