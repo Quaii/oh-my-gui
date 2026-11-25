@@ -9,6 +9,7 @@ on:
       - .github/workflows/desktop-build.yml
       - src-tauri/**
       - scripts/*desktop*.mjs
+      - scripts/desktop-dmg-settings.py
 
 permissions:
   contents: read
@@ -53,9 +54,27 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run docs:check
+      - uses: actions/setup-python@v6
+        if: runner.os == 'macOS'
+        with:
+          python-version: '3.12'
+      - name: Prepare macOS disk image tools
+        if: runner.os == 'macOS'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/oh-my-gui-dmg"
+          "$RUNNER_TEMP/oh-my-gui-dmg/bin/pip" install dmgbuild==2.0.0
+          echo "$RUNNER_TEMP/oh-my-gui-dmg/bin" >> "$GITHUB_PATH"
       - run: npm run desktop:build
+        env:
+          OMP_STYLED_MAC_PREVIEW: 'true'
       - run: cargo test --release --locked --manifest-path src-tauri/Cargo.toml
       - run: npm run desktop:check
+        if: runner.os != 'macOS'
+      - name: Check bundled macOS backend
+        if: runner.os == 'macOS'
+        run: |
+          app="src-tauri/target/release/bundle/macos/Oh My GUI.app"
+          npm run desktop:check -- "$app/Contents/Resources/resources/runtime" "$app/Contents/MacOS/node"
       - run: npm run desktop:release-check
       - uses: actions/upload-artifact@v4
         with:

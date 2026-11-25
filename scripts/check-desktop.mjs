@@ -8,8 +8,9 @@ import {desktopApplicationEnvironment} from '../server/src/desktop-installer.ts'
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const runtime=process.argv[2]?path.resolve(process.argv[2]):path.join(root,'src-tauri/resources/runtime');
+const executable=process.argv[3]?path.resolve(process.argv[3]):path.join(runtime,process.platform==='win32'?'node.exe':'node');
 const token=randomBytes(32).toString('hex');
-const child=spawn(path.join(runtime,process.platform==='win32'?'node.exe':'node'),[path.join(runtime,'server/src/index.mjs')],{
+const child=spawn(executable,[path.join(runtime,'server/src/index.mjs')],{
   cwd:root,windowsHide:true,env:{...desktopApplicationEnvironment({...process.env,OMP_INSTALLER_PAYLOAD:'inert-old-installer',OMP_INSTALL_PROGRESS:'inert-old-log'}),HOST:'127.0.0.1',PORT:'0',OMP_DESKTOP_TOKEN:token},stdio:['pipe','pipe','pipe']
 });
 let nativeLines='';

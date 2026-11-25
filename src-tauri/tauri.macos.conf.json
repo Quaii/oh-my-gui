@@ -3,6 +3,22 @@
   "bundle": {
     "targets": ["app", "dmg"],
     "icon": ["icons/icon.icns", "icons/128x128.png"],
-    "macOS": { "minimumSystemVersion": "13.5" }
+    "externalBin": ["resources/runtime/node"],
+    "resources": [
+      "resources/runtime/licenses/",
+      "resources/runtime/server/",
+      "resources/runtime/web/",
+      "resources/runtime/runtime.json"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "13.5",
+      "entitlements": "macos-entitlements.plist",
+      "dmg": {
+        "background": "dmg/background.png",
+        "windowSize": { "width": 640, "height": 340 },
+        "appPosition": { "x": 169, "y": 205 },
+        "applicationFolderPosition": { "x": 471, "y": 205 }
+      }
+    }
   }
 }

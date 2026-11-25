@@ -36,3 +36,5 @@
 - Tauri dialog plugin (Apache-2.0 OR MIT): https://github.com/tauri-apps/plugins-workspace/tree/v2/plugins/dialog . Native project-folder selection is called only by the host, with no filesystem/dialog IPC permissions granted to the webview.
 
 - smol-toml (BSD-3-Clause): https://github.com/squirrelchat/smol-toml . The server uses it to read Codex configuration. Desktop bundles include its license.
+
+- The macOS disk image background is original Oh My GUI artwork. dmgbuild (MIT) configures the Finder layout in the Mac preview workflow. https://github.com/dmgbuild/dmgbuild

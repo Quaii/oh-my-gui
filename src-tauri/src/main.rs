@@ -77,12 +77,18 @@ fn start_backend(
     let runtime: PathBuf = if cfg!(debug_assertions) {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/runtime")
     } else {
-        app.path().resource_dir()?.join("runtime")
+        let relative = if cfg!(target_os = "macos") { "resources/runtime" } else { "runtime" };
+        app.path().resource_dir()?.join(relative)
     };
     let runtime = backend_path::for_child(&runtime);
     let token = uuid::Uuid::new_v4().simple().to_string();
     let port: u64 = if installer { 4320 } else { 4319 };
-    let mut command = Command::new(runtime.join(if cfg!(windows) { "node.exe" } else { "node" }));
+    let node = if cfg!(all(target_os = "macos", not(debug_assertions))) {
+        std::env::current_exe()?.with_file_name("node")
+    } else {
+        runtime.join(if cfg!(windows) { "node.exe" } else { "node" })
+    };
+    let mut command = Command::new(node);
     command
         .arg(runtime.join("server/src/index.mjs"))
         .current_dir(backend_path::for_child(&app.path().home_dir()?))

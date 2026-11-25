@@ -24,6 +24,14 @@ let sameRuntime=false;
 try{sameRuntime=await digest(process.execPath)===await digest(runtimeNode);}catch(error){if(error.code!=='ENOENT')throw error;}
 if(!sameRuntime)await fs.copyFile(process.execPath,runtimeNode);
 if(process.platform!=='win32')await fs.chmod(runtimeNode,0o755);
+if (process.platform === 'darwin') {
+  // Tauri signs external binaries with the app. Files in Resources are only sealed as data.
+  const arch = { arm64: 'aarch64', x64: 'x86_64' }[process.arch];
+  if (!arch) throw new Error(`Unsupported macOS Node architecture: ${process.arch}`);
+  const sidecar = path.join(runtime, `node-${arch}-apple-darwin`);
+  await fs.copyFile(runtimeNode, sidecar);
+  await fs.chmod(sidecar, 0o755);
+}
 await fs.mkdir(path.join(runtime,'licenses'),{recursive:true});
 await fs.copyFile(path.join(root,'node_modules/yaml/LICENSE'),path.join(runtime,'licenses/yaml.txt'));
 await fs.copyFile(path.join(root,'node_modules/smol-toml/LICENSE'),path.join(runtime,'licenses/smol-toml.txt'));
