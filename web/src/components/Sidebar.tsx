@@ -13,6 +13,7 @@ import {
   subscribeSessionMeta,
 } from "../lib/sessionmeta";
 import { Brand } from "./Brand";
+import { ToolbarBlur } from "./ToolbarBlur";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -97,6 +98,7 @@ const NAV = [
 export function Sidebar(props: SidebarProps) {
   const headingId = useId();
   const scrollRoot=useRef<HTMLElement|null>(null);useSmoothWheel(scrollRoot,'[data-slot=scroll-area-viewport]',props.collapsed);
+  const footerRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState("");
   const [filterQuery,setFilterQuery]=useState("");
   const [closedProjects,setClosedProjects]=useState<Record<string,boolean>>({});
@@ -403,7 +405,12 @@ export function Sidebar(props: SidebarProps) {
 
 
       <ScrollArea className="session-scroll min-h-0 min-w-0 flex-1">
-        <nav className="workspace-sidebar-sections" aria-label="Chats and projects">
+        <nav className="workspace-sidebar-sections" aria-label="Chats and projects" onFocus={event => {
+          const footer = footerRef.current;
+          if (footer && event.target.getBoundingClientRect().bottom > footer.getBoundingClientRect().top) {
+            event.target.scrollIntoView({ block: "end", inline: "nearest", behavior: "instant" });
+          }
+        }}>
           {pinned.length > 0 && <section aria-labelledby={headingId + "-pinned"}>
             <header className="workspace-sidebar-heading"><h2 id={headingId + "-pinned"}>Pinned</h2></header>
             <div className="workspace-sidebar-rows">{pinned.map(renderSession)}</div>
@@ -469,7 +476,8 @@ export function Sidebar(props: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      <div className="session-sidebar-footer">
+      <div ref={footerRef} className="session-sidebar-footer">
+        <ToolbarBlur />
         <Button variant="ghost" onClick={props.onOpenSettings} className="session-sidebar-footer-button mr-auto justify-start gap-2 px-3 text-[13px] font-normal">
           <Settings2 className="size-4" /> Settings
         </Button>

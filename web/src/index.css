@@ -1038,18 +1038,27 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 }
 .session-scroll .workspace-sidebar-sections {padding-block-end:var(--sidebar-footer-clearance);}
 .session-scroll [data-slot=scroll-area-viewport] {scroll-padding-block-end:var(--sidebar-footer-clearance);}
+.session-scroll [data-slot=scroll-area-scrollbar] {max-height:calc(100% - var(--sidebar-footer-clearance));}
 .session-sidebar-footer {
   position:absolute;
   z-index:1;
-  inset-inline:var(--sidebar-footer-inset);
-  inset-block-end:var(--sidebar-footer-inset);
+  inset-inline:0;
+  inset-block-end:0;
+  min-height:var(--sidebar-footer-clearance);
+  padding:var(--sidebar-footer-inset);
   display:flex;
   align-items:center;
   gap:var(--space-1);
+}
+.session-sidebar-footer>.toolbar-blur-gradient {
+  --toolbar-blur-direction:to top;
+  position:absolute;
+  inset:-24px 0 0;
+  z-index:-1;
   pointer-events:none;
+  background:linear-gradient(to top, color-mix(in srgb,var(--sidebar) 88%,transparent) 36%,transparent);
 }
 .session-sidebar-footer .session-sidebar-footer-button {
-  pointer-events:auto;
   height:var(--sidebar-footer-control-height);
   border-radius:var(--radius-control);
   background:var(--sidebar-accent);
@@ -1340,8 +1349,8 @@ html,body,#root {margin:0;padding:0;border:0;border-radius:0;}
 .background-animation-row>button {margin-left:auto;flex-shrink:0;}
 .background-gallery {max-height:none;overflow:visible;padding:var(--space-1) var(--space-2) var(--space-2) var(--space-1);overscroll-behavior:contain;scrollbar-width:thin;}
 .appearance-controls:not(.appearance-controls-expanded) .background-gallery {max-height:none;}
-.toolbar-blur-gradient>span:first-child {backdrop-filter:blur(14px);mask-image:linear-gradient(to bottom,#000 0%,#000b 32%,#0005 64%,transparent 100%);background:transparent;}
-.toolbar-blur-gradient::after {content:"";position:absolute;inset:0;background:url('/backgrounds/noise.svg') repeat;opacity:.018;mask-image:linear-gradient(#000,transparent);pointer-events:none;}
+.toolbar-blur-gradient>span:first-child {backdrop-filter:blur(14px);mask-image:linear-gradient(var(--toolbar-blur-direction,to bottom),#000 0%,#000b 32%,#0005 64%,transparent 100%);background:transparent;}
+.toolbar-blur-gradient::after {content:"";position:absolute;inset:0;background:url('/backgrounds/noise.svg') repeat;opacity:.018;mask-image:linear-gradient(var(--toolbar-blur-direction,to bottom),#000,transparent);pointer-events:none;}
 .workspace-background-dither {position:absolute;inset:0;pointer-events:none;opacity:.025;background:url('/backgrounds/noise.svg') repeat;mix-blend-mode:soft-light;}
 /* The transcript reaches the bottom edge; only the composer and its gradual blur cover it. */
 .workspace-main:not(.is-home):not(.is-empty) .composer-region {position:absolute;inset:auto 0 0;pointer-events:none;background:transparent;}

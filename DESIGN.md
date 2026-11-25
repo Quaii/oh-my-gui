@@ -137,6 +137,9 @@ The composer also floats over the transcript. Its blur begins gradually above th
 at the sides; it is bounded to the composer frame, not a screen-wide solid footer. Transcript bottom
 padding and scroll padding track the measured composer height so the final message can scroll clear.
 Preserve pointer-event routing so the transparent layers do not block reading or clicking content.
+The chat sidebar also scrolls behind its footer. Its bottom edge reverses the header blur, and
+the transparent footer intercepts clicks across the button strip. Focused rows and the final chat
+can scroll clear of the controls.
 
 Do not put blur fades on every scrollable region. Ordinary editor, explorer, appearance-gallery and
 list edges remain clear. [ScrollFrame](web/src/components/ScrollFrame.tsx) is deliberately a neutral
