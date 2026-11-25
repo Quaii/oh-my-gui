@@ -286,6 +286,11 @@ not rebuilt. Live chat navigation retains its bridge key. All native CloseReques
 the shared quit dialog; Keep in tray hides the window, while confirmed quit stops the owned backend.
 Installers retain their existing installation-aware close confirmation and do not create tray icons.
 The tray-data regressions and browser dialog fixtures are separate from native OS interaction tests.
+
+Enable agent notifications in **Settings → Interaction → Desktop notifications**. The desktop host
+posts an alert when a turn completes successfully or the agent asks a structured question while
+you are away from that chat. Notifications use generic text so conversation details stay in the
+app. The packaged macOS app requests system permission when you enable the setting.
 Skills loading/failure/recovery and the running-session quit dialog passed inert browser checks;
 tray data and live-bridge identity have regression coverage. Native tray-menu clicks and taskbar-close
 interaction still require interactive acceptance on the intended OS.

@@ -3,6 +3,7 @@ import { createInterface } from 'node:readline';
 import { appRelease, desktopUpdates } from './desktop-updates.ts';
 import { projectFolders, pickDesktopFolder, receiveDesktopFolder, folderChooserOpen } from './folder-picker.ts';
 import {desktopAccess} from "./desktop.ts";
+import { AgentNotificationEvents, desktopNotificationStatus, receiveDesktopNotification, sendAgentNotification } from "./desktop-notifications.ts";
 import { desktopSetupStatus, completeDesktopSetup, desktopSetupInstallStatus, startDesktopSetupInstall } from './desktop-setup.ts';
 import { desktopInstallerStatus, installDesktopApplication, launchInstalledDesktop } from './desktop-installer.ts';
 import os from "node:os";
@@ -57,6 +58,7 @@ interface Slot {
   routingAbort?: AbortController;
   lastRouting?: any;
   replay: UiReplay;
+  notificationEvents?: AgentNotificationEvents;
   initializing?: Promise<void>;
   exports?: Map<string, string>;
   host?: HostRpcAdapter;
@@ -127,6 +129,9 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
 
   const bridge = new OmpBridge(key, cwd);
   const slot: Slot = { bridge, cwd, subscribers: new Set(), state: null, startedAt: Date.now(), replay: new UiReplay() };
+  if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD) {
+    slot.notificationEvents = new AgentNotificationEvents();
+  }
   slots.set(key, slot);
   slot.host = new HostRpcAdapter(record => bridge.write(record));
   slot.host.tool('ui_notice', async record => {
@@ -147,6 +152,8 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
     if (rec.type === "available_commands_update") slot.state = slot.state;
     if(rec.type === "agent_start") slot.state={...slot.state,isStreaming:true};
     if(["agent_end","agent_settled","session_settled"].includes(rec.type)) slot.state={...slot.state,isStreaming:false};
+    const notification = slot.notificationEvents?.accept(rec);
+    if (notification) sendAgentNotification(notification, slot.subscribers.size === 0);
     broadcast(slot, slot.replay.accept(rec));
   });
   bridge.on("ui_request", (rec: any) => {
@@ -155,6 +162,10 @@ async function startBridge(key: string, cwd: string, sessionPath?: string, args?
       rec = { ...rec, authProvider: slot.login.providerId };
     } else if (slot.login?.hasAuthLink && rec.method === 'input' && !rec.secret) {
       rec = { ...rec, authProvider: slot.login.providerId };
+    }
+    if (!slot.login && !slot.replay.dialogs.has(rec.id)) {
+      const notification = slot.notificationEvents?.accept(rec);
+      if (notification) sendAgentNotification(notification, slot.subscribers.size === 0);
     }
     broadcast(slot, slot.replay.accept(rec));
   });
@@ -822,6 +833,16 @@ const server = http.createServer((req, res) => {
   if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/folder' && req.method === 'POST') {
     void readBody(req,8192).then(body=>pickDesktopFolder(typeof body.directory === 'string' ? body.directory : undefined)).then(data=>json(res,200,data)).catch(error=>json(res,400,{error:error.message}));return;
   }
+  if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/notifications') {
+    void (async () => {
+      if (req.method === 'GET') return json(res, 200, await desktopNotificationStatus());
+      if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed.' });
+      const body = await readBody(req, 1024);
+      if (typeof body?.enabled !== 'boolean') return json(res, 400, { error: 'Choose whether to enable notifications.' });
+      json(res, 200, await desktopNotificationStatus(body.enabled));
+    })().catch(error => json(res, 400, { error: error.message }));
+    return;
+  }
   if (process.env.OMP_DESKTOP_TOKEN && !process.env.OMP_INSTALLER_PAYLOAD && url.pathname === '/api/desktop/tray-action' && req.method === 'POST') {
     void (async()=>{
       const body = await readBody(req,8192);
@@ -898,6 +919,7 @@ if(process.env.OMP_DESKTOP_TOKEN){
       try { void desktopUpdates.receive(JSON.parse(line.slice(7))).catch(error=>log(error.message)); } catch {}
     }
     else if(line.startsWith('folder ')) { try { receiveDesktopFolder(JSON.parse(line.slice(7))); } catch {} }
+    else if(line.startsWith('notification ')) { try { receiveDesktopNotification(JSON.parse(line.slice(13))); } catch {} }
   });
   input.on('close',()=>void shutdown());
 }

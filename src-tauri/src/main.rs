@@ -5,6 +5,7 @@ mod folder_picker;
 #[cfg(windows)]
 mod installer_shutdown;
 mod native_icon;
+mod notifications;
 mod tray;
 mod updates;
 mod window_frame;
@@ -234,6 +235,13 @@ fn start_backend(
                 if !installer {
                     if let Ok(value) = serde_json::from_str(data) {
                         folder_picker::open(&native_app, value);
+                    }
+                }
+            } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_NOTIFICATION ") {
+                if !installer {
+                    if let Ok(value) = serde_json::from_str(data) {
+                        let handle = native_app.clone();
+                        let _ = native_app.run_on_main_thread(move || notifications::dispatch(&handle, value));
                     }
                 }
             } else if let Some(data) = line.strip_prefix("OMP_DESKTOP_TRAY_ACTION ") {
@@ -476,7 +484,10 @@ fn main() {
         return;
     }
     let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
-    let result = tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(not(target_os = "macos"))]
+    let builder = builder.plugin(tauri_plugin_notification::init());
+    let result = builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {

@@ -33,6 +33,8 @@ import { McpPanel } from "../components/settings/McpPanel";
 import { SkillsPanel } from "../components/settings/SkillsPanel";
 import { ToolsPanel } from "../components/settings/ToolsPanel";
 import { CommandsPanel } from "../components/settings/CommandsPanel";
+import { DesktopNotificationSettings } from "../components/settings/DesktopNotificationSettings";
+import { isDesktopHost } from "../lib/desktop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -422,6 +424,7 @@ export function SettingsPage(input: SettingsPageProps | { appearancePreview: tru
             ) : tab ? (
               <div className="settings-stack">
                 {panel === "appearance" && <AppearancePanel />}
+                {panel === "interaction" && isDesktopHost() && <DesktopNotificationSettings />}
                 {panel === "appearance" ? <details className="harness-display-settings"><summary className="cursor-pointer py-3 text-[13px] text-muted-foreground">Harness display settings</summary>{preview ? <Empty>Available when a local Oh My Pi runtime is connected.</Empty> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}</details> : <ConfigList settings={tabSettings} onSave={save} onReset={reset} hideAdvanced />}
               </div>
             ) : (
