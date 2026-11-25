@@ -156,7 +156,8 @@ For a notarized Mac release, export a Developer ID Application certificate with 
 as a password-protected `.p12`. Set `APPLE_CERTIFICATE` to the base64-encoded export and
 `APPLE_CERTIFICATE_PASSWORD` to its password in GitHub Actions secrets. Add `APPLE_ID`,
 `APPLE_PASSWORD` (an app-specific password), and `APPLE_TEAM_ID` for Apple notarization. The
-release build verifies the app signature and stapled notarization before packaging the draft.
+release build verifies the app signature and stapled notarization, then submits and staples the
+downloadable disk image before computing its checksum and packaging the draft.
 These credentials are separate from the updater key.
 [Tauri macOS signing guide](https://v2.tauri.app/distribute/sign/macos/)
 

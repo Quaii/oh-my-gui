@@ -53,7 +53,7 @@ jobs:
       - run: npm run docs:check
       - run: npm run desktop:build
         if: runner.os != 'macOS'
-      - name: Build and verify the notarized macOS application
+      - name: Build and notarize the macOS release
         if: runner.os == 'macOS'
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -72,6 +72,14 @@ jobs:
           codesign --verify --deep --strict "$app"
           xcrun stapler validate "$app"
           npm run desktop:check -- "$app/Contents/Resources/resources/runtime" "$app/Contents/MacOS/node"
+          for dmg in src-tauri/target/release/bundle/dmg/*.dmg; do
+            codesign --verify --strict "$dmg"
+            xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" --wait --timeout 15m --output-format json > "$RUNNER_TEMP/notary-dmg.json"
+            jq -e '.status == "Accepted"' "$RUNNER_TEMP/notary-dmg.json"
+            xcrun stapler staple "$dmg"
+            xcrun stapler validate "$dmg"
+          done
       - run: npm run desktop:check
         if: runner.os != 'macOS'
       - run: npm run desktop:release-check
