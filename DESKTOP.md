@@ -143,10 +143,22 @@ that control once the workflow exists on the repository's default branch. The pr
 not modified just to enable that control.
 The macOS deployment floor is 13.5, matching the bundled Node 24 runtime rather than advertising
 support for older systems on which the backend cannot start.
-For unsigned CI builds only, a known `hdiutil` eject/Resource-busy failure falls back to creating and
-verifying a DMG directly from the successfully built app and an Applications link. This avoids
-mounting another temporary volume; it does not force-eject any disk. Compiler/signing failures still
-fail the job. The recovery is disabled when Apple signing/notarization credentials are configured.
+Mac previews use ad-hoc signing. The preview workflow builds the app with Tauri and uses
+[dmgbuild](https://github.com/dmgbuild/dmgbuild) to set the Finder layout without an interactive
+Finder session. The resulting disk image has the app, an Applications link, and the install
+instructions on its background. Local Tauri images can also have a hidden `.VolumeIcon.icns`
+file for the mounted disk's icon.
+
+Tauri signs the bundled Node executable alongside the Mac app. The native build check launches
+that signed executable with the backend and web assets from inside the application bundle.
+
+For a notarized Mac release, export a Developer ID Application certificate with its private key
+as a password-protected `.p12`. Set `APPLE_CERTIFICATE` to the base64-encoded export and
+`APPLE_CERTIFICATE_PASSWORD` to its password in GitHub Actions secrets. Add `APPLE_ID`,
+`APPLE_PASSWORD` (an app-specific password), and `APPLE_TEAM_ID` for Apple notarization. The
+release build verifies the app signature and stapled notarization before packaging the draft.
+These credentials are separate from the updater key.
+[Tauri macOS signing guide](https://v2.tauri.app/distribute/sign/macos/)
 
 ## Verified package build
 

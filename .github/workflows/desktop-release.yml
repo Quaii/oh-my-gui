@@ -52,7 +52,28 @@ jobs:
       - run: npm test
       - run: npm run docs:check
       - run: npm run desktop:build
+        if: runner.os != 'macOS'
+      - name: Build and verify the notarized macOS application
+        if: runner.os == 'macOS'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          : "${APPLE_CERTIFICATE:?Add the base64-encoded Developer ID Application certificate and private key}"
+          : "${APPLE_CERTIFICATE_PASSWORD:?Add the certificate export password}"
+          : "${APPLE_ID:?Add the Apple developer account email}"
+          : "${APPLE_PASSWORD:?Add an Apple app-specific password for notarization}"
+          : "${APPLE_TEAM_ID:?Add the Apple developer team ID}"
+          npm run desktop:build
+          app="src-tauri/target/release/bundle/macos/Oh My GUI.app"
+          codesign --verify --deep --strict "$app"
+          xcrun stapler validate "$app"
+          npm run desktop:check -- "$app/Contents/Resources/resources/runtime" "$app/Contents/MacOS/node"
       - run: npm run desktop:check
+        if: runner.os != 'macOS'
       - run: npm run desktop:release-check
       - run: node scripts/desktop-update-manifest.mjs --fragment .tmp/update-release
       - uses: actions/upload-artifact@v4
