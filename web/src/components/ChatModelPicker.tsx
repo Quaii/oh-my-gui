@@ -87,7 +87,7 @@ export function ChatModelPicker({ className, model, models, hidden, onVisibility
         <div className="relative p-1.5">
           <Search aria-hidden="true" className="pointer-events-none absolute start-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input ref={focusSwappedSearch} value={filter} onChange={event => setFilter(event.target.value)}
-            aria-label="Search models" placeholder="Search models" className="border-0 bg-transparent ps-9" />
+            aria-label="Search models" placeholder="Search models" className="bg-transparent ps-9 focus-visible:ring-1" />
         </div>
         <ScrollArea viewportClassName="max-h-72">
           <div className="p-1.5">

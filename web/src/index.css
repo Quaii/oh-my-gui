@@ -794,7 +794,6 @@
 [data-slot=dialog-overlay] { backdrop-filter:blur(6px); }
 .settings-main [data-slot=toggle-group-item][data-state=on] { background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);border-color:transparent;box-shadow:none; }
 .settings-main [data-slot=switch] { cursor:pointer; }
-[data-slot=switch][data-size=sm] [data-slot=switch-thumb][data-state=checked] { transform:translateX(10px); }
 [data-slot=canvas-node][data-selected] { box-shadow:0 0 0 2px color-mix(in srgb,var(--foreground) 18%,transparent); }
 @media(max-width:640px){[data-slot=prompt-box-actions]{gap:0}.composer-chip{max-width:140px}.composer-chip>span.max-w-\[170px\]{max-width:92px}.settings-main>header{gap:var(--space-2);padding-inline:var(--space-3)}}
 .composer-fast-control[aria-pressed=true] {
