@@ -359,7 +359,14 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     app.manage(updates::Updates::default());
     let (backend, url) = start_backend(app.handle(), installer)?;
     app.manage(backend);
+    #[cfg(not(target_os = "linux"))]
     let custom_chrome = cfg!(any(windows, target_os = "macos"));
+    #[cfg(target_os = "linux")]
+    let custom_chrome = {
+        use gtk::prelude::ObjectExt;
+        // Wayland window moves need the compositor's pointer grab. Keep its native frame.
+        gtk::gdk::Display::default().is_some_and(|display| display.type_().name() == "GdkX11Display")
+    };
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
         .title(if installer { "Install Oh My GUI" } else { "Oh My GUI" })
         .decorations(!custom_chrome)

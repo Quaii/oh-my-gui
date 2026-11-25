@@ -335,10 +335,11 @@ chat screenshots. Change this guide only for an intentional design decision, not
 
 ## Desktop custom chrome
 
-The Windows and macOS desktop hosts disable native decorations and use the existing floating panel toolbar
+The Windows, macOS and Linux X11 desktop hosts disable native decorations and use the floating panel toolbar
 for minimize, maximize/restore and close. The three 36px buttons sit flush on one rounded toolbar
 surface. Each button has its own hover and focus state, with a red hover on Close. The group lives
-on the rightmost visible workspace/editor panel and in the Settings toolbar.
+on the rightmost visible workspace/editor panel and in the Settings toolbar. Linux on Wayland keeps
+its native title bar for compositor-managed window movement and resizing.
 Workspace toolbar slots animate width, spacing and opacity during the Files handoff.
 Standalone chats show only the session title. Project chats show their folder breadcrumb and a
 Leave project action.
