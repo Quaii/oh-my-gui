@@ -282,7 +282,8 @@ experience, not merely a backend detail.
 Workspace icon sets: Lucide, Phosphor, Tabler, Heroicons, Bootstrap and Remix. Use semantic mappings
 in [WorkspaceIcons.tsx](web/src/components/WorkspaceIcons.tsx) and adaptive exports in
 [NavigationIcons.tsx](web/src/components/NavigationIcons.tsx). Choose meaningfully distinct glyphs for
-settings/tools; do not repeat a generic wrench or power icon down an entire page.
+settings/tools; do not repeat a generic wrench or power icon down an entire page. Remix and Bootstrap
+glyphs draw smaller within the same spacing to balance their visual weight.
 
 Editor icons are independently selectable: Material, Monochrome, Minimal. The shared
 [FileIcon](web/src/components/FileIcon.tsx) is used in the explorer, tabs and changed files. Preview

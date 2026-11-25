@@ -887,6 +887,8 @@ code,pre,.font-mono {font-family:var(--workspace-code-font,var(--font-mono));}
 .icon-theme-card:hover,.icon-theme-card[aria-pressed=true] {background:var(--secondary);}
 .settings-main [data-slot=toggle-group] {gap:var(--space-1);padding:var(--space-1);border:0;border-radius:var(--radius-control);background:var(--secondary);}
 .settings-main [data-slot=toggle-group-item] {min-height:32px;border:0;border-radius:var(--radius-item)!important;box-shadow:none;}
+svg[data-icon-set=remix] {scale:.84;}
+svg[data-icon-set=bootstrap] {scale:.88;}
 .settings-main [data-slot=toggle-group-item][data-state=on] {background:var(--background);color:var(--foreground);box-shadow:0 1px 3px #0001;}
 .project-dialog [data-slot=tabs-list] {height:48px;padding:var(--space-1);}
 .project-dialog [data-slot=tabs-trigger] {height:40px;}
