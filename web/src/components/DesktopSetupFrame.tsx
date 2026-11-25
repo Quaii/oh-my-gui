@@ -4,8 +4,8 @@ import { Brand } from './Brand';
 import { Button } from './ui/button';
 import { post } from '../lib/api';
 
-export function DesktopSetupFrame({ steps, current, busy, onCancel, children, allowCancelWhileBusy = false }: {
-  steps: string[]; current: number; busy: boolean; onCancel: () => void; children: ReactNode; allowCancelWhileBusy?: boolean;
+export function DesktopSetupFrame({ steps, current, busy, onCancel, children, allowCancelWhileBusy = false, panelClassName = '' }: {
+  steps: string[]; current: number; busy: boolean; onCancel: () => void; children: ReactNode; allowCancelWhileBusy?: boolean; panelClassName?: string;
 }) {
   const startDrag = (event: MouseEvent<HTMLElement>) => {
     if (!window.__OMP_CUSTOM_CHROME__ || event.button !== 0) return;
@@ -24,7 +24,7 @@ export function DesktopSetupFrame({ steps, current, busy, onCancel, children, al
         {index < current && <span className="sr-only">Completed</span>}
       </li>)}</ol>
     </aside>
-    <main className="desktop-setup workspace-floating-surface" aria-busy={busy}>
+    <main className={`desktop-setup workspace-floating-surface ${panelClassName}`} aria-busy={busy}>
       <div className="desktop-setup-panel-header" onMouseDown={startDrag}><span>{steps[current]}</span><Button variant="ghost" size="icon-sm" disabled={busy && !allowCancelWhileBusy} aria-label={window.__OMP_INSTALLER__ ? 'Cancel installation' : 'Close setup'} title={busy && !allowCancelWhileBusy ? 'Wait for the current operation to finish' : 'Close setup'} onClick={onCancel}><X className="size-4" /></Button></div>
       {children}
     </main>

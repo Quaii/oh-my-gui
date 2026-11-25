@@ -15,7 +15,7 @@ const BackgroundPreview=React.lazy(()=>import("./components/backgrounds/Backgrou
 
 if(window.__OMP_DESKTOP__)document.documentElement.dataset.desktop="true";
 if(window.__OMP_CUSTOM_CHROME__)document.documentElement.dataset.desktopChrome="true";
-if(window.__OMP_DESKTOP__&&!window.__OMP_INSTALLER__&&!window.__OMP_TRAY__)document.documentElement.dataset.desktopSetup="true";
+if(window.__OMP_DESKTOP__&&!window.__OMP_TRAY__)document.documentElement.dataset.desktopSetup="true";
 if(window.__OMP_TRAY__)document.documentElement.dataset.tray="true";
 applyTheme(window.__OMP_INSTALLER__ ? 'carbon' : getTheme());
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, Download, LoaderCircle } from "lucide-react";
+import { ArrowRight, Check, Copy, Download, LoaderCircle } from "lucide-react";
 import { DesktopSetupFrame } from "./DesktopSetupFrame";
 import { Button } from "./ui/button";
 import {
@@ -44,6 +44,7 @@ export function DesktopInstaller() {
   const [exitQueued, setExitQueued] = useState(false);
   const exitAfterInstall = useRef(false);
   const [error, setError] = useState("");
+  const [copiedError, setCopiedError] = useState("");
   const load = () =>
     get<InstallerStatus>("/api/desktop/installer")
       .then(setStatus)
@@ -94,6 +95,16 @@ export function DesktopInstaller() {
   const freshInstall = mode === "install";
   const launchLabel = freshInstall ? "Open setup" : "Open Oh My GUI";
   const steps = INSTALL_STEPS.map(step => step.id === "complete" ? launchLabel : step.label);
+  const installerError = error || status?.progress?.error;
+  const installDetail = exitQueued
+    ? "This window will close when the current installation step finishes."
+    : busy
+      ? status?.progress?.stage === "package" && verified !== null
+        ? `Checking package: ${verified}%`
+        : status?.progress?.detail || "Starting installation…"
+      : status?.progress?.runtimeVersion
+        ? `OMP runtime verified · ${status.progress.runtimeVersion}`
+        : "No administrator access is needed. You can uninstall from Windows Settings.";
 
   async function close() {
     try {
@@ -148,6 +159,7 @@ export function DesktopInstaller() {
         busy={busy}
         allowCancelWhileBusy
         onCancel={requestExit}
+        panelClassName="desktop-installer"
       >
         <section>
           <h1 id="installer-title">
@@ -178,23 +190,15 @@ export function DesktopInstaller() {
                       : freshInstall ? "Install for your account" : "Existing installation"}
               </h2>
             </div>
-            <p className="break-all">
+            <p className="truncate" title={status?.destination}>
               {status?.destination || "Checking installation location…"}
             </p>
             {status?.previousVersion && status.previousVersion !== status.version && (
-              <p>Version {status.previousVersion} → {status.version}</p>
+              <p className="truncate" title={`Version ${status.previousVersion} → ${status.version}`}>Version {status.previousVersion} → {status.version}</p>
             )}
-            <p>
-              {exitQueued
-                ? "This window will close when the current installation step finishes."
-                : busy
-                  ? status?.progress?.detail || "Starting installation…"
-                  : status?.progress?.runtimeVersion
-                    ? `OMP runtime verified · ${status.progress.runtimeVersion}`
-                    : "No administrator access is needed. You can uninstall from Windows Settings."}
-            </p>
+            <p className="line-clamp-2 wrap-anywhere" title={installDetail}>{installDetail}</p>
             {(started || status?.installed) && (
-              <div className="mt-4 space-y-2" aria-live="polite">
+              <div className="mt-2 space-y-1" aria-live="polite">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Installation stages completed</span>
                   <span>
@@ -216,17 +220,23 @@ export function DesktopInstaller() {
                     }}
                   />
                 </div>
-                {status?.progress?.stage === "package" && verified !== null && (
-                  <p className="text-xs">Checking package: {verified}%</p>
-                )}
               </div>
             )}
           </div>
         </section>
-        {(error || status?.progress?.error) && (
-          <p role="alert" className="mt-4 text-sm text-destructive">
-            {error || status?.progress?.error}
-          </p>
+        {installerError && (
+          <div className="desktop-installer-error">
+            <p role="alert" className="line-clamp-2 wrap-anywhere" title={installerError}>{installerError}</p>
+            <Button variant="ghost" size="icon-sm" className="shrink-0"
+              aria-label={copiedError === installerError ? "Error details copied" : "Copy error details"}
+              title={copiedError === installerError ? "Copied" : "Copy error details"}
+              onClick={() => void navigator.clipboard.writeText(installerError).then(
+                () => setCopiedError(installerError),
+                () => setCopiedError(""),
+              )}>
+              {copiedError === installerError ? <Check className="size-4" /> : <Copy className="size-4" />}
+            </Button>
+          </div>
         )}
         <footer>
           {!status && error ? (

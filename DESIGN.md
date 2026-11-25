@@ -388,6 +388,8 @@ The installer always uses Carbon and has no theme selector. Carbon is also the a
 for new profiles; explicit saved themes are retained. Completed steps use accent checkmarks in the
 left rail, the active step uses the sidebar selection surface, and future steps remain muted.
 Runtime checks, installation errors and retry controls remain visible; no download percentages are fabricated.
+The Windows installer fits its fixed window without scrolling. Progress, errors and footer actions
+stay visible together, and the error row can copy the full message.
 Theme previews use a three-column grid inside a bounded scroll area; the page must never grow wider
 than its window. Appearance choices update immediately. Provider connection remains an explicit action
 in the existing Settings screen.

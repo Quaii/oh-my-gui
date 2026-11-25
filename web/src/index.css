@@ -1705,7 +1705,15 @@ html[data-desktop-setup=true],html[data-desktop-setup=true] body{overflow:hidden
 }
 .provider-config-dialog>*{min-width:0}.provider-config-dialog [data-slot=select-trigger]{max-width:100%;min-width:0}
 
-.desktop-installer-progress{margin-top:var(--space-4);padding:var(--space-3)}.desktop-installer-progress p{margin-top:var(--space-2)}
+.desktop-installer {padding-block:var(--space-5);overflow:clip;}
+.desktop-installer>.desktop-setup-panel-header {margin-bottom:var(--space-2);}
+.desktop-installer>section {flex:0 0 auto;overflow:visible;}
+.desktop-installer section>p,.desktop-installer-progress p {font-size:13px;line-height:18px;}
+.desktop-installer section>p {margin-top:var(--space-2);}
+.desktop-installer-progress {margin-top:var(--space-3);padding:var(--space-3);}
+.desktop-installer-progress p {margin-top:var(--space-1);}
+.desktop-installer-error {display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);margin-top:var(--space-2);font-size:12px;line-height:16px;color:var(--destructive);}
+.desktop-installer>footer {margin-top:auto;padding-top:var(--space-3);}
 .desktop-update-notice{position:fixed;z-index:60;right:24px;bottom:24px;max-width:calc(100vw - 48px);border-radius:var(--radius-floating);padding:var(--space-5)}
 /* The CSS build adds browser prefixes; keep the standard backdrop-filter declaration. */
 html[data-tray=true]{zoom:1!important;background:var(--sidebar)}
