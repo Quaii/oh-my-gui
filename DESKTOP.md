@@ -149,6 +149,13 @@ Finder session. The resulting disk image has the app, an Applications link, and 
 instructions on its background. Local Tauri images can also have a hidden `.VolumeIcon.icns`
 file for the mounted disk's icon.
 
+After dragging the app into Applications, open **Open Preview** from the mounted preview disk
+image if macOS blocks first launch. The helper verifies the installed app's signature and checks
+that it matches the build on the disk image. It then clears the download quarantine attribute from
+that app bundle and opens it. Use this helper with a preview you downloaded from this repository.
+If Finder blocks the helper itself, open Terminal, type `/bin/bash ` with a trailing space, drag
+**Open Preview** into the Terminal window, then press Return.
+
 Tauri signs the bundled Node executable alongside the Mac app. The native build check launches
 that signed executable with the backend and web assets from inside the application bundle.
 

@@ -369,6 +369,7 @@ The native light border is suppressed to match the dark custom chrome.
 
 The macOS disk image uses a Finder drag-and-drop window with the app on the left, Applications
 on the right, and a short instruction and arrow on a neutral background.
+The preview image shows Open Preview below the two installation icons.
 
 The custom installer and first-launch setup are a compact workspace: a left progress rail and one
 floating content panel, with 12px outer padding and gap. The Windows setup window is 680×460,

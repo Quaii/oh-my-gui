@@ -16,6 +16,7 @@ export async function createDevelopmentDmg(root, { styled = false } = {}) {
   await fs.mkdir(folder, { recursive: true });
   if (styled) {
     // Write Finder metadata directly. Hosted runners have no interactive Finder.
+    await fs.access(path.join(root, 'src-tauri/dmg/Open Preview.command'), fs.constants.X_OK);
     execFileSync('codesign', ['--verify', '--deep', '--strict', app], { stdio: 'inherit', timeout: 60000 });
     execFileSync('dmgbuild', ['-s', path.join(root, 'scripts/desktop-dmg-settings.py'),
       '-D', `app=${app}`, '-D', `tauri=${path.join(root, 'src-tauri')}`, 'Oh My GUI', destination],
