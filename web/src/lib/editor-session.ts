@@ -1,5 +1,9 @@
 export type EditorDocument={path:string;content:string;savedContent:string;version:string;generation:number;status:'ready'|'saving';error?:string};
 export type EditorSession={documents:EditorDocument[];active:string|null};
+export const CHECK_EDITOR_DRAFTS = "omp:check-editor-drafts";
+export function hasPendingEditorChanges() {
+  return !window.dispatchEvent(new Event(CHECK_EDITOR_DRAFTS, { cancelable: true }));
+}
 export type EditorAction=
  |{type:'open';document:{path:string;content:string;version:string};reload?:boolean;activate?:boolean}
  |{type:'activate';path:string}

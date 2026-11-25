@@ -282,8 +282,9 @@ Checksum regressions and inert compact UI fixtures are separate from fresh-insta
 
 The main application owns an accent-synchronized system tray menu: Open, Settings, five recent chats,
 running sessions and Quit. Recent chat metadata refreshes with a short cache; unchanged menu state is
-not rebuilt. Live chat navigation retains its bridge key. All native CloseRequested events go through
-the shared quit dialog; Keep in tray hides the window, while confirmed quit stops the owned backend.
+not rebuilt. Live chat navigation retains its bridge key. Native close requests quit an idle workspace
+directly and ask for confirmation when sessions are running or editor changes are unsaved.
+Keep in tray hides the window, while quitting stops the owned backend.
 Installers retain their existing installation-aware close confirmation and do not create tray icons.
 The tray-data regressions and browser dialog fixtures are separate from native OS interaction tests.
 

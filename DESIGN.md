@@ -430,9 +430,10 @@ package-check progress uses bytes actually read. Native dependency and copy oper
 without fabricated byte percentages. Keep the stage detail and bar visible in the compact window.
 Successful installation requires installed-file, Node runtime and uninstall-registration checks.
 
-Native desktop close requests, including taskbar close actions, open a quit confirmation. Show the
-reported running-session count and warn about unsaved editor changes. Cancel preserves the window;
-Keep in tray hides it without stopping runtimes. Selecting a live chat reuses its runtime identity. The tray mark
+Native desktop close requests quit directly when the workspace is idle and editor drafts are saved.
+When sessions are running or edits are unsaved, show the relevant warning and two equal-width actions.
+Keep in tray hides the window without stopping runtimes. Close and Escape dismiss the confirmation.
+Selecting a live chat reuses its runtime identity. The tray mark
 follows the accent. Installers keep their separate abort-installation confirmation and have no tray.
 
 Settings pages have independent error recovery so a failed panel does not remove navigation. The

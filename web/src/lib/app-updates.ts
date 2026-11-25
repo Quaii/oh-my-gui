@@ -69,8 +69,3 @@ export function useUpdateStatus() {
   }
   return { status, error, action };
 }
-export function editorAllowsUpdate() {
-  return window.dispatchEvent(
-    new Event("omp:before-update", { cancelable: true }),
-  );
-}

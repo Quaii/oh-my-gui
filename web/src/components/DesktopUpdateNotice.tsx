@@ -6,7 +6,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "./ui/dialog";
-import { editorAllowsUpdate, useUpdateStatus } from "../lib/app-updates";
+import { useUpdateStatus } from "../lib/app-updates";
+import { hasPendingEditorChanges } from "../lib/editor-session";
 import { Download, RefreshCw } from "lucide-react";
 import { Markdown } from "./Markdown";
 
@@ -39,7 +40,7 @@ export function DesktopUpdateNotice() {
     status?.phase || "",
   );
   async function install() {
-    if (!editorAllowsUpdate()) {
+    if (hasPendingEditorChanges()) {
       setGuard("Save your editor changes before installing the update.");
       return;
     }
