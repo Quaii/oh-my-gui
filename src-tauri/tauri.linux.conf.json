@@ -2,6 +2,15 @@
   "productName": "Oh My GUI",
   "bundle": {
     "targets": ["deb", "appimage"],
-    "icon": ["icons/32x32.png", "icons/128x128.png"]
+    "category": "DeveloperTool",
+    "shortDescription": "Desktop workspace for the local OMP runtime.",
+    "longDescription": "Oh My GUI is a desktop workspace for the local OMP agent runtime. It provides a chat interface, project navigation, and an editor.",
+    "icon": ["icons/32x32.png", "icons/128x128.png"],
+    "linux": {
+      "deb": {
+        "section": "devel",
+        "depends": ["xdg-utils"]
+      }
+    }
   }
 }

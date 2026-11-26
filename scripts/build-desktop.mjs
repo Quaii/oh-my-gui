@@ -7,6 +7,18 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let diagnostics = '';
 const args = [path.join(root, 'node_modules/@tauri-apps/cli/tauri.js'), 'build'];
 const mac = process.platform === 'darwin';
+const linux = process.platform === 'linux';
+const flags = process.argv.slice(2);
+let linuxBundles = [];
+if (flags.length > 0) {
+  if (!linux || flags[0] !== '--bundles' || flags.length < 2) {
+    throw new Error('Usage on Linux: npm run desktop:build -- --bundles deb [appimage]');
+  }
+  linuxBundles = [...new Set(flags.slice(1).flatMap(value => value.split(',')))];
+  if (linuxBundles.some(bundle => !['deb', 'appimage'].includes(bundle))) {
+    throw new Error('Can only select deb or appimage Linux bundles.');
+  }
+}
 const signedRelease = process.env.OMP_SIGNED_RELEASE === 'true';
 const appleIdentity = process.env.APPLE_SIGNING_IDENTITY || process.env.APPLE_CERTIFICATE;
 const styledPreview = mac && !signedRelease && !appleIdentity && process.env.OMP_STYLED_MAC_PREVIEW === 'true';
@@ -18,6 +30,8 @@ if (signedRelease) {
 if (mac && !signedRelease && !appleIdentity) bundle.macOS = { signingIdentity: '-' };
 if (Object.keys(bundle).length) args.push('--config', JSON.stringify({ bundle }));
 if (styledPreview) args.push('--bundles', 'app');
+if (linuxBundles.length) args.push('--bundles', ...linuxBundles);
+if (linux) args.push('--', '--locked');
 const child = spawn(process.execPath, args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
 const forward = (stream, output) => stream.on('data', chunk => {
   output.write(chunk);

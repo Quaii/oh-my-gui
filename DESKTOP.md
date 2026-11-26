@@ -172,6 +172,33 @@ downloadable disk image before computing its checksum and packaging the draft.
 These credentials are separate from the updater key.
 [Tauri macOS signing guide](https://v2.tauri.app/distribute/sign/macos/)
 
+### Linux x64 development build
+
+Work on the `linux-testing` branch for Linux packaging and acceptance. Building a
+development package does not publish a release or change the Windows and macOS installers.
+
+On Ubuntu 22.04 or 24.04, install Node.js 24 x64, stable Rust, then the native development
+dependencies:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y build-essential pkg-config libwebkit2gtk-4.1-dev \
+  libayatana-appindicator3-dev librsvg2-dev
+npm ci
+npm run desktop:build -- --bundles deb
+```
+
+Find the package in `src-tauri/target/release/bundle/deb/` (or under the configured Cargo
+target directory). Install it with `sudo apt install ./path/to/package.deb` so Apt resolves
+the declared runtime dependencies. Launch **Oh My GUI** from the applications menu.
+The development package is unsigned, targets x86-64 glibc distributions, and bundles Node
+for the local backend rather than depending on a system Node installation.
+
+The Linux package smoke check launches the installed app in a fresh X11 virtual desktop
+and isolated user profile. It does not install an OMP runtime, use credentials, or send a
+model request. A passing smoke test is not a claim of hardware, Wayland, upgrade, or
+cross-distribution compatibility.
+
 ## Verified package build
 
 [Run 43836649167](https://github.com/Quaii/oh-my-gui/actions/runs/43836649167) passed Windows x64,

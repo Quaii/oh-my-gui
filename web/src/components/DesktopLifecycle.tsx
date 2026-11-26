@@ -66,6 +66,7 @@ export function DesktopLifecycle() {
     }
   }
   const running = warning?.running;
+  const minimize = window.__OMP_MINIMIZE_INSTEAD_OF_TRAY__ === true;
 
   return (
     <Dialog open={!!warning} onOpenChange={(open) => { if (!open && !actionPending.current) setWarning(undefined); }}>
@@ -83,14 +84,18 @@ export function DesktopLifecycle() {
                 {running !== 0 && warning?.unsaved && " "}
                 {warning?.unsaved && "Unsaved editor changes will be lost."}
               </p>
-              <p>You can keep the app running in the tray instead.</p>
+              <p>
+                {minimize
+                  ? "You can minimize the window to keep the app running instead."
+                  : "You can keep the app running in the tray instead."}
+              </p>
             </div>
           </DialogDescription>
         </DialogHeader>
         {error && <p role="alert">{error}</p>}
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" disabled={acting} onClick={() => void action("hide")}>
-            Keep in tray
+            {minimize ? "Minimize" : "Keep in tray"}
           </Button>
           <Button
             variant="destructive"

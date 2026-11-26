@@ -279,22 +279,33 @@ export function Sidebar(props: SidebarProps) {
     );
   }
 
+  // Keep the same header and brand mounted when the navigation body changes.
+  const toggleLabel = props.collapsed ? "Expand sidebar" : "Collapse sidebar";
+  const header = (
+    <div className="workspace-sidebar-header" data-collapsed={props.collapsed}>
+      <Brand className="workspace-sidebar-mark size-7" />
+      <span className="workspace-sidebar-title" aria-hidden={props.collapsed}>Oh My GUI</span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="workspace-sidebar-toggle"
+            onClick={props.onToggleCollapsed}
+            aria-label={toggleLabel}
+            aria-expanded={!props.collapsed}
+          >
+            <ChevronsLeft aria-hidden="true" className="workspace-sidebar-chevron size-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{toggleLabel}</TooltipContent>
+      </Tooltip>
+    </div>
+  );
+
   if (props.collapsed) {
     return (
-      <aside ref={scrollRoot} className="collapsed-sidebar flex h-full w-full shrink-0 flex-col items-center gap-1 bg-sidebar py-4">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={props.onToggleCollapsed}
-              className="grid size-9 place-items-center rounded-lg transition-colors t-fast hover:bg-sidebar-accent"
-              aria-label="Expand sidebar"
-            >
-              <Brand className="size-6" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right">Expand sidebar</TooltipContent>
-        </Tooltip>
-
+      <aside ref={scrollRoot} className="collapsed-sidebar flex h-full w-full shrink-0 flex-col items-center gap-1 bg-sidebar pb-4">
+        {header}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -358,28 +369,7 @@ export function Sidebar(props: SidebarProps) {
 
   return (
     <aside ref={scrollRoot} className="session-sidebar flex h-full w-full min-w-0 shrink-0 flex-col bg-sidebar">
-      <div className="flex h-18 items-center gap-2.5 px-5">
-        <Brand className="size-7 shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[16px] font-semibold tracking-[-0.04em]">Oh My GUI</span>
-          </div>
-        </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-6 text-muted-foreground hover:text-fog-100"
-              onClick={props.onToggleCollapsed}
-              aria-label="Collapse sidebar"
-            >
-              <ChevronsLeft className="size-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">Collapse</TooltipContent>
-        </Tooltip>
-      </div>
+      {header}
 
       <div className="relative mx-3 mb-2 border-b border-sidebar-border/70 pt-1 pb-3">
         <Search className="pointer-events-none absolute left-2 top-[19px] size-3 -translate-y-1/2 text-muted-foreground" />

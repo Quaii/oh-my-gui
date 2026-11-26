@@ -1,0 +1,178 @@
+name: Windows and Linux v0.1.4
+
+# One-time manual-download release. The signed updater pipeline is separate.
+on:
+  push:
+    branches: [tauri]
+    paths: [.github/workflows/release-v0.1.4.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-v0.1.4
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: v0.1.4
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            platform: windows
+          - runner: ubuntu-22.04
+            platform: linux
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.18.1
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - name: Check release versions
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const read = file => readFileSync(file, 'utf8');
+          const json = file => JSON.parse(read(file));
+          const version = process.env.RELEASE_TAG.slice(1);
+          assert.equal(json('package.json').version, version);
+          assert.equal(json('package-lock.json').version, version);
+          assert.equal(json('package-lock.json').packages[''].version, version);
+          assert.equal(json('src-tauri/tauri.conf.json').version, version);
+          assert.equal(read('src-tauri/Cargo.toml').match(/^version = "([^"]+)"/m)?.[1], version);
+          assert.equal(read('src-tauri/Cargo.lock').match(/^name = "omp-desktop"\nversion = "([^"]+)"/m)?.[1], version);
+          assert.equal(json('shared/app-release.json').releases[0].version, version);
+          JS
+      - name: Install Linux build prerequisites
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run docs:check
+      - name: Build Windows installer
+        if: matrix.platform == 'windows'
+        run: npm run desktop:build
+      - name: Build Linux package
+        if: matrix.platform == 'linux'
+        run: npm run desktop:build -- --bundles deb
+      - run: cargo test --release --locked --manifest-path src-tauri/Cargo.toml
+      - run: npm run desktop:check
+      - name: Verify Windows package layout
+        if: matrix.platform == 'windows'
+        run: npm run desktop:release-check
+      - name: Stage Windows installer and checksum
+        if: matrix.platform == 'windows'
+        run: |
+          version="${RELEASE_TAG#v}"
+          mkdir -p out
+          cp "src-tauri/target/release/bundle/custom/Oh My GUI_${version}_x64.exe" "out/Oh-My-GUI_${version}_windows-x64.exe"
+          cd out
+          sha256sum -- "Oh-My-GUI_${version}_windows-x64.exe" > SHA256SUMS-windows
+      - name: Stage Linux package and checksum
+        if: matrix.platform == 'linux'
+        run: |
+          version="${RELEASE_TAG#v}"
+          mkdir -p out
+          cp "src-tauri/target/release/bundle/deb/Oh My GUI_${version}_amd64.deb" "out/Oh-My-GUI_${version}_linux-amd64.deb"
+          cd out
+          test "$(dpkg-deb -f "Oh-My-GUI_${version}_linux-amd64.deb" Architecture)" = amd64
+          test "$(dpkg-deb -f "Oh-My-GUI_${version}_linux-amd64.deb" Version)" = "$version"
+          sha256sum -- "Oh-My-GUI_${version}_linux-amd64.deb" > SHA256SUMS-linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-v0.1.4-${{ matrix.platform }}
+          path: out/*
+          if-no-files-found: error
+
+  linux-smoke:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v5
+        with:
+          name: release-v0.1.4-linux
+          path: candidate
+      - name: Verify checksum and install exact release candidate
+        working-directory: candidate
+        run: |
+          sha256sum --check --strict SHA256SUMS-linux
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ./*.deb
+      - name: Install virtual desktop test tools
+        run: |
+          sudo apt-get install -y --no-install-recommends dbus-x11 desktop-file-utils iproute2 \
+            openbox python3 x11-utils xauth xdotool xvfb
+      - name: Exercise the installed native app twice
+        run: python3 scripts/check-linux-package.py --installed candidate/*.deb
+
+  publish:
+    needs: [build, linux-smoke]
+    if: github.ref == 'refs/heads/tauri' && github.repository == 'Quaii/oh-my-gui'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: release-v0.1.4-*
+          path: candidate
+          merge-multiple: true
+      - name: Verify both assets match the successful builds
+        working-directory: candidate
+        run: |
+          version="${RELEASE_TAG#v}"
+          test -s "Oh-My-GUI_${version}_windows-x64.exe"
+          test -s "Oh-My-GUI_${version}_linux-amd64.deb"
+          cat SHA256SUMS-windows SHA256SUMS-linux > SHA256SUMS
+          test "$(wc -l < SHA256SUMS)" = 2
+          sha256sum --check --strict SHA256SUMS
+      - name: Publish both tested installers together
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/tauri" --jq '.object.sha')" = "$GITHUB_SHA"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1 ||
+             gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release or tag already exists; refusing to replace it."
+            exit 1
+          fi
+          version="${RELEASE_TAG#v}"
+          gh release create "$RELEASE_TAG" --draft --target "$GITHUB_SHA" \
+            --title "Oh My GUI $RELEASE_TAG" --notes-file ".github/release-notes/$RELEASE_TAG.md" \
+            "candidate/Oh-My-GUI_${version}_windows-x64.exe" \
+            "candidate/Oh-My-GUI_${version}_linux-amd64.deb" candidate/SHA256SUMS
+          gh release view "$RELEASE_TAG" --json assets --jq '.assets | length' | grep -qx 3
+          gh release edit "$RELEASE_TAG" --draft=false --latest
