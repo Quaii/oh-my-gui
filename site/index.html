@@ -18,6 +18,39 @@
   <link rel="icon" href="assets/brand.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script src="showcase.js" defer></script>
+  <style>
+    .omg-memory {
+      margin-block-start: clamp(36px, 6vw, 74px);
+      padding: clamp(20px, 4vw, 48px);
+      border: 1px solid #ffffff18;
+      border-radius: var(--corner, 8px);
+      background: #10161dc7;
+      color: #f5f5f7;
+    }
+    .omg-memory h3 {
+      margin: 0 0 clamp(22px, 4vw, 38px);
+      font-size: clamp(24px, 3.5vw, 36px);
+      font-weight: 650;
+      line-height: 1.1;
+      letter-spacing: -.035em;
+    }
+    .omg-memory .rows { display: grid; gap: clamp(20px, 3vw, 32px); margin: 0; }
+    .omg-memory .row { display: grid; gap: 9px; }
+    .omg-memory dt {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px .65em;
+      font-size: clamp(15px, 2vw, 22px);
+      line-height: 1.25;
+      font-weight: 550;
+    }
+    .omg-memory .score { color: #9bcfff; font-size: .8em; white-space: nowrap; }
+    .omg-memory dd { margin: 0; }
+    .omg-memory .bar { display: block; width: var(--length); height: 5px; background: #9398a0; }
+    .omg-memory .featured .bar { background: linear-gradient(90deg, #03a9f4, #398dff); }
+    .omg-memory .note { margin-block-start: clamp(20px, 3vw, 32px); color: #b8c3ce; font-size: 13px; }
+  </style>
 </head>
 <body>
   <header class="nav">
@@ -50,9 +83,9 @@
       <div class="wrap">
         <div class="hero-text">
           <div class="hero-head">
-            <h1 id="hero-title"><span>The AI harness you know.</span><span>Reimagined for desktop.</span></h1>
-            <p>An independent desktop app for Oh My Pi, with project chats, live agent activity, and your files in one window.</p>
-            <a class="hero-link" href="https://github.com/Quaii/oh-my-gui">Download Oh My GUI <span aria-hidden="true">↗</span></a>
+            <h1 id="hero-title"><span>OMP </span><span>Reimagined for your desktop</span></h1>
+            <p>Oh My Gui is an independent desktop app for Oh My Pi.</p>
+            <a class="hero-link" href="https://github.com/Quaii/oh-my-gui">Download OMG <span aria-hidden="true">↗</span></a>
           </div>
           <div class="hero-window">
             <figure id="project-chat" class="hero-stage">
@@ -70,19 +103,36 @@
 
     <section id="frontend" class="frontend" aria-labelledby="frontend-title">
       <div class="wrap frontend-layout">
-        <h2 id="frontend-title">A frontend for<br>Oh My Pi.</h2>
+        <h2 id="frontend-title">Blazingly fast and<br>your omp setup stays!</h2>
         <div>
-          <p>Oh My GUI connects to your local Oh My Pi runtime. Your providers, models, and tools still run through the CLI setup you already use.</p>
-          <p>The interface puts your projects, conversations, and agent activity alongside the files you’re working on. Use the desktop app or open the same interface in your browser.</p>
+          <p>Oh My GUI connects to your local Oh My Pi runtime. Your providers, models, and everything else is already connected automatically!</p>
+          <p>Built with Tauri, ram and cpu usage stays low and is negligible to the OMP terminal usage.</p>
         </div>
       </div>
+      <figure class="omg-memory wrap" aria-labelledby="omg-memory-title" aria-describedby="omg-memory-note">
+        <h3 id="omg-memory-title">Memory usage</h3>
+        <!-- Draft widths show the requested proportions. Once benchmarked, use a
+             common zero baseline and width = memoryMb / maxMemoryMb × 100%.
+             Competitor numbers need not appear visually; update the benchmark note. -->
+        <dl class="rows">
+          <div class="row featured" style="--length:21%">
+            <dt>OMG <span class="score">240 MB</span></dt>
+            <dd aria-hidden="true"><span class="bar"></span></dd>
+          </div>
+          <div class="row" style="--length:96%">
+            <dt>Others (Claude Code, Codex, etc.)</dt>
+            <dd aria-hidden="true"><span class="bar"></span></dd>
+          </div>
+        </dl>
+        <figcaption class="note" id="omg-memory-note">Lower is better. Illustrative comparison; bar lengths are not benchmark results.</figcaption>
+      </figure>
     </section>
 
     <section id="workspace" class="workspace" aria-labelledby="workspace-title">
       <div class="wrap">
         <div class="section-head">
-          <h2 id="workspace-title">Inside the workspace</h2>
-          <p>Everything starts with your project folder.</p>
+          <h2 id="workspace-title">The workspace</h2>
+          <p>Everything stays familiar as you know it</p>
         </div>
       </div>
       <div class="tour" aria-label="Workspace tour">
@@ -94,7 +144,7 @@
                 <img src="assets/workspace-overview.webp" alt="Home showing what is running, unfinished tasks, and recent conversations" width="1440" height="900" loading="lazy" draggable="false">
               </picture>
             </div>
-            <figcaption><strong>Resume your work</strong><span>Find running chats and unfinished tasks on Home.</span></figcaption>
+            <figcaption><strong>Resume your work</strong><span>Find running chats and unfinished tasks on the Home page.</span></figcaption>
           </figure>
           <figure id="tour-chat">
             <div class="image-link">
@@ -133,7 +183,7 @@
     <section id="themes" class="themes" aria-labelledby="themes-title">
       <div class="wrap">
         <div class="section-head">
-          <h2 id="themes-title">A theme for your work.</h2>
+          <h2 id="themes-title">Plenty of animated themes to choose from</h2>
         </div>
         <div class="theme-strip" aria-label="Sample themes">
           <div class="theme-track">
@@ -152,8 +202,8 @@
     <section id="appearance" class="appearance" aria-labelledby="appearance-title">
       <div class="wrap">
         <div class="section-head appearance-intro">
-          <h2 id="appearance-title">The way you want it.</h2>
-          <p>Change backgrounds, fonts, icons, accents, and glass effects in the app’s Appearance page.</p>
+          <h2 id="appearance-title">Infinite customization options</h2>
+          <p>Change backgrounds, fonts, icons, accents, and glass effects in the  appearance page. All for free.</p>
         </div>
         <div id="appearance-preview" class="appearance-preview">
           <iframe class="appearance-frame" title="Interactive Oh My GUI Appearance settings" loading="lazy" hidden></iframe>
