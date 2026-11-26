@@ -1,0 +1,109 @@
+name: Linux desktop testing
+
+# Unsigned development packages only, with no releases or deployments.
+on:
+  push:
+    branches: [linux-testing]
+    paths:
+      - .github/workflows/desktop-linux-testing.yml
+      - .cargo/**
+      - package.json
+      - package-lock.json
+      - tsconfig.json
+      - 'rust-toolchain*'
+      - scripts/**
+      - server/**
+      - shared/**
+      - src-tauri/**
+      - web/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-linux-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    # Build on the oldest distro in the test matrix to avoid a newer libc dependency.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.18.1
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          cache-on-failure: true
+      - name: Install native build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run docs:check
+      - name: Build unsigned x64 Debian package
+        run: npm run desktop:build -- --bundles deb
+      - run: cargo test --release --locked --manifest-path src-tauri/Cargo.toml
+      - run: npm run desktop:check
+      - name: Stage package and checksum
+        working-directory: src-tauri/target/release/bundle/deb
+        run: |
+          shopt -s nullglob
+          packages=( ./*.deb )
+          if (( ${#packages[@]} != 1 )); then
+            printf 'Expected one .deb, found %s\n' "${#packages[@]}" >&2
+            exit 1
+          fi
+          test "$(dpkg-deb -f "${packages[0]}" Architecture)" = amd64
+          dpkg-deb -f "${packages[0]}" Package Version Architecture Depends
+          sha256sum -- "${packages[0]}" > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oh-my-gui-linux-x64-deb-unsigned
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/deb/SHA256SUMS
+
+  smoke:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v5
+        with:
+          name: oh-my-gui-linux-x64-deb-unsigned
+          path: candidate
+      - name: Verify download and install with package dependencies
+        working-directory: candidate
+        run: |
+          sha256sum --check --strict SHA256SUMS
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ./*.deb
+      - name: Install virtual desktop test tools
+        run: |
+          sudo apt-get install -y --no-install-recommends dbus-x11 desktop-file-utils iproute2 \
+            openbox python3 x11-utils xauth xdotool xvfb
+      - name: Launch the native package and verify clean shutdown
+        run: python3 scripts/check-linux-package.py --installed candidate/*.deb
