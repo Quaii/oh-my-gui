@@ -29,6 +29,8 @@ struct Backend {
 struct InstallerBusy(AtomicBool);
 struct InstallerCloseAllowed(AtomicBool);
 struct WindowMode(Mutex<Option<String>>);
+#[cfg(target_os = "linux")]
+struct TrayUnavailable;
 impl Backend {
     fn stop(&self) {
         let Ok(mut child) = self.child.lock() else {
@@ -89,7 +91,7 @@ fn start_backend(
     } else {
         runtime.join(if cfg!(windows) { "node.exe" } else { "node" })
     };
-    let mut command = Command::new(node);
+    let mut command = Command::new(&node);
     command
         .arg(runtime.join("server/src/index.mjs"))
         .current_dir(backend_path::for_child(&app.path().home_dir()?))
@@ -150,7 +152,18 @@ fn start_backend(
         use std::os::windows::process::CommandExt;
         command.creation_flags(0x08000000);
     }
-    let mut child = command.spawn()?;
+    let child = command.spawn();
+    #[cfg(target_os = "linux")]
+    let child = child.map_err(|error| {
+        std::io::Error::new(
+            error.kind(),
+            format!(
+                "Could not start the bundled Node runtime at {}: {error}",
+                node.display()
+            ),
+        )
+    });
+    let mut child = child?;
     let stdout = child.stdout.take().ok_or("Missing backend output")?;
     let backend = Backend {
         child: Mutex::new(child),
@@ -195,6 +208,11 @@ fn start_backend(
                                 });
                             }
                             Some("hide") => {
+                                // Many Linux desktops have no usable status-notifier host.
+                                // Keep the window reachable through the task switcher.
+                                #[cfg(target_os = "linux")]
+                                let _ = window.minimize();
+                                #[cfg(not(target_os = "linux"))]
                                 let _ = window.hide();
                             }
                             Some("drag") => {
@@ -258,6 +276,10 @@ fn start_backend(
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
                     let handle = native_app.clone();
                     let _ = native_app.run_on_main_thread(move || {
+                        #[cfg(target_os = "linux")]
+                        if handle.try_state::<TrayUnavailable>().is_some() {
+                            return;
+                        }
                         let _ = tray::update(&handle, &value);
                     });
                 }
@@ -326,6 +348,24 @@ fn external(url: &tauri::Url) {
 
 fn startup_error(message: &str) {
     eprintln!("{message}");
+    #[cfg(target_os = "linux")]
+    {
+        use gtk::prelude::{DialogExt, GtkWindowExt};
+        // Desktop launchers do not have a console. Headless invocations still
+        // get stderr and a nonzero status without trying to show a dialog.
+        if gtk::is_initialized_main_thread() {
+            let dialog = gtk::MessageDialog::new(
+                None::<&gtk::Window>,
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Error,
+                gtk::ButtonsType::Close,
+                message,
+            );
+            dialog.set_title("Oh My GUI could not start");
+            dialog.run();
+            dialog.close();
+        }
+    }
     #[cfg(windows)]
     unsafe {
         use windows_sys::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
@@ -393,6 +433,12 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
         .disable_drag_drop_handler()
         .initialization_script(if installer {
             "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;window.__OMP_INSTALLER__=true;"
+        } else if cfg!(target_os = "linux") {
+            if custom_chrome {
+                "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;window.__OMP_MINIMIZE_INSTEAD_OF_TRAY__=true;"
+            } else {
+                "window.__OMP_DESKTOP__=true;window.__OMP_MINIMIZE_INSTEAD_OF_TRAY__=true;"
+            }
         } else if custom_chrome {
             "window.__OMP_DESKTOP__=true;window.__OMP_CUSTOM_CHROME__=true;"
         } else {
@@ -417,7 +463,15 @@ fn setup_window(app: &mut tauri::App, installer: bool) -> Result<(), Box<dyn std
     window_frame::apply(&window);
     if !installer {
         tray::prepare(app.handle(), &url)?;
-        tray::update(app.handle(), &serde_json::json!({"recent":[],"running":[]}))?;
+        let tray_result = tray::update(app.handle(), &serde_json::json!({"recent":[],"running":[]}));
+        #[cfg(target_os = "linux")]
+        if let Err(error) = tray_result {
+            // The window does not depend on the desktop's optional status indicator.
+            eprintln!("Linux status indicator unavailable: {error}");
+            app.manage(TrayUnavailable);
+        }
+        #[cfg(not(target_os = "linux"))]
+        tray_result?;
     }
     let state_window = window.clone();
     window.on_window_event(move |event| {
@@ -483,6 +537,13 @@ fn main() {
         }
         return;
     }
+    #[cfg(target_os = "linux")]
+    if let Err(error) = gtk::init() {
+        // Tao panics if GTK cannot connect to a display. Fail clearly before
+        // creating the event loop (e.g. when invoked over SSH without a display).
+        eprintln!("Oh My GUI needs a graphical Linux session: {error}");
+        std::process::exit(1);
+    }
     let installer = cfg!(windows) && std::env::args().any(|argument| argument == "--installer");
     let builder = tauri::Builder::default();
     #[cfg(not(target_os = "macos"))]
@@ -505,6 +566,9 @@ fn main() {
         Ok(app) => app,
         Err(error) => {
             startup_error(&error.to_string());
+            #[cfg(target_os = "linux")]
+            std::process::exit(1);
+            #[cfg(not(target_os = "linux"))]
             return;
         }
     };
